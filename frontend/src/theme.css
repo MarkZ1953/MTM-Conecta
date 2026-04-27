@@ -1,0 +1,323 @@
+/* ==========================================================
+   MTM-Conecta — Paleta de marca sobre PrimeReact v10
+   Método: Named-class / selector override (docs oficiales)
+   Orden: importar DESPUÉS de lara-light-cyan/theme.css
+   ========================================================== */
+
+/* ----------------------------------------------------------
+   1. Tokens de marca como CSS variables globales
+   ---------------------------------------------------------- */
+:root {
+  /* Morados */
+  --mtm-primary: #6a3fa0;
+  --mtm-primary-light: #8e5cc2;
+  --mtm-primary-soft: #ede7f6;
+
+  /* Dorados / Ámbar */
+  --mtm-accent: #f2c94c;
+  --mtm-accent-deep: #e6a800;
+  --mtm-accent-soft: #fff8e1;
+
+  /* Verdes / Teal */
+  --mtm-teal: #2e9b7d;
+  --mtm-teal-deep: #1d9e75;
+  --mtm-teal-soft: #e1f5ee;
+
+  /* Rosa */
+  --mtm-rose: #d4537e;
+
+  /* Neutros */
+  --mtm-white: #ffffff;
+  --mtm-dark: #2c2c2a;
+  --mtm-border: #d4c8ec;
+}
+
+/* ----------------------------------------------------------
+   2. Botones primarios
+   ---------------------------------------------------------- */
+.p-button {
+  background-color: var(--mtm-primary);
+  border-color: var(--mtm-primary);
+  color: var(--mtm-white);
+}
+.p-button:not(:disabled):hover {
+  background-color: var(--mtm-primary-light);
+  border-color: var(--mtm-primary-light);
+}
+.p-button:not(:disabled):active {
+  background-color: #5a3390;
+  border-color: #5a3390;
+}
+.p-button:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--mtm-primary-soft),
+    0 0 0 4px var(--mtm-primary-light);
+}
+
+/* Variante outlined */
+.p-button-outlined {
+  background-color: transparent;
+  border-color: var(--mtm-primary);
+  color: var(--mtm-primary);
+}
+.p-button-outlined:not(:disabled):hover {
+  background-color: var(--mtm-primary-soft);
+}
+
+/* Variante text */
+.p-button-text {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--mtm-primary);
+}
+.p-button-text:not(:disabled):hover {
+  background-color: var(--mtm-primary-soft);
+}
+
+/* ----------------------------------------------------------
+   3. Inputs de texto
+   ---------------------------------------------------------- */
+.p-inputtext {
+  border-color: var(--mtm-border);
+  color: var(--mtm-dark);
+}
+.p-inputtext:enabled:hover {
+  border-color: var(--mtm-primary-light);
+}
+.p-inputtext:enabled:focus {
+  border-color: var(--mtm-primary);
+  box-shadow:
+    0 0 0 2px var(--mtm-primary-soft),
+    0 0 0 4px var(--mtm-primary-light);
+}
+.p-inputtext::placeholder {
+  color: #a0a09c;
+}
+
+/* ----------------------------------------------------------
+   4. AutoComplete
+   ---------------------------------------------------------- */
+.p-autocomplete .p-autocomplete-input {
+  border-color: var(--mtm-border);
+}
+.p-autocomplete:not(.p-disabled).p-focus .p-autocomplete-input {
+  border-color: var(--mtm-primary);
+  box-shadow: 0 0 0 2px var(--mtm-primary-soft);
+}
+/* Chips / tokens de selección múltiple */
+.p-autocomplete-multiple-container .p-autocomplete-chip {
+  background: var(--mtm-primary-soft);
+  color: var(--mtm-primary);
+  border: 1px solid var(--mtm-border);
+}
+.p-autocomplete-multiple-container .p-autocomplete-chip .p-chip-remove-icon {
+  color: var(--mtm-primary);
+}
+/* Panel de sugerencias */
+.p-autocomplete-panel .p-autocomplete-item.p-highlight {
+  background: var(--mtm-primary-soft);
+  color: var(--mtm-primary);
+}
+.p-autocomplete-panel .p-autocomplete-item:not(.p-highlight):hover {
+  background: #f0eaf9;
+}
+
+/* ----------------------------------------------------------
+   5. Dropdown / Select
+   ---------------------------------------------------------- */
+.p-dropdown {
+  border-color: var(--mtm-border);
+}
+.p-dropdown:not(.p-disabled):hover {
+  border-color: var(--mtm-primary-light);
+}
+.p-dropdown:not(.p-disabled).p-focus {
+  border-color: var(--mtm-primary);
+  box-shadow: 0 0 0 2px var(--mtm-primary-soft);
+}
+.p-dropdown-panel .p-dropdown-item.p-highlight {
+  background: var(--mtm-primary-soft);
+  color: var(--mtm-primary);
+}
+.p-dropdown-panel .p-dropdown-item:not(.p-highlight):hover {
+  background: #f0eaf9;
+}
+
+/* ----------------------------------------------------------
+   6. Checkbox
+   ---------------------------------------------------------- */
+.p-checkbox .p-checkbox-box.p-highlight {
+  background: var(--mtm-primary);
+  border-color: var(--mtm-primary);
+}
+.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-highlight:hover {
+  background: var(--mtm-primary-light);
+  border-color: var(--mtm-primary-light);
+}
+.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box:hover {
+  border-color: var(--mtm-primary-light);
+}
+.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-focus {
+  border-color: var(--mtm-primary);
+  box-shadow: 0 0 0 2px var(--mtm-primary-soft);
+}
+
+/* ----------------------------------------------------------
+   7. RadioButton
+   ---------------------------------------------------------- */
+.p-radiobutton .p-radiobutton-box.p-highlight {
+  background: var(--mtm-primary);
+  border-color: var(--mtm-primary);
+}
+.p-radiobutton:not(.p-radiobutton-disabled)
+  .p-radiobutton-box.p-highlight:hover {
+  background: var(--mtm-primary-light);
+  border-color: var(--mtm-primary-light);
+}
+
+/* ----------------------------------------------------------
+   8. Chips
+   ---------------------------------------------------------- */
+.p-chip {
+  background: var(--mtm-primary-soft);
+  color: var(--mtm-primary);
+}
+
+/* ----------------------------------------------------------
+   9. Badge / Tag
+   ---------------------------------------------------------- */
+.p-badge {
+  background: var(--mtm-primary);
+  color: var(--mtm-white);
+}
+.p-tag {
+  background: var(--mtm-primary);
+  color: var(--mtm-white);
+}
+
+/* ----------------------------------------------------------
+   10. Panel
+   ---------------------------------------------------------- */
+.p-panel .p-panel-header {
+  background: var(--mtm-primary-soft);
+  color: var(--mtm-primary);
+  border-color: var(--mtm-border);
+}
+.p-panel .p-panel-content {
+  border-color: var(--mtm-border);
+}
+
+/* ----------------------------------------------------------
+   11. Card
+   ---------------------------------------------------------- */
+.p-card {
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 12px 0 rgba(106, 63, 160, 0.08);
+}
+
+/* ----------------------------------------------------------
+   12. Dialog
+   ---------------------------------------------------------- */
+.p-dialog .p-dialog-header {
+  background: var(--mtm-primary);
+  color: var(--mtm-white);
+  border-color: var(--mtm-primary);
+}
+.p-dialog .p-dialog-header .p-dialog-header-icon {
+  color: var(--mtm-white);
+}
+.p-dialog .p-dialog-header .p-dialog-header-icon:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ----------------------------------------------------------
+   13. DataTable
+   ---------------------------------------------------------- */
+.p-datatable .p-datatable-header {
+  background: var(--mtm-primary-soft);
+  color: var(--mtm-primary);
+  border-color: var(--mtm-border);
+}
+.p-datatable .p-datatable-thead > tr > th {
+  background: var(--mtm-primary-soft);
+  color: var(--mtm-primary);
+  border-color: var(--mtm-border);
+}
+.p-datatable .p-datatable-thead > tr > th.p-highlight {
+  background: var(--mtm-primary-soft);
+  color: var(--mtm-primary);
+}
+.p-datatable .p-datatable-thead > tr > th .p-sortable-column-icon {
+  color: var(--mtm-primary);
+}
+.p-datatable .p-datatable-tbody > tr:hover {
+  background: #f0eaf9;
+}
+.p-datatable .p-datatable-tbody > tr.p-highlight {
+  background: var(--mtm-primary-soft);
+  color: var(--mtm-primary);
+}
+
+/* ----------------------------------------------------------
+   14. Tabs
+   ---------------------------------------------------------- */
+.p-tabview .p-tabview-nav li .p-tabview-nav-link {
+  color: var(--mtm-dark);
+}
+.p-tabview .p-tabview-nav li .p-tabview-nav-link:hover {
+  color: var(--mtm-primary-light);
+  border-color: var(--mtm-primary-light);
+}
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  color: var(--mtm-primary);
+  border-color: var(--mtm-primary);
+}
+
+/* ----------------------------------------------------------
+   15. Mensajes / Toast
+   ---------------------------------------------------------- */
+.p-message.p-message-info {
+  background: var(--mtm-primary-soft);
+  border-color: var(--mtm-primary-light);
+  color: var(--mtm-primary);
+}
+.p-toast .p-toast-message.p-toast-message-info {
+  background: var(--mtm-primary-soft);
+  border-color: var(--mtm-primary);
+  color: var(--mtm-primary);
+}
+
+/* ----------------------------------------------------------
+   16. Clases utilitarias de paleta (uso libre en JSX)
+   ---------------------------------------------------------- */
+.mtm-bg-primary {
+  background-color: var(--mtm-primary) !important;
+  color: var(--mtm-white) !important;
+}
+.mtm-bg-primary-soft {
+  background-color: var(--mtm-primary-soft) !important;
+}
+.mtm-bg-accent {
+  background-color: var(--mtm-accent) !important;
+  color: var(--mtm-dark) !important;
+}
+.mtm-bg-teal {
+  background-color: var(--mtm-teal) !important;
+  color: var(--mtm-white) !important;
+}
+.mtm-bg-rose {
+  background-color: var(--mtm-rose) !important;
+  color: var(--mtm-white) !important;
+}
+.mtm-text-primary {
+  color: var(--mtm-primary) !important;
+}
+.mtm-text-teal {
+  color: var(--mtm-teal) !important;
+}
+.mtm-text-rose {
+  color: var(--mtm-rose) !important;
+}
+.mtm-text-accent {
+  color: var(--mtm-accent-deep) !important;
+}

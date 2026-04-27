@@ -7,13 +7,36 @@ import { Avatar } from "primereact/avatar";
 import { Ripple } from "primereact/ripple";
 import { UIDialog } from "./components";
 import FormAutoCompleteMultiple from "./components/form/form-autocomplete-multiple";
+import { LoginPage } from "./auth/pages/login-page";
+import { RegisterPage } from "./auth/pages/register-page";
+
+type View = "login" | "register" | "app";
 
 export default function App() {
+  const [view, setView] = useState<View>("login");
   const [visible, setVisible] = useState<boolean>(false);
   const btnRef1 = useRef<any>(null);
   const btnRef2 = useRef<any>(null);
   const btnRef3 = useRef<any>(null);
   const btnRef4 = useRef<any>(null);
+
+  // --- Vistas de autenticación ---
+  if (view === "login") {
+    return (
+      <LoginPage
+        onNavigateRegister={() => setView("register")}
+        onLoginSuccess={() => setView("app")}
+      />
+    );
+  }
+  if (view === "register") {
+    return (
+      <RegisterPage
+        onNavigateLogin={() => setView("login")}
+        onRegisterSuccess={() => setView("login")}
+      />
+    );
+  }
 
   return (
     <div className="card flex justify-content-center">
