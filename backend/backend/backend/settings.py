@@ -46,6 +46,8 @@ LOCAL_APPS = [
     'apps.programas',
     'apps.donantes',
     'apps.proyectos',
+    'apps.voluntarios',   # ← Módulo de voluntarios (landing page + panel)
+    'apps.leads',         # ← Solicitudes recibidas desde la landing page
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

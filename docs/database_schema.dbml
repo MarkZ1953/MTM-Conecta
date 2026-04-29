@@ -8,50 +8,37 @@
 
 // ────────────────────────────────────────────────────────────────
 // MÓDULO 1 · SEGURIDAD Y CONTROL DE ACCESO
+// Usa el sistema nativo de Django (auth_group / auth_permission)
+// en vez de tablas custom, para compatibilidad con django.contrib.admin
 // ────────────────────────────────────────────────────────────────
 
-Table roles {
-  id          integer     [pk, increment]
-  nombre      varchar(50) [unique, not null, note: 'Ej: admin, coordinador, psicólogo, visitador']
-  descripcion text
-  activo      boolean     [default: true]
-  created_at  timestamp   [default: `now()`]
+// Tabla gestionada por Django — NO modificar manualmente
+Table auth_group {
+  id   integer     [pk, increment]
+  name varchar(150) [unique, not null, note: 'Ej: Administrador, Coordinador, Operador, Consultor']
 }
 
-Table permisos {
-  id          integer      [pk, increment]
-  codigo      varchar(100) [unique, not null, note: 'Ej: beneficiarios.crear, donaciones.ver']
-  descripcion text
-  modulo      varchar(50)  [not null, note: 'beneficiarios, donantes, donaciones, proyectos, reportes, usuarios, auditoria']
-}
-
-Table roles_permisos {
-  rol_id     integer [not null]
-  permiso_id integer [not null]
+// Tabla intermedia gestionada por Django
+Table auth_user_groups {
+  id       integer [pk, increment]
+  user_id  integer [not null]
+  group_id integer [not null]
   indexes {
-    (rol_id, permiso_id) [pk]
+    (user_id, group_id) [unique]
   }
 }
 
 Table usuarios {
   id             integer      [pk, increment]
-  persona_id     integer      [unique, not null]
   email          varchar(150) [unique, not null]
   password_hash  varchar(255) [not null]
+  primer_nombre  varchar(80)  [not null]
+  primer_apellido varchar(80) [not null]
   activo         boolean      [default: true]
+  is_staff       boolean      [default: false]
   ultimo_acceso  timestamp
   created_at     timestamp    [default: `now()`]
   updated_at     timestamp    [default: `now()`]
-}
-
-Table usuarios_roles {
-  usuario_id integer [not null]
-  rol_id     integer [not null]
-  asignado_por integer
-  asignado_en  timestamp [default: `now()`]
-  indexes {
-    (usuario_id, rol_id) [pk]
-  }
 }
 
 Table auditoria {
@@ -59,7 +46,7 @@ Table auditoria {
   usuario_id      integer
   accion          varchar(20)  [not null, note: 'CREATE, UPDATE, DELETE, LOGIN, LOGOUT, VIEW']
   tabla_afectada  varchar(100)
-  registro_id     integer
+  registro_id     bigint
   datos_anteriores json
   datos_nuevos    json
   ip_address      varchar(45)
@@ -379,43 +366,87 @@ Table proyectos_beneficiarios {
 }
 
 
+// ────────────────────────────────────────────────────────────────
+// MÓDULO 10 · VOLUNTARIOS
+// Datos específicos del voluntario — info personal en `personas`
+// ────────────────────────────────────────────────────────────────
+
+Table voluntarios {
+  id                       integer     [pk, increment]
+  persona_id               integer     [unique, not null]
+  habilidades              text        [note: 'Habilidades, profesión u oficio']
+  disponibilidad           varchar(20) [note: 'weekdays, weekends, flexible']
+  estado                   varchar(20) [default: 'pendiente', note: 'pendiente, activo, inactivo, rechazado']
+  fecha_inicio             date
+  observaciones            text        [note: 'Notas internas del coordinador']
+  acepta_tratamiento_datos boolean     [default: false, note: 'Requerido Ley 1581/2012']
+  fecha_aceptacion         timestamp
+  registrado_por_id        integer
+  created_at               timestamp   [default: `now()`]
+  updated_at               timestamp   [default: `now()`]
+}
+
+
+// ────────────────────────────────────────────────────────────────
+// MÓDULO 11 · FORMULARIOS LANDING PAGE (LEADS)
+// Captura de solicitudes desde DonateForm, VolunteerForm, PartnerForm
+// ────────────────────────────────────────────────────────────────
+
+Table formularios_leads {
+  id                       integer      [pk, increment]
+  tipo                     varchar(20)  [not null, note: 'donacion, voluntario, alianza, contacto']
+  estado                   varchar(20)  [default: 'nuevo', note: 'nuevo, en_proceso, atendido, descartado']
+  nombre_completo          varchar(200) [not null]
+  email                    varchar(150) [not null]
+  telefono                 varchar(20)
+  tipo_donacion            varchar(30)  [note: 'monetary | species — solo tipo=donacion']
+  monto_donacion           decimal(14,2)
+  habilidades              text         [note: 'Solo tipo=voluntario']
+  disponibilidad           varchar(20)  [note: 'weekdays, weekends, flexible — solo tipo=voluntario']
+  nombre_empresa           varchar(150) [note: 'Solo tipo=alianza']
+  propuesta_alianza        text         [note: 'Solo tipo=alianza']
+  acepta_tratamiento_datos boolean      [default: false, note: 'Requerido Ley 1581/2012']
+  ip_origen                varchar(45)
+  notas_internas           text
+  atendido_por_id          integer
+  fecha_atencion           timestamp
+  created_at               timestamp    [default: `now()`]
+}
+
+
 // ================================================================
 // REFERENCIAS (Foreign Keys)
 // ================================================================
 
-// ── Seguridad ────────────────────────────────
-Ref: roles_permisos.rol_id     > roles.id
-Ref: roles_permisos.permiso_id > permisos.id
-Ref: usuarios.persona_id       > personas.id
-Ref: usuarios_roles.usuario_id > usuarios.id
-Ref: usuarios_roles.rol_id     > roles.id
-Ref: usuarios_roles.asignado_por > usuarios.id
+// ── Seguridad (Django Groups) ─────────────────────────────
+Ref: auth_user_groups.user_id  > usuarios.id
+Ref: auth_user_groups.group_id > auth_group.id
 Ref: auditoria.usuario_id      > usuarios.id
 
-// ── Personas ─────────────────────────────────
+// ── Personas ─────────────────────────────────────────────
 Ref: contactos_emergencia.persona_id > personas.id
 
-// ── Acudientes ───────────────────────────────
+// ── Acudientes ───────────────────────────────────────────
 Ref: acudientes.persona_id      > personas.id
 Ref: ocupacion_laboral.acudiente_id > acudientes.id
 
-// ── Beneficiarios ────────────────────────────
+// ── Beneficiarios ────────────────────────────────────────
 Ref: beneficiarios.persona_id   > personas.id
 Ref: acudiente_beneficiario.acudiente_id    > acudientes.id
 Ref: acudiente_beneficiario.beneficiario_id > beneficiarios.id
 
-// ── Caracterización ──────────────────────────
+// ── Caracterización ──────────────────────────────────────
 Ref: caracterizaciones.beneficiario_id   > beneficiarios.id
 Ref: caracterizaciones.acudiente_id      > acudientes.id
 Ref: caracterizaciones.registrado_por_id > usuarios.id
 Ref: miembros_familia.caracterizacion_id > caracterizaciones.id
 
-// ── Consentimientos ──────────────────────────
+// ── Consentimientos ──────────────────────────────────────
 Ref: consentimientos.beneficiario_id    > beneficiarios.id
 Ref: consentimientos.acudiente_id       > acudientes.id
 Ref: consentimientos.registrado_por_id  > usuarios.id
 
-// ── Programas ────────────────────────────────
+// ── Programas ────────────────────────────────────────────
 Ref: inscripciones_programas.beneficiario_id   > beneficiarios.id
 Ref: inscripciones_programas.programa_id       > programas.id
 Ref: inscripciones_programas.registrado_por_id > usuarios.id
@@ -423,13 +454,20 @@ Ref: seguimientos.beneficiario_id > beneficiarios.id
 Ref: seguimientos.programa_id     > programas.id
 Ref: seguimientos.usuario_id      > usuarios.id
 
-// ── Donantes y Donaciones ────────────────────
+// ── Donantes y Donaciones ────────────────────────────────
 Ref: donantes.persona_id          > personas.id
 Ref: donaciones.donante_id        > donantes.id
 Ref: donaciones.proyecto_id       > proyectos.id
 Ref: donaciones.registrado_por_id > usuarios.id
 
-// ── Proyectos ────────────────────────────────
-Ref: proyectos.responsable_id             > usuarios.id
+// ── Proyectos ────────────────────────────────────────────
+Ref: proyectos.responsable_id              > usuarios.id
 Ref: proyectos_beneficiarios.proyecto_id   > proyectos.id
 Ref: proyectos_beneficiarios.beneficiario_id > beneficiarios.id
+
+// ── Voluntarios ──────────────────────────────────────────
+Ref: voluntarios.persona_id        > personas.id
+Ref: voluntarios.registrado_por_id > usuarios.id
+
+// ── Leads (solicitudes landing page) ─────────────────────
+Ref: formularios_leads.atendido_por_id > usuarios.id

@@ -23,6 +23,16 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     """
     Usuario del sistema MTM Conecta.
     Usa email como identificador en lugar de username.
+
+    El control de acceso por módulo se gestiona mediante
+    django.contrib.auth.models.Group (grupos nativos de Django),
+    accesibles vía usuario.groups.all() — no se usan tablas Rol/Permiso custom.
+
+    Grupos sugeridos para la fundación:
+      - Administrador   → acceso total
+      - Coordinador     → gestión de beneficiarios y programas
+      - Operador        → registro y consulta
+      - Consultor       → solo lectura
     """
     email           = models.EmailField(unique=True, verbose_name='Correo electrónico')
     primer_nombre   = models.CharField(max_length=80, verbose_name='Primer nombre')
@@ -51,71 +61,18 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     def nombre_completo(self):
         return f'{self.primer_nombre} {self.primer_apellido}'
 
-
-class Rol(models.Model):
-    nombre      = models.CharField(max_length=50, unique=True, verbose_name='Nombre')
-    descripcion = models.TextField(blank=True, verbose_name='Descripción')
-    activo      = models.BooleanField(default=True, verbose_name='Activo')
-    created_at  = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table            = 'roles'
-        verbose_name        = 'Rol'
-        verbose_name_plural = 'Roles'
-        ordering            = ['nombre']
-
-    def __str__(self):
-        return self.nombre
-
-
-class Permiso(models.Model):
-    codigo      = models.CharField(max_length=100, unique=True, verbose_name='Código',
-                                   help_text='Ej: beneficiarios.crear, donaciones.ver')
-    descripcion = models.TextField(blank=True, verbose_name='Descripción')
-    modulo      = models.CharField(max_length=50, verbose_name='Módulo')
-
-    class Meta:
-        db_table            = 'permisos'
-        verbose_name        = 'Permiso'
-        verbose_name_plural = 'Permisos'
-        ordering            = ['modulo', 'codigo']
-
-    def __str__(self):
-        return self.codigo
-
-
-class RolPermiso(models.Model):
-    rol     = models.ForeignKey(Rol, on_delete=models.CASCADE, related_name='rol_permisos')
-    permiso = models.ForeignKey(Permiso, on_delete=models.CASCADE, related_name='rol_permisos')
-
-    class Meta:
-        db_table            = 'roles_permisos'
-        verbose_name        = 'Rol-Permiso'
-        verbose_name_plural = 'Roles-Permisos'
-        unique_together     = ('rol', 'permiso')
-
-    def __str__(self):
-        return f'{self.rol} → {self.permiso}'
-
-
-class UsuarioRol(models.Model):
-    usuario      = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='usuario_roles')
-    rol          = models.ForeignKey(Rol, on_delete=models.CASCADE, related_name='usuario_roles')
-    asignado_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True,
-                                     related_name='roles_asignados')
-    asignado_en  = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table            = 'usuarios_roles'
-        verbose_name        = 'Usuario-Rol'
-        verbose_name_plural = 'Usuarios-Roles'
-        unique_together     = ('usuario', 'rol')
-
-    def __str__(self):
-        return f'{self.usuario} → {self.rol}'
+    @property
+    def rol_display(self):
+        """Retorna el nombre del primer grupo asignado (rol principal)."""
+        grupo = self.groups.first()
+        return grupo.name if grupo else 'Sin rol'
 
 
 class Auditoria(models.Model):
+    """
+    Registro de trazabilidad de acciones realizadas en el sistema.
+    Cumple con el principio de transparencia de la Ley 1581 de 2012.
+    """
     ACCIONES = [
         ('CREATE', 'Crear'),
         ('UPDATE', 'Actualizar'),
