@@ -1,0 +1,435 @@
+// ================================================================
+// MTM CONECTA — MODELO DE BASE DE DATOS
+// Fundación Mujeres Trabajando por el Meta
+// ================================================================
+// Pegar en: https://dbdiagram.io/d
+// ================================================================
+
+
+// ────────────────────────────────────────────────────────────────
+// MÓDULO 1 · SEGURIDAD Y CONTROL DE ACCESO
+// ────────────────────────────────────────────────────────────────
+
+Table roles {
+  id          integer     [pk, increment]
+  nombre      varchar(50) [unique, not null, note: 'Ej: admin, coordinador, psicólogo, visitador']
+  descripcion text
+  activo      boolean     [default: true]
+  created_at  timestamp   [default: `now()`]
+}
+
+Table permisos {
+  id          integer      [pk, increment]
+  codigo      varchar(100) [unique, not null, note: 'Ej: beneficiarios.crear, donaciones.ver']
+  descripcion text
+  modulo      varchar(50)  [not null, note: 'beneficiarios, donantes, donaciones, proyectos, reportes, usuarios, auditoria']
+}
+
+Table roles_permisos {
+  rol_id     integer [not null]
+  permiso_id integer [not null]
+  indexes {
+    (rol_id, permiso_id) [pk]
+  }
+}
+
+Table usuarios {
+  id             integer      [pk, increment]
+  persona_id     integer      [unique, not null]
+  email          varchar(150) [unique, not null]
+  password_hash  varchar(255) [not null]
+  activo         boolean      [default: true]
+  ultimo_acceso  timestamp
+  created_at     timestamp    [default: `now()`]
+  updated_at     timestamp    [default: `now()`]
+}
+
+Table usuarios_roles {
+  usuario_id integer [not null]
+  rol_id     integer [not null]
+  asignado_por integer
+  asignado_en  timestamp [default: `now()`]
+  indexes {
+    (usuario_id, rol_id) [pk]
+  }
+}
+
+Table auditoria {
+  id              integer      [pk, increment]
+  usuario_id      integer
+  accion          varchar(20)  [not null, note: 'CREATE, UPDATE, DELETE, LOGIN, LOGOUT, VIEW']
+  tabla_afectada  varchar(100)
+  registro_id     integer
+  datos_anteriores json
+  datos_nuevos    json
+  ip_address      varchar(45)
+  user_agent      varchar(255)
+  created_at      timestamp    [default: `now()`]
+}
+
+
+// ────────────────────────────────────────────────────────────────
+// MÓDULO 2 · PERSONAS (BASE COMPARTIDA)
+// Tabla polimórfica usada por acudientes, beneficiarios,
+// donantes y staff del sistema.
+// ────────────────────────────────────────────────────────────────
+
+Table personas {
+  id                    integer      [pk, increment]
+  tipo_persona          varchar(25)  [not null, note: 'acudiente, beneficiario, donante, staff, voluntario']
+  primer_nombre         varchar(80)  [not null]
+  segundo_nombre        varchar(80)
+  primer_apellido       varchar(80)  [not null]
+  segundo_apellido      varchar(80)
+  tipo_documento        varchar(20)  [note: 'CC, TI, RC, CE, Pasaporte, NIT']
+  numero_documento      varchar(25)  [unique]
+  ciudad_exp_documento  varchar(80)
+  fecha_nacimiento      date
+  sexo                  char(1)      [note: 'F = Femenino, M = Masculino, O = Otro']
+  telefono              varchar(20)
+  email                 varchar(150)
+  created_at            timestamp    [default: `now()`]
+  updated_at            timestamp    [default: `now()`]
+}
+
+Table contactos_emergencia {
+  id          integer     [pk, increment]
+  persona_id  integer     [not null]
+  nombre      varchar(160) [not null]
+  telefono    varchar(20)  [not null]
+  parentesco  varchar(60)
+}
+
+
+// ────────────────────────────────────────────────────────────────
+// MÓDULO 3 · ACUDIENTES / REPRESENTANTES LEGALES
+// Datos del formulario sección "Información Personal Acudiente"
+// ────────────────────────────────────────────────────────────────
+
+Table acudientes {
+  id             integer     [pk, increment]
+  persona_id     integer     [unique, not null]
+  estado_civil   varchar(30) [note: 'Soltero, Casado, Unión libre, Separado, Viudo']
+  profesion      varchar(100)
+  numero_hijos   integer
+  created_at     timestamp   [default: `now()`]
+  updated_at     timestamp   [default: `now()`]
+}
+
+Table ocupacion_laboral {
+  id                    integer     [pk, increment]
+  acudiente_id          integer     [unique, not null]
+  actualmente_trabaja   boolean
+  lugar_trabajo         varchar(150)
+  horario_laboral       varchar(100)
+  actividad_desempenada varchar(150)
+  tipo_contrato         varchar(20) [note: 'Independiente, Por contrato']
+}
+
+
+// ────────────────────────────────────────────────────────────────
+// MÓDULO 4 · BENEFICIARIOS (MENORES / PACIENTES)
+// Datos del formulario sección "Información del Menor"
+// ────────────────────────────────────────────────────────────────
+
+Table beneficiarios {
+  id                   integer     [pk, increment]
+  persona_id           integer     [unique, not null]
+  diagnostico          text        [note: 'Diagnóstico médico principal']
+  ultima_evolucion     text        [note: 'Última evolución clínica registrada']
+  grado_escolar        varchar(30) [note: 'Ej: 3° primaria, Kínder, No escolarizado']
+  fecha_ingreso_hosp   date        [note: 'Fecha de ingreso del menor al hospital']
+  lugar_nacimiento     varchar(100)
+  activo               boolean     [default: true]
+  created_at           timestamp   [default: `now()`]
+  updated_at           timestamp   [default: `now()`]
+}
+
+Table acudiente_beneficiario {
+  id                    integer     [pk, increment]
+  acudiente_id          integer     [not null]
+  beneficiario_id       integer     [not null]
+  parentesco            varchar(60) [not null, note: 'Padre, Madre, Hermano, Tío, Abuelo, etc.']
+  es_acudiente_principal boolean    [default: false]
+  indexes {
+    (acudiente_id, beneficiario_id) [unique]
+  }
+}
+
+
+// ────────────────────────────────────────────────────────────────
+// MÓDULO 5 · FICHA DE CARACTERIZACIÓN SOCIOECONÓMICA
+// Datos del formulario sección "Ficha de Caracterización"
+// ────────────────────────────────────────────────────────────────
+
+Table caracterizaciones {
+  id                integer  [pk, increment]
+  beneficiario_id   integer  [not null]
+  acudiente_id      integer  [not null]
+  registrado_por_id integer
+  fecha_registro    date     [not null]
+
+  // ── Vivienda ────────────────────────────────
+  tipo_vivienda       varchar(20) [note: 'Propia, Arriendo, Familiar']
+  zona_residencia     varchar(10) [note: 'Urbana, Rural']
+  direccion           varchar(200)
+  barrio              varchar(100)
+  municipio           varchar(100)
+  departamento        varchar(100)
+  estrato             integer     [note: '1, 2, 3, 4, 5, 6']
+
+  // ── Grupos poblacionales (del formulario) ───
+  grupo_afrocolombiano  boolean [default: false]
+  grupo_indigena        boolean [default: false]
+  grupo_lgbtq           boolean [default: false]
+  grupo_migrante        boolean [default: false]
+  grupo_desplazado      boolean [default: false]
+  grupo_rom             boolean [default: false]
+  grupo_otro            varchar(100)
+
+  // ── Afiliación a salud ──────────────────────
+  tiene_eps             boolean
+  nombre_eps            varchar(100)
+  tipo_eps              varchar(20) [note: 'Subsidiado, Contributivo']
+  tiene_sisben          boolean
+  nivel_sisben          varchar(10)
+  tiene_caja_comp       boolean
+  nombre_caja_comp      varchar(100)
+
+  // ── Servicios del hogar ─────────────────────
+  servicio_luz          boolean [default: false]
+  servicio_agua         boolean [default: false]
+  servicio_gas          boolean [default: false]
+  servicio_television   boolean [default: false]
+  servicio_internet     boolean [default: false]
+  tiene_transporte      boolean [default: false]
+  tipo_transporte       varchar(80)
+
+  // ── Información familiar ────────────────────
+  convivientes_cantidad      integer
+  ingreso_mensual_familiar   decimal(12,2)
+  descripcion_relacion_fam   text
+
+  // ── Derechos fundamentales ──────────────────
+  forma_suplir_alimentacion  text
+  alimentos_comidas          text
+  nna_en_sistema_educativo   boolean
+  actividades_tiempo_libre   text
+  frecuencia_actividades     varchar(80)
+
+  // ── Cierre ──────────────────────────────────
+  observaciones   text
+  created_at      timestamp [default: `now()`]
+  updated_at      timestamp [default: `now()`]
+}
+
+Table miembros_familia {
+  id                 integer     [pk, increment]
+  caracterizacion_id integer     [not null]
+  nombre             varchar(160) [not null]
+  edad               integer
+  parentesco         varchar(60)  [note: 'Parentesco con el menor beneficiario']
+  ocupacion          varchar(100)
+}
+
+
+// ────────────────────────────────────────────────────────────────
+// MÓDULO 6 · CONSENTIMIENTOS INFORMADOS
+// Basado en los dos formularios PDF: adultos y menores de edad
+// ────────────────────────────────────────────────────────────────
+
+Table consentimientos {
+  id                      integer      [pk, increment]
+  tipo                    varchar(20)  [not null, note: 'adulto, menor_edad']
+  beneficiario_id         integer
+  acudiente_id            integer
+
+  // ── Datos del firmante ──────────────────────
+  firmante_nombre         varchar(160) [not null]
+  firmante_cedula         varchar(20)  [not null]
+  firmante_ciudad_exp     varchar(80)
+  firmante_telefono       varchar(20)
+  firmante_es_rep_legal   boolean      [default: false]
+
+  // ── Datos del menor (solo tipo = menor_edad) ─
+  menor_nombre            varchar(160)
+  menor_tipo_documento    varchar(20)  [note: 'TI, RC, CE']
+  menor_numero_documento  varchar(20)
+
+  // ── Autorización ────────────────────────────
+  acepta_uso_imagen       boolean      [default: false]
+  acepta_datos_sensibles  boolean      [default: false]
+  acepta_publicacion_redes boolean     [default: false]
+
+  // ── Firma ───────────────────────────────────
+  ciudad_firma            varchar(80)
+  fecha_firma             date         [not null]
+  firma_imagen_url        varchar(255) [note: 'Ruta a imagen de firma escaneada o digital']
+
+  registrado_por_id       integer
+  created_at              timestamp    [default: `now()`]
+}
+
+
+// ────────────────────────────────────────────────────────────────
+// MÓDULO 7 · PROGRAMAS E INSCRIPCIONES
+// Los 5 programas reales de la Fundación MTM
+// ────────────────────────────────────────────────────────────────
+
+Table programas {
+  id          integer      [pk, increment]
+  nombre      varchar(150) [not null, note: 'Ej: Hogar de Paso Victoria, Educando Ángeles']
+  descripcion text
+  beneficios  text
+  activo      boolean      [default: true]
+  created_at  timestamp    [default: `now()`]
+}
+
+Table inscripciones_programas {
+  id                 integer     [pk, increment]
+  beneficiario_id    integer     [not null]
+  programa_id        integer     [not null]
+  fecha_inscripcion  date        [not null]
+  estado             varchar(20) [default: 'activo', note: 'activo, suspendido, egresado']
+  fecha_egreso       date
+  motivo_egreso      text
+  observaciones      text
+  registrado_por_id  integer
+  created_at         timestamp   [default: `now()`]
+  indexes {
+    (beneficiario_id, programa_id) [unique]
+  }
+}
+
+Table seguimientos {
+  id                 integer     [pk, increment]
+  beneficiario_id    integer     [not null]
+  programa_id        integer
+  usuario_id         integer     [not null]
+  fecha_seguimiento  date        [not null]
+  tipo_seguimiento   varchar(50) [note: 'Visita domiciliaria, Llamada, Sesión presencial, Evaluación']
+  descripcion        text
+  estado             varchar(20) [note: 'pendiente, realizado, cancelado']
+  created_at         timestamp   [default: `now()`]
+}
+
+
+// ────────────────────────────────────────────────────────────────
+// MÓDULO 8 · DONANTES Y DONACIONES
+// ────────────────────────────────────────────────────────────────
+
+Table donantes {
+  id                 integer      [pk, increment]
+  tipo_donante       varchar(20)  [not null, note: 'persona_natural, empresa']
+  persona_id         integer      [note: 'Vinculado si es persona natural']
+  nombre_empresa     varchar(150) [note: 'Solo si es persona jurídica']
+  nit                varchar(25)  [note: 'Solo si es persona jurídica']
+  representante      varchar(160)
+  telefono           varchar(20)
+  email              varchar(150)
+  ciudad             varchar(80)
+  activo             boolean      [default: true]
+  notas              text
+  fecha_registro     date
+  created_at         timestamp    [default: `now()`]
+  updated_at         timestamp    [default: `now()`]
+}
+
+Table donaciones {
+  id                 integer      [pk, increment]
+  donante_id         integer      [not null]
+  proyecto_id        integer
+  tipo_donacion      varchar(30)  [not null, note: 'Dinero, Alimentos, Ropa, Servicios, Medicamentos, Otro']
+  monto              decimal(14,2) [note: 'Solo aplica para donaciones en dinero']
+  descripcion        text         [note: 'Descripción de la donación en especie']
+  fecha_donacion     date         [not null]
+  comprobante_url    varchar(255) [note: 'Soporte digital del recibo o transferencia']
+  estado             varchar(20)  [default: 'recibida', note: 'recibida, procesada, asignada']
+  registrado_por_id  integer
+  created_at         timestamp    [default: `now()`]
+}
+
+
+// ────────────────────────────────────────────────────────────────
+// MÓDULO 9 · PROYECTOS
+// ────────────────────────────────────────────────────────────────
+
+Table proyectos {
+  id               integer      [pk, increment]
+  nombre           varchar(150) [not null]
+  descripcion      text
+  objetivo         text
+  fecha_inicio     date
+  fecha_fin        date
+  presupuesto      decimal(14,2)
+  monto_recaudado  decimal(14,2) [default: 0]
+  estado           varchar(20)  [default: 'planificacion', note: 'planificacion, activo, pausado, completado, cancelado']
+  responsable_id   integer
+  created_at       timestamp    [default: `now()`]
+  updated_at       timestamp    [default: `now()`]
+}
+
+Table proyectos_beneficiarios {
+  proyecto_id       integer [not null]
+  beneficiario_id   integer [not null]
+  fecha_vinculacion date
+  indexes {
+    (proyecto_id, beneficiario_id) [pk]
+  }
+}
+
+
+// ================================================================
+// REFERENCIAS (Foreign Keys)
+// ================================================================
+
+// ── Seguridad ────────────────────────────────
+Ref: roles_permisos.rol_id     > roles.id
+Ref: roles_permisos.permiso_id > permisos.id
+Ref: usuarios.persona_id       > personas.id
+Ref: usuarios_roles.usuario_id > usuarios.id
+Ref: usuarios_roles.rol_id     > roles.id
+Ref: usuarios_roles.asignado_por > usuarios.id
+Ref: auditoria.usuario_id      > usuarios.id
+
+// ── Personas ─────────────────────────────────
+Ref: contactos_emergencia.persona_id > personas.id
+
+// ── Acudientes ───────────────────────────────
+Ref: acudientes.persona_id      > personas.id
+Ref: ocupacion_laboral.acudiente_id > acudientes.id
+
+// ── Beneficiarios ────────────────────────────
+Ref: beneficiarios.persona_id   > personas.id
+Ref: acudiente_beneficiario.acudiente_id    > acudientes.id
+Ref: acudiente_beneficiario.beneficiario_id > beneficiarios.id
+
+// ── Caracterización ──────────────────────────
+Ref: caracterizaciones.beneficiario_id   > beneficiarios.id
+Ref: caracterizaciones.acudiente_id      > acudientes.id
+Ref: caracterizaciones.registrado_por_id > usuarios.id
+Ref: miembros_familia.caracterizacion_id > caracterizaciones.id
+
+// ── Consentimientos ──────────────────────────
+Ref: consentimientos.beneficiario_id    > beneficiarios.id
+Ref: consentimientos.acudiente_id       > acudientes.id
+Ref: consentimientos.registrado_por_id  > usuarios.id
+
+// ── Programas ────────────────────────────────
+Ref: inscripciones_programas.beneficiario_id   > beneficiarios.id
+Ref: inscripciones_programas.programa_id       > programas.id
+Ref: inscripciones_programas.registrado_por_id > usuarios.id
+Ref: seguimientos.beneficiario_id > beneficiarios.id
+Ref: seguimientos.programa_id     > programas.id
+Ref: seguimientos.usuario_id      > usuarios.id
+
+// ── Donantes y Donaciones ────────────────────
+Ref: donantes.persona_id          > personas.id
+Ref: donaciones.donante_id        > donantes.id
+Ref: donaciones.proyecto_id       > proyectos.id
+Ref: donaciones.registrado_por_id > usuarios.id
+
+// ── Proyectos ────────────────────────────────
+Ref: proyectos.responsable_id             > usuarios.id
+Ref: proyectos_beneficiarios.proyecto_id   > proyectos.id
+Ref: proyectos_beneficiarios.beneficiario_id > beneficiarios.id

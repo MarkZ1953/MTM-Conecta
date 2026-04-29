@@ -1,0 +1,22 @@
+# ── Django Core ───────────────────────────────────────────
+django==6.0.4
+
+# ── Django REST Framework ─────────────────────────────────
+djangorestframework==3.17.1
+djangorestframework-simplejwt==5.5.1
+
+# ── CORS / Filtros ────────────────────────────────────────
+django-cors-headers==4.9.0
+django-filter==25.2
+
+# ── Base de datos ─────────────────────────────────────────
+psycopg2-binary==2.9.10       # PostgreSQL (Supabase)
+
+# ── Variables de entorno ──────────────────────────────────
+python-dotenv==1.2.2
+
+# ── Archivos / Imágenes ───────────────────────────────────
+pillow==11.2.1
+
+# ── Export de datos ───────────────────────────────────────
+openpyxl==3.1.5               # Exportar Excel desde ResourceAPI
