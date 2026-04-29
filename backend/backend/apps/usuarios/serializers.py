@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Usuario, Rol, Permiso, RolPermiso, UsuarioRol, Auditoria
+from .models import Usuario, Auditoria
+from django.contrib.auth.models import Group
 
 
 # ── Auth ──────────────────────────────────────────────────────────
@@ -40,12 +41,13 @@ class UsuarioListSerializer(serializers.ModelSerializer):
 
 class UsuarioDetailSerializer(serializers.ModelSerializer):
     nombre_completo = serializers.ReadOnlyField()
+    rol_display = serializers.ReadOnlyField()
 
     class Meta:
         model  = Usuario
         fields = ['id', 'email', 'nombre_completo', 'primer_nombre', 'primer_apellido',
-                  'is_active', 'is_staff', 'ultimo_acceso', 'created_at', 'updated_at']
-        read_only_fields = ['created_at', 'updated_at', 'ultimo_acceso']
+                  'is_active', 'is_staff', 'ultimo_acceso', 'created_at', 'updated_at', 'rol_display']
+        read_only_fields = ['created_at', 'updated_at', 'ultimo_acceso', 'rol_display']
 
 
 class UsuarioCreateSerializer(serializers.ModelSerializer):
@@ -77,35 +79,12 @@ class CambiarPasswordSerializer(serializers.Serializer):
         return attrs
 
 
-# ── Roles y Permisos ──────────────────────────────────────────────
+# ── Grupos (Roles Nativos) ────────────────────────────────────────
 
-class PermisoSerializer(serializers.ModelSerializer):
+class GroupSerializer(serializers.ModelSerializer):
     class Meta:
-        model  = Permiso
-        fields = '__all__'
-
-
-class RolSerializer(serializers.ModelSerializer):
-    permisos = serializers.SerializerMethodField()
-
-    class Meta:
-        model  = Rol
-        fields = ['id', 'nombre', 'descripcion', 'activo', 'permisos', 'created_at']
-        read_only_fields = ['created_at']
-
-    def get_permisos(self, obj):
-        codigos = obj.rol_permisos.select_related('permiso').values_list('permiso__codigo', flat=True)
-        return list(codigos)
-
-
-class UsuarioRolSerializer(serializers.ModelSerializer):
-    rol_nombre   = serializers.ReadOnlyField(source='rol.nombre')
-    asignado_por_nombre = serializers.ReadOnlyField(source='asignado_por.nombre_completo')
-
-    class Meta:
-        model  = UsuarioRol
-        fields = ['id', 'usuario', 'rol', 'rol_nombre', 'asignado_por', 'asignado_por_nombre', 'asignado_en']
-        read_only_fields = ['asignado_en']
+        model  = Group
+        fields = ['id', 'name']
 
 
 # ── Auditoría ─────────────────────────────────────────────────────

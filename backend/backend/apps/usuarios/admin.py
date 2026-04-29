@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Usuario, Rol, Permiso, RolPermiso, UsuarioRol, Auditoria
+from .models import Usuario, Auditoria
 
 
 @admin.register(Usuario)
@@ -22,32 +22,6 @@ class UsuarioAdmin(UserAdmin):
         }),
     )
     readonly_fields = ['ultimo_acceso', 'created_at', 'updated_at']
-
-
-@admin.register(Rol)
-class RolAdmin(admin.ModelAdmin):
-    list_display  = ['nombre', 'activo', 'created_at']
-    list_filter   = ['activo']
-    search_fields = ['nombre']
-
-
-@admin.register(Permiso)
-class PermisoAdmin(admin.ModelAdmin):
-    list_display  = ['codigo', 'modulo', 'descripcion']
-    list_filter   = ['modulo']
-    search_fields = ['codigo', 'descripcion']
-
-
-@admin.register(RolPermiso)
-class RolPermisoAdmin(admin.ModelAdmin):
-    list_display = ['rol', 'permiso']
-    list_filter  = ['rol']
-
-
-@admin.register(UsuarioRol)
-class UsuarioRolAdmin(admin.ModelAdmin):
-    list_display = ['usuario', 'rol', 'asignado_por', 'asignado_en']
-    list_filter  = ['rol']
 
 
 @admin.register(Auditoria)

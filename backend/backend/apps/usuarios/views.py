@@ -4,13 +4,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.models import Group
 
-from .models import Usuario, Rol, Permiso, UsuarioRol, Auditoria
+from .models import Usuario, Auditoria
 from .serializers import (
     MtmTokenObtainPairSerializer,
     UsuarioListSerializer, UsuarioDetailSerializer, UsuarioCreateSerializer,
-    CambiarPasswordSerializer, RolSerializer, PermisoSerializer,
-    UsuarioRolSerializer, AuditoriaSerializer,
+    CambiarPasswordSerializer, GroupSerializer, AuditoriaSerializer,
 )
 
 
@@ -105,26 +105,11 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         return Response({'detail': 'Usuario desactivado.'})
 
 
-class RolViewSet(viewsets.ModelViewSet):
-    queryset           = Rol.objects.all()
-    serializer_class   = RolSerializer
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset           = Group.objects.all()
+    serializer_class   = GroupSerializer
     permission_classes = [permissions.IsAdminUser]
-    search_fields      = ['nombre']
-
-
-class PermisoViewSet(viewsets.ModelViewSet):
-    queryset           = Permiso.objects.all()
-    serializer_class   = PermisoSerializer
-    permission_classes = [permissions.IsAdminUser]
-    filterset_fields   = ['modulo']
-    search_fields      = ['codigo', 'descripcion']
-
-
-class UsuarioRolViewSet(viewsets.ModelViewSet):
-    queryset           = UsuarioRol.objects.select_related('usuario', 'rol').all()
-    serializer_class   = UsuarioRolSerializer
-    permission_classes = [permissions.IsAdminUser]
-    filterset_fields   = ['usuario', 'rol']
+    search_fields      = ['name']
 
 
 class AuditoriaViewSet(viewsets.ReadOnlyModelViewSet):
