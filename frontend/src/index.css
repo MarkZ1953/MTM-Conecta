@@ -1,1 +1,154 @@
+/* ── Fuentes Google ──────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap');
+
+/* ── PrimeReact ──────────────────────────────────────────── */
+@import "primereact/resources/themes/lara-light-blue/theme.css";
+@import "primereact/resources/primereact.min.css";
+
+/* ── Tailwind v4 ─────────────────────────────────────────── */
 @import "tailwindcss";
+
+/* ── Tokens de color MTM (Tailwind v4 @theme) ────────────── */
+/*
+ * Migración desde tailwind.config.js de jhon-uni a Tailwind v4.
+ * Los colores son idénticos — solo cambia el formato de configuración.
+ * Paleta oficial Fundación MTM.
+ */
+@theme {
+  /* Tipografías */
+  --font-sans: 'DM Sans', sans-serif;
+  --font-serif: 'Cormorant Garamond', serif;
+  --font-display: 'Playfair Display', serif;
+
+  /* ── Colores semánticos ─────────────────────────────────── */
+  --color-primary:            hsl(270 50% 35%);
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  --color-secondary:            hsl(270 25% 95%);
+  --color-secondary-foreground: hsl(270 50% 35%);
+
+  --color-accent:            hsl(42 85% 55%);
+  --color-accent-foreground: hsl(35 60% 18%);
+
+  --color-teal:            hsl(170 50% 40%);
+  --color-teal-foreground: hsl(0 0% 100%);
+
+  --color-rose:            hsl(340 55% 56%);
+  --color-rose-foreground: hsl(0 0% 100%);
+
+  --color-background: hsl(0 0% 99%);
+  --color-foreground:  hsl(260 30% 12%);
+
+  --color-card:            hsl(270 20% 98%);
+  --color-card-foreground: hsl(260 30% 12%);
+
+  --color-muted:            hsl(270 15% 93%);
+  --color-muted-foreground: hsl(260 10% 48%);
+
+  --color-border: hsl(270 12% 88%);
+
+  /* ── Border radius ──────────────────────────────────────── */
+  --radius-lg: 0.75rem;
+  --radius-md: calc(0.75rem - 2px);
+  --radius-sm: calc(0.75rem - 4px);
+
+  /* ── Animaciones ────────────────────────────────────────── */
+  --animate-fade-up:  fade-up 0.7s ease-out forwards;
+  --animate-fade-in:  fade-in 0.5s ease-out forwards;
+  --animate-slide-in: slide-in 0.5s ease-out forwards;
+}
+
+/* ── Keyframes ───────────────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Base ────────────────────────────────────────────────── */
+*, *::before, *::after {
+  border-color: hsl(270 12% 88%);
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: hsl(0 0% 99%);
+  color: hsl(260 30% 12%);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Componentes utilitarios ─────────────────────────────── */
+.text-gold {
+  background: linear-gradient(135deg, hsl(42 85% 55%), hsl(38 78% 45%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-primary-gradient {
+  background: linear-gradient(135deg, hsl(270 55% 28%), hsl(270 48% 40%));
+}
+
+.bg-hero-overlay {
+  background: linear-gradient(
+    160deg,
+    hsl(270 55% 20% / 0.88) 0%,
+    hsl(270 50% 32% / 0.75) 50%,
+    hsl(270 45% 40% / 0.60) 100%
+  );
+}
+
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.card-hover {
+  transition: all 0.3s;
+}
+.card-hover:hover {
+  transform: translateY(-0.25rem);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+/* ── Animation delay helpers ─────────────────────────────── */
+.animate-delay-100 { animation-delay: 0.1s; }
+.animate-delay-200 { animation-delay: 0.2s; }
+.animate-delay-300 { animation-delay: 0.3s; }
+.animate-delay-400 { animation-delay: 0.4s; }
+
+/* ── Scroll reveal ───────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Modal backdrop ──────────────────────────────────────── */
+.modal-overlay {
+  backdrop-filter: blur(4px);
+}
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: hsl(270 25% 95%); }
+::-webkit-scrollbar-thumb { background: hsl(270 50% 35% / 0.4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(270 50% 35% / 0.7); }

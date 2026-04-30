@@ -1,187 +1,166 @@
-import { Controller, useFormContext, useFormState } from "react-hook-form";
-import { useDebounce } from "@/hooks/use-debounce";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { InputText } from 'primereact/inputtext'
+import { Password } from 'primereact/password'
+import { FloatLabel } from 'primereact/floatlabel'
+import { MultiSelect } from 'primereact/multiselect'
+import { Dropdown } from 'primereact/dropdown'
 
-export const UsersFormFields = ({
-  isCreated = false,
-}: {
-  isCreated?: boolean;
-}) => {
-  const { control, register, setValue, getValues } = useFormContext();
-  const [searchValue, setSearchValue] = useState("");
-  const debouncedSearchValue = useDebounce(searchValue, 400);
-  const anchor = useComboboxAnchor();
-  const { errors } = useFormState();
+export interface UsersFormValues {
+  firstName: string
+  lastName: string
+  email: string
+  password: string
+  role: string
+  groups: string[]
+}
 
-  const { data: roles = [] } = useQuery({
-    queryKey: ["roles", debouncedSearchValue],
-    queryFn: () => rolesGetAll({ name: debouncedSearchValue }),
-    select: (res): Rol[] => res.data.results,
-    enabled: !!debouncedSearchValue,
-    staleTime: 5 * 60 * 1000,
-  });
+interface UsersFormFieldsProps {
+  values: UsersFormValues
+  onChange: (field: keyof UsersFormValues, value: string | string[]) => void
+  errors: Partial<Record<keyof UsersFormValues, string>>
+  loading?: boolean
+  /** Grupos disponibles de Django auth.Group */
+  availableGroups?: { label: string; value: string }[]
+  /** Roles disponibles (Administrador, Coordinador, etc.) */
+  availableRoles?: { label: string; value: string }[]
+  /** Si true, muestra campo de contraseña (creación). Oculto en edición. */
+  showPassword?: boolean
+}
 
-  const fields = [
-    {
-      name: "username",
-      icon: <UserCircleIcon className="h-4 w-4 text-muted-foreground" />,
-      label: "Usuario",
-      error: errors.username?.message?.toString(),
-      field: (
-        <>
-          <Input
-            id="username"
-            {...register("username")}
-            placeholder="Ej: usuario123"
-          />
-        </>
-      ),
-    },
-    {
-      name: "first_name",
-      icon: <UserIcon className="h-4 w-4 text-muted-foreground" />,
-      label: "Nombre",
-      error: errors.first_name?.message?.toString(),
-      field: (
-        <>
-          <Input
-            id="first_name"
-            {...register("first_name")}
-            placeholder="Ej: Juan"
-          />
-        </>
-      ),
-    },
-    {
-      name: "last_name",
-      icon: <UserIcon className="h-4 w-4 text-muted-foreground" />,
-      label: "Apellido",
-      error: errors.last_name?.message?.toString(),
-      field: (
-        <>
-          <Input
-            id="last_name"
-            {...register("last_name")}
-            placeholder="Ej: Pérez"
-          />
-        </>
-      ),
-    },
-    {
-      name: "email",
-      icon: <EnvelopeIcon className="h-4 w-4 text-muted-foreground" />,
-      label: "Correo Electrónico",
-      error: errors.email?.message?.toString(),
-      field: (
-        <>
-          <Input
-            id="email"
-            {...register("email")}
-            placeholder="Ej: usuario@ejemplo.com"
-          />
-        </>
-      ),
-    },
-    ...(isCreated
-      ? [
-          {
-            name: "roles",
-            icon: <LockKeyIcon className="h-4 w-4 text-muted-foreground" />,
-            label: "Roles",
-            error: errors.roles?.message?.toString(),
-            className: "col-span-1 md:col-span-2",
-            field: (
-              <>
-                <Controller
-                  name="roles"
-                  control={control}
-                  defaultValue={[]}
-                  render={({ field }) => (
-                    <Combobox
-                      multiple
-                      items={roles}
-                      value={field.value ?? []}
-                      onValueChange={(values) => {
-                        field.onChange(values);
+const DEFAULT_ROLES = [
+  { label: 'Administrador', value: 'admin' },
+  { label: 'Coordinador', value: 'coordinador' },
+  { label: 'Operador', value: 'operador' },
+  { label: 'Consultor', value: 'consultor' },
+]
 
-                        const selectedRoleIds = roles
-                          .filter((role) => values.includes(role.name))
-                          .map((role) => role.id);
-
-                        const defaultRoleIds = getValues("role_ids") || [];
-
-                        const allRoleIds = Array.from(
-                          new Set([...defaultRoleIds, ...selectedRoleIds]),
-                        );
-
-                        setValue("role_ids", allRoleIds);
-                      }}
-                    >
-                      <ComboboxChips ref={anchor}>
-                        <ComboboxValue>
-                          {(values) => (
-                            <>
-                              {values.map((value: string) => (
-                                <ComboboxChip key={value}>{value}</ComboboxChip>
-                              ))}
-
-                              <ComboboxChipsInput
-                                id="roles"
-                                placeholder="Ej: Administrador"
-                                onChange={(e) => setSearchValue(e.target.value)}
-                              />
-                            </>
-                          )}
-                        </ComboboxValue>
-                      </ComboboxChips>
-
-                      <ComboboxContent anchor={anchor}>
-                        <ComboboxEmpty className={"bg-gray-50 py-4"}>
-                          <div className="flex flex-col items-center gap-2">
-                            <TrayIcon
-                              size={32}
-                              className="text-muted-foreground"
-                            />
-                            <span>No se encontraron roles</span>
-                          </div>
-                        </ComboboxEmpty>
-                        <ComboboxList>
-                          {(item) => (
-                            <ComboboxItem key={item.id} value={item.name}>
-                              {item.name}
-                            </ComboboxItem>
-                          )}
-                        </ComboboxList>
-                      </ComboboxContent>
-                    </Combobox>
-                  )}
-                />
-              </>
-            ),
-          },
-        ]
-      : []),
-  ];
-
+export function UsersFormFields({
+  values,
+  onChange,
+  errors,
+  loading = false,
+  availableGroups = [],
+  availableRoles = DEFAULT_ROLES,
+  showPassword = true,
+}: UsersFormFieldsProps) {
   return (
-    <>
-      <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-2">
-        {fields.map((field) => (
-          <Field key={field.name} className={field.className}>
-            <FieldLabel htmlFor={field.name} className="flex items-center">
-              {field.icon}
-              <span>{field.label}</span>
-            </FieldLabel>
+    <div className="flex flex-col gap-5">
+      {/* Primer nombre */}
+      <div className="flex flex-col gap-1">
+        <FloatLabel>
+          <InputText
+            id="user-firstname"
+            value={values.firstName}
+            onChange={(e) => onChange('firstName', e.target.value)}
+            className={`w-full${errors.firstName ? ' p-invalid' : ''}`}
+            disabled={loading}
+            autoComplete="given-name"
+          />
+          <label htmlFor="user-firstname">Primer nombre</label>
+        </FloatLabel>
+        {errors.firstName && (
+          <small className="p-error">{errors.firstName}</small>
+        )}
+      </div>
 
-            {field.field}
+      {/* Apellido */}
+      <div className="flex flex-col gap-1">
+        <FloatLabel>
+          <InputText
+            id="user-lastname"
+            value={values.lastName}
+            onChange={(e) => onChange('lastName', e.target.value)}
+            className={`w-full${errors.lastName ? ' p-invalid' : ''}`}
+            disabled={loading}
+            autoComplete="family-name"
+          />
+          <label htmlFor="user-lastname">Primer apellido</label>
+        </FloatLabel>
+        {errors.lastName && (
+          <small className="p-error">{errors.lastName}</small>
+        )}
+      </div>
 
-            <FieldDescription className="text-red-500">
-              {field.error}
-            </FieldDescription>
-          </Field>
-        ))}
-      </FieldGroup>
-    </>
-  );
-};
+      {/* Email */}
+      <div className="flex flex-col gap-1">
+        <FloatLabel>
+          <InputText
+            id="user-email"
+            type="email"
+            value={values.email}
+            onChange={(e) => onChange('email', e.target.value)}
+            className={`w-full${errors.email ? ' p-invalid' : ''}`}
+            disabled={loading}
+            autoComplete="email"
+          />
+          <label htmlFor="user-email">Correo electrónico</label>
+        </FloatLabel>
+        {errors.email && (
+          <small className="p-error">{errors.email}</small>
+        )}
+      </div>
+
+      {/* Contraseña (solo en creación) */}
+      {showPassword && (
+        <div className="flex flex-col gap-1">
+          <FloatLabel>
+            <Password
+              inputId="user-password"
+              value={values.password}
+              onChange={(e) => onChange('password', e.target.value)}
+              className={`w-full${errors.password ? ' p-invalid' : ''}`}
+              toggleMask
+              disabled={loading}
+              autoComplete="new-password"
+              pt={{ input: { style: { width: '100%' } } }}
+            />
+            <label htmlFor="user-password">Contraseña</label>
+          </FloatLabel>
+          {errors.password && (
+            <small className="p-error">{errors.password}</small>
+          )}
+        </div>
+      )}
+
+      {/* Rol */}
+      <div className="flex flex-col gap-1">
+        <FloatLabel>
+          <Dropdown
+            inputId="user-role"
+            value={values.role}
+            options={availableRoles}
+            onChange={(e) => onChange('role', e.value as string)}
+            className={`w-full${errors.role ? ' p-invalid' : ''}`}
+            disabled={loading}
+            placeholder="Selecciona un rol"
+          />
+          <label htmlFor="user-role">Rol en la fundación</label>
+        </FloatLabel>
+        {errors.role && (
+          <small className="p-error">{errors.role}</small>
+        )}
+      </div>
+
+      {/* Grupos (Django auth.Group) — permisos granulares */}
+      {availableGroups.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <FloatLabel>
+            <MultiSelect
+              inputId="user-groups"
+              value={values.groups}
+              options={availableGroups}
+              onChange={(e) => onChange('groups', e.value as string[])}
+              className={`w-full${errors.groups ? ' p-invalid' : ''}`}
+              disabled={loading}
+              display="chip"
+              placeholder="Grupos de permisos"
+            />
+            <label htmlFor="user-groups">Grupos de acceso</label>
+          </FloatLabel>
+          {errors.groups && (
+            <small className="p-error">{errors.groups}</small>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
