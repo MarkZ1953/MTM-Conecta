@@ -120,3 +120,66 @@ class AuditoriaViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields   = ['accion', 'tabla_afectada', 'usuario']
     search_fields      = ['tabla_afectada', 'usuario__email']
     ordering_fields    = ['created_at']
+
+
+# ── Dashboard Metrics ─────────────────────────────────────
+from django.db.models import Sum, Count
+from django.db.models.functions import TruncMonth
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from apps.beneficiarios.models import Beneficiario
+from apps.donantes.models import Donacion, Donante
+from apps.proyectos.models import Proyecto
+from apps.voluntarios.models import Voluntario
+
+class DashboardMetricsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        total_beneficiarios = Beneficiario.objects.count()
+        total_donaciones = Donacion.objects.count()
+        proyectos_activos = Proyecto.objects.filter(estado='activo').count()
+        donantes_registrados = Donante.objects.count()
+        total_voluntarios = Voluntario.objects.exclude(estado='rechazado').count()
+
+        # Donaciones por mes
+        donaciones_mes_qs = (
+            Donacion.objects.filter(monto__isnull=False)
+            .annotate(month=TruncMonth('fecha_donacion'))
+            .values('month')
+            .annotate(total=Sum('monto'))
+            .order_by('month')
+        )
+        
+        meses = {1:'Ene',2:'Feb',3:'Mar',4:'Abr',5:'May',6:'Jun',7:'Jul',8:'Ago',9:'Sep',10:'Oct',11:'Nov',12:'Dic'}
+        donaciones_mes = []
+        for d in donaciones_mes_qs:
+            if d['month']:
+                mes_str = meses.get(d['month'].month, str(d['month'].month))
+                donaciones_mes.append({'mes': mes_str, 'monto': float(d['total'] or 0)})
+
+        # Donaciones por tipo
+        colores = ['#3B82F6', '#06B6D4', '#10B981', '#F97316', '#8B5CF6', '#EC4899']
+        tipos_qs = (
+            Donacion.objects.values('tipo_donacion')
+            .annotate(cantidad=Count('id'))
+            .order_by('-cantidad')
+        )
+        
+        donaciones_por_tipo = []
+        for idx, t in enumerate(tipos_qs):
+            donaciones_por_tipo.append({
+                'name': str(t['tipo_donacion']).capitalize(),
+                'cantidad': t['cantidad'],
+                'color': colores[idx % len(colores)]
+            })
+
+        return Response({
+            'totalBeneficiarios': total_beneficiarios,
+            'totalDonaciones': total_donaciones,
+            'proyectosActivos': proyectos_activos,
+            'donantesRegistrados': donantes_registrados,
+            'totalVoluntarios': total_voluntarios,
+            'donacionesMes': donaciones_mes,
+            'donacionesPorTipo': donaciones_por_tipo
+        })

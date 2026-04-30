@@ -4,6 +4,7 @@ export type AdminModule =
   | 'donantes'
   | 'donaciones'
   | 'proyectos'
+  | 'voluntarios'
   | 'reportes'
   | 'usuarios'
   | 'roles'
@@ -22,6 +23,7 @@ export interface DashboardData {
   totalDonaciones: number
   proyectosActivos: number
   donantesRegistrados: number
+  totalVoluntarios: number
   donacionesMes: Array<{
     mes: string
     monto: number

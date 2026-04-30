@@ -1,19 +1,55 @@
+import { useState, useEffect } from 'react'
 import CrudTable from '../components/shared/CrudTable'
+import { useData } from '../context/DataContext'
+
+interface DonacionRow {
+  id: number
+  donante: string
+  monto: string
+  tipo: string
+  fecha: string
+  estado: string
+}
 
 export default function DonationsPage() {
-  const mockData = [
-    { id: 1, donante: 'Empresa A', monto: '€5,000', tipo: 'Dinero', fecha: '2024-01-15', estado: 'Completado' },
-    { id: 2, donante: 'Persona B', monto: '€500', tipo: 'Dinero', fecha: '2024-01-20', estado: 'Completado' },
-    { id: 3, donante: 'Fundación C', monto: '€2,500', tipo: 'Servicios', fecha: '2024-02-01', estado: 'Pendiente' },
-  ]
+  const { apiFetch } = useData()
+  const [data, setData] = useState<DonacionRow[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    apiFetch('/donaciones/?page_size=100')
+      .then(r => r.json())
+      .then(json => {
+        const results = json.results ?? []
+        const rows: DonacionRow[] = results.map((d: any) => ({
+          id: d.id,
+          donante: d.donante_nombre ?? d.donante ?? '—',
+          monto: d.monto != null ? `$${Number(d.monto).toLocaleString('es-CO')}` : '(especie)',
+          tipo: d.tipo_donacion_display ?? d.tipo_donacion ?? '—',
+          fecha: d.fecha_donacion ?? '—',
+          estado: d.estado_display ?? d.estado ?? '—',
+        }))
+        setData(rows)
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [apiFetch])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-48">
+        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <div>
       <CrudTable
-        data={mockData}
+        data={data}
         columns={[
           { field: 'donante', header: 'Donante' },
-          { field: 'monto', header: 'Monto' },
+          { field: 'monto', header: 'Monto / Tipo especie' },
           { field: 'tipo', header: 'Tipo' },
           { field: 'fecha', header: 'Fecha' },
           { field: 'estado', header: 'Estado' },

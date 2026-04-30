@@ -6,6 +6,7 @@ import BeneficiariesPage from './BeneficiariesPage'
 import DonorsPage from './DonorsPage'
 import DonationsPage from './DonationsPage'
 import ProjectsPage from './ProjectsPage'
+import VolunteersPage from './VolunteersPage'
 import ReportsPage from './ReportsPage'
 import UsersPage from './UsersPage'
 import RolesPage from './RolesPage'
@@ -18,6 +19,7 @@ const PAGE_TITLES: Record<AdminModule, string> = {
   donantes: 'Donantes',
   donaciones: 'Donaciones',
   proyectos: 'Proyectos',
+  voluntarios: 'Voluntarios',
   reportes: 'Reportes',
   usuarios: 'Usuarios',
   roles: 'Roles',
@@ -40,6 +42,8 @@ export default function AdminShell() {
         return <DonationsPage />
       case 'proyectos':
         return <ProjectsPage />
+      case 'voluntarios':
+        return <VolunteersPage />
       case 'reportes':
         return <ReportsPage />
       case 'usuarios':

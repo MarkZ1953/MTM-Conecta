@@ -22,7 +22,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 pb-8">
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
         <StatCard
           title="Total Beneficiarios"
           value={dashboardData.totalBeneficiarios}
@@ -46,6 +46,12 @@ export default function DashboardPage() {
           value={dashboardData.donantesRegistrados}
           change="+5 nuevos"
           icon="pi pi-users"
+        />
+        <StatCard
+          title="Voluntarios Activos"
+          value={dashboardData.totalVoluntarios}
+          change="-"
+          icon="pi pi-star"
         />
       </div>
 
@@ -88,10 +94,11 @@ export default function DashboardPage() {
                 data={dashboardData.donacionesPorTipo}
                 cx="50%"
                 cy="50%"
-                labelLine={false}
+                labelLine={true}
                 label={({ name, value }) => `${name}: ${value}`}
-                outerRadius={80}
+                outerRadius={65}
                 fill="#8884d8"
+                style={{ fontSize: '11px' }}
                 dataKey="cantidad"
               >
                 {dashboardData.donacionesPorTipo.map((entry, index) => (

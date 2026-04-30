@@ -7,6 +7,7 @@ const NAV_ITEMS: { module: AdminModule; label: string; icon: string; group: stri
   { module: 'donantes', label: 'Donantes', icon: 'pi pi-credit-card', group: 'Principal' },
   { module: 'donaciones', label: 'Donaciones', icon: 'pi pi-gift', group: 'Principal' },
   { module: 'proyectos', label: 'Proyectos', icon: 'pi pi-folder-open', group: 'Principal' },
+  { module: 'voluntarios', label: 'Voluntarios', icon: 'pi pi-star', group: 'Principal' },
   { module: 'reportes', label: 'Reportes', icon: 'pi pi-chart-bar', group: 'Administración' },
   { module: 'usuarios', label: 'Usuarios', icon: 'pi pi-users', group: 'Administración' },
   { module: 'roles', label: 'Roles', icon: 'pi pi-shield', group: 'Administración' },
@@ -21,7 +22,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ active, onNavigate, collapsed, onToggle }: SidebarProps) {
-  const { canAccess } = useAuth()
+  const { canAccess, logout } = useAuth()
 
   const groups = ['Principal', 'Administración']
 
@@ -80,7 +81,7 @@ export default function Sidebar({ active, onNavigate, collapsed, onToggle }: Sid
                     onClick={() => onNavigate(item.module)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm ${
                       isActive
-                        ? 'bg-white bg-opacity-20 backdrop-blur-sm text-white shadow-lg'
+                        ? 'bg-black/20 text-white font-bold border-l-4 border-accent shadow-lg'
                         : 'text-white/70 hover:bg-white/10 hover:text-white'
                     }`}
                   >
@@ -96,7 +97,10 @@ export default function Sidebar({ active, onNavigate, collapsed, onToggle }: Sid
 
       {/* Footer */}
       <div className="border-t border-white/10 p-3">
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-all text-sm">
+        <button 
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-all text-sm"
+        >
           <i className="pi pi-sign-out text-base" />
           {!collapsed && <span>Cerrar sesión</span>}
         </button>

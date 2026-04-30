@@ -2,32 +2,34 @@ import { useState, useEffect } from 'react'
 import CrudTable from '../components/shared/CrudTable'
 import { useData } from '../context/DataContext'
 
-interface DonanteRow {
+interface VoluntarioRow {
   id: number
   nombre: string
   email: string
-  tipo: string
-  ciudad: string
+  telefono: string
+  disponibilidad: string
   estado: string
+  fecha_inicio: string
 }
 
-export default function DonorsPage() {
+export default function VolunteersPage() {
   const { apiFetch } = useData()
-  const [data, setData] = useState<DonanteRow[]>([])
+  const [data, setData] = useState<VoluntarioRow[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    apiFetch('/donantes/?page_size=100')
+    apiFetch('/voluntarios/?page_size=100')
       .then(r => r.json())
       .then(json => {
         const results = json.results ?? []
-        const rows: DonanteRow[] = results.map((d: any) => ({
-          id: d.id,
-          nombre: d.nombre_display ?? '—',
-          email: d.email ?? '—',
-          tipo: d.tipo_donante === 'empresa' ? 'Empresa' : 'Persona natural',
-          ciudad: d.ciudad ?? '—',
-          estado: d.activo ? 'Activo' : 'Inactivo',
+        const rows: VoluntarioRow[] = results.map((v: any) => ({
+          id: v.id,
+          nombre: v.nombre_completo ?? '—',
+          email: v.email ?? '—',
+          telefono: v.telefono ?? '—',
+          disponibilidad: v.disponibilidad_display ?? v.disponibilidad ?? '—',
+          estado: v.estado_display ?? v.estado ?? '—',
+          fecha_inicio: v.fecha_inicio ?? '—',
         }))
         setData(rows)
       })
@@ -50,12 +52,13 @@ export default function DonorsPage() {
         columns={[
           { field: 'nombre', header: 'Nombre' },
           { field: 'email', header: 'Email' },
-          { field: 'tipo', header: 'Tipo' },
-          { field: 'ciudad', header: 'Ciudad' },
+          { field: 'telefono', header: 'Teléfono' },
+          { field: 'disponibilidad', header: 'Disponibilidad' },
           { field: 'estado', header: 'Estado' },
+          { field: 'fecha_inicio', header: 'Fecha de Inicio' },
         ]}
-        title="Donantes"
-        onAdd={() => console.log('Agregar donante')}
+        title="Voluntarios"
+        onAdd={() => console.log('Agregar voluntario')}
       />
     </div>
   )

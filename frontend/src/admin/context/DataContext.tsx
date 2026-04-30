@@ -1,44 +1,67 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import type { DashboardData } from '../types'
+import API_BASE_URL from '@/config/api.config'
+import { getAccessToken } from './AuthContext'
 
 interface DataContextType {
   dashboardData: DashboardData
   updateDashboardData: (data: Partial<DashboardData>) => void
+  loading: boolean
+  refreshMetrics: () => Promise<void>
+  apiFetch: (path: string) => Promise<Response>
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined)
 
-const initialData: DashboardData = {
-  totalBeneficiarios: 542,
-  totalDonaciones: 187,
-  proyectosActivos: 3,
-  donantesRegistrados: 89,
-  donacionesMes: [
-    { mes: 'Ene', monto: 12000 },
-    { mes: 'Feb', monto: 9000 },
-    { mes: 'Mar', monto: 15000 },
-    { mes: 'Abr', monto: 10000 },
-    { mes: 'May', monto: 18000 },
-    { mes: 'Jun', monto: 23000 },
-  ],
-  donacionesPorTipo: [
-    { name: 'Dinero', cantidad: 45, color: '#3B82F6' },
-    { name: 'Alimentos', cantidad: 32, color: '#06B6D4' },
-    { name: 'Servicios', cantidad: 12, color: '#10B981' },
-    { name: 'Otros', cantidad: 8, color: '#F97316' },
-  ],
+const emptyData: DashboardData = {
+  totalBeneficiarios: 0,
+  totalDonaciones: 0,
+  proyectosActivos: 0,
+  donantesRegistrados: 0,
+  totalVoluntarios: 0,
+  donacionesMes: [],
+  donacionesPorTipo: [],
 }
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [dashboardData, setDashboardData] = useState<DashboardData>(initialData)
+  const [dashboardData, setDashboardData] = useState<DashboardData>(emptyData)
+  const [loading, setLoading] = useState(false)
+
+  /** Hace fetch autenticado a cualquier ruta bajo API_BASE_URL */
+  const apiFetch = useCallback((path: string) => {
+    const token = getAccessToken()
+    return fetch(`${API_BASE_URL}${path}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    })
+  }, [])
+
+  const refreshMetrics = useCallback(async () => {
+    const token = getAccessToken()
+    if (!token) return
+    setLoading(true)
+    try {
+      const res = await apiFetch('/dashboard/metrics/')
+      if (res.ok) {
+        const data = await res.json()
+        setDashboardData(data)
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard metrics', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [apiFetch])
 
   const updateDashboardData = (data: Partial<DashboardData>) => {
     setDashboardData(prev => ({ ...prev, ...data }))
   }
 
   return (
-    <DataContext.Provider value={{ dashboardData, updateDashboardData }}>
+    <DataContext.Provider value={{ dashboardData, updateDashboardData, loading, refreshMetrics, apiFetch }}>
       {children}
     </DataContext.Provider>
   )

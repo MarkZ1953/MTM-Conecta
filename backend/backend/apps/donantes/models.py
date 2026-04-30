@@ -41,12 +41,14 @@ class Donante(models.Model):
 
 class Donacion(models.Model):
     TIPO_DONACION = [
-        ('dinero',        'Dinero'),
-        ('alimentos',     'Alimentos'),
-        ('ropa',          'Ropa'),
-        ('servicios',     'Servicios'),
-        ('medicamentos',  'Medicamentos'),
-        ('otro',          'Otro'),
+        ('dinero',         'Dinero'),
+        ('alimentos',      'Alimentos'),
+        ('ropa',           'Ropa'),
+        ('libros',         'Libros'),
+        ('elementos_aseo', 'Elementos de aseo'),
+        ('servicios',      'Servicios'),
+        ('medicamentos',   'Medicamentos'),
+        ('otro',           'Otro'),
     ]
     ESTADO = [
         ('recibida',  'Recibida'),

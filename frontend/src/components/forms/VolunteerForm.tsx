@@ -57,13 +57,31 @@ export default function VolunteerForm({ onClose }: VolunteerFormProps) {
 
     setLoading(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const res = await fetch('http://localhost:8000/api/v1/public/voluntarios/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          skills: formData.skills,
+          availability: formData.availability,
+        }),
+      })
+
+      if (!res.ok) {
+        throw new Error('Error al enviar la solicitud')
+      }
+
       setSuccess(true)
       setTimeout(() => {
         onClose()
         setSuccess(false)
         setFormData({ fullName: '', email: '', phone: '', skills: '', availability: 'weekends' })
       }, 2000)
+    } catch (error) {
+      console.error(error)
+      // Opcional: mostrar un mensaje de error al usuario
     } finally {
       setLoading(false)
     }
@@ -82,7 +100,7 @@ export default function VolunteerForm({ onClose }: VolunteerFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       <div>
         <label className="block text-sm font-semibold text-foreground mb-2">Nombre Completo</label>
         <input
