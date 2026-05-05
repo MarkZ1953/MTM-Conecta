@@ -18,12 +18,10 @@ export function LoginForm() {
   });
 
   const navigate = useNavigate();
-
+ 
   const { isSubmitting } = form.formState;
 
   const onSubmit = async (data: any) => {
-    console.log(data);
-
     try {
       const { status } = await authAPI.login({
         username: data.username,

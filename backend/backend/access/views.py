@@ -25,10 +25,6 @@ from .permissions import (
     resolve_permissions,
 )
 
-
-
-
-
 # ---------------------------------------------------------------------------
 # Export column definitions
 # ---------------------------------------------------------------------------
@@ -93,7 +89,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             #     print("Error guardando auditoría:", log_error)
 
             return Response(
-                {"detail": t("access.login.invalid_credentials", lang)},
+                {"message": t("access.login.invalid_credentials", lang)},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
@@ -140,7 +136,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 
         if not refresh_token:
             return Response(
-                {"detail": t("access.token.refresh_not_found", lang)},
+                {"message": t("access.token.refresh_not_found", lang)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -167,7 +163,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 
         except (TokenError, User.DoesNotExist):
             return Response(
-                {"detail": t("access.token.invalid_or_user_not_found", lang)},
+                {"message": t("access.token.invalid_or_user_not_found", lang)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -214,7 +210,7 @@ class LogoutViewSet(viewsets.ViewSet):
             # )
 
             response = Response(
-                {"detail": t("access.logout.success", lang)},
+                {"message": t("access.logout.success", lang)},
                 status=status.HTTP_200_OK,
             )
             response.delete_cookie("refresh_token")
@@ -253,7 +249,7 @@ class PermissionListView(APIView):
 # ---------------------------------------------------------------------------
 
 
-class RoleViewSet(viewsets.ModelViewSet):
+class RoleViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     pagination_class = GroupPagination
@@ -294,27 +290,6 @@ class RoleViewSet(viewsets.ModelViewSet):
             perms = resolve_permissions(raw_permissions)
             group.permissions.set(perms)
 
-    @action(detail=False, methods=["post"], url_path="export")
-    def export_roles(self, request):
-        body = request.data
-        mode = body.get("mode", "selected")
-        fmt = body.get("format", "xlsx")
-        ids = body.get("ids", [])
-
-        qs = Group.objects.all()
-
-        if mode == "selected" and ids:
-            qs = qs.filter(id__in=ids)
-            preserved = Case(*[When(id=pk, then=pos) for pos, pk in enumerate(ids)])
-            qs = qs.order_by(preserved)
-
-        if fmt == "csv":
-            return export_csv(qs, ROLES_EXPORT_COLUMNS, filename="roles.csv")
-
-        return export_xlsx(
-            qs, ROLES_EXPORT_COLUMNS, filename="roles.xlsx", sheet_name="Roles"
-        )
-
 
 class RolePermissionUpdateView(APIView):
     """
@@ -334,7 +309,7 @@ class RolePermissionUpdateView(APIView):
             group = Group.objects.get(id=role_id)
         except Group.DoesNotExist:
             return Response(
-                {"detail": t("access.role.not_found", lang)},
+                {"message": t("access.role.not_found", lang)},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -344,7 +319,7 @@ class RolePermissionUpdateView(APIView):
         return Response(
             {
                 "ok": True,
-                "detail": t("access.role.permissions_updated", lang, count=perms.count()),
+                "message": t("access.role.permissions_updated", lang, count=perms.count()),
                 "permissions_set": perms.count(),
             }
         )
@@ -380,32 +355,32 @@ class UserViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
 
         if not new_password or not confirm_password:
             return Response(
-                {"detail": t("access.password.fields_required", lang)},
+                {"message": t("access.password.fields_required", lang)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         if current_password is not None:
             if not user.check_password(current_password):
                 return Response(
-                    {"detail": t("access.password.current_incorrect", lang)},
+                    {"message": t("access.password.current_incorrect", lang)},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
         if new_password != confirm_password:
             return Response(
-                {"detail": t("access.password.mismatch", lang)},
+                {"message": t("access.password.mismatch", lang)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         if current_password == new_password:
             return Response(
-                {"detail": t("access.password.same_as_current", lang)},
+                {"message": t("access.password.same_as_current", lang)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         if len(new_password) < 8:
             return Response(
-                {"detail": t("access.password.too_short", lang)},
+                {"message": t("access.password.too_short", lang)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -413,7 +388,7 @@ class UserViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
         user.save()
 
         return Response(
-            {"detail": t("access.password.changed", lang)},
+            {"message": t("access.password.changed", lang)},
             status=status.HTTP_200_OK,
         )
 
