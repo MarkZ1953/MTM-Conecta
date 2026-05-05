@@ -3,17 +3,18 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import AuthenticationFailed
+from app.mixins.soft_delete_mixin import SoftDeleteMixin
 from .serializers import UserSerializer, GroupSerializer
 from .paginations import UserPagination, GroupPagination
-from utils.exporters import export_xlsx, export_csv
 from django.contrib.auth.models import Group, User
+from app.mixins.export_mixin import ExportMixin
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .filters import UserFilter, GroupFilter
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from django.db.models import Case, When
-from audits.service import log_event
+# from audits.service import log_event
 from rest_framework import filters
 
 from utils.i18n import resolve_lang, t
@@ -23,6 +24,9 @@ from .permissions import (
     get_user_permissions,
     resolve_permissions,
 )
+
+
+
 
 
 # ---------------------------------------------------------------------------
@@ -78,15 +82,15 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         except AuthenticationFailed:
             username = request.data.get("username", "desconocido")
 
-            try:
-                log_event(
-                    request=request,
-                    instance=None,
-                    action="login_failed",
-                    description=t("access.login.success", "es", username=username),
-                )
-            except Exception as log_error:
-                print("Error guardando auditoría:", log_error)
+            # try:
+                # log_event(
+                #     request=request,
+                #     instance=None,
+                #     action="login_failed",
+                #     description=t("access.login.success", "es", username=username),
+                # )
+            # except Exception as log_error:
+            #     print("Error guardando auditoría:", log_error)
 
             return Response(
                 {"detail": t("access.login.invalid_credentials", lang)},
@@ -96,13 +100,13 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         user = serializer.user
         response = Response(serializer.validated_data, status=status.HTTP_200_OK)
 
-        log_event(
-            request=request,
-            user=user,
-            action="login",
-            instance=user,
-            description=t("access.login.success", "es", username=user.username),
-        )
+        # log_event(
+        #     request=request,
+        #     user=user,
+        #     action="login",
+        #     instance=user,
+        #     description=t("access.login.success", "es", username=user.username),
+        # )
 
         refresh_token = response.data.get("refresh")
         access_token = response.data.get("access")
@@ -201,13 +205,13 @@ class LogoutViewSet(viewsets.ViewSet):
         lang = resolve_lang(request.META.get("HTTP_ACCEPT_LANGUAGE"))
 
         try:
-            log_event(
-                request=request,
-                user=request.user,
-                action="logout",
-                description=t("access.logout.success", "es"),
-                instance=request.user,
-            )
+            # log_event(
+            #     request=request,
+            #     user=request.user,
+            #     action="logout",
+            #     description=t("access.logout.success", "es"),
+            #     instance=request.user,
+            # )
 
             response = Response(
                 {"detail": t("access.logout.success", lang)},
@@ -351,7 +355,7 @@ class RolePermissionUpdateView(APIView):
 # ---------------------------------------------------------------------------
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
     pagination_class = UserPagination
@@ -420,39 +424,3 @@ class UserViewSet(viewsets.ModelViewSet):
         if roles is not None:
             groups = Group.objects.filter(id__in=roles)
             user.groups.set(groups)
-
-    @action(detail=True, methods=["post"], url_path="soft-delete")
-    def soft_delete(self, request, pk=None, *args, **kwargs):
-        lang = resolve_lang(request.META.get("HTTP_ACCEPT_LANGUAGE"))
-        user = self.get_object()
-        user.is_active = False
-        user.save()
-
-        return Response(
-            {"detail": t("access.user.soft_deleted", lang)},
-            status=status.HTTP_200_OK,
-        )
-
-    @action(detail=False, methods=["post"], url_path="export")
-    def export_users(self, request):
-        body = request.data
-        mode = body.get("mode", "selected")
-        fmt = body.get("format", "xlsx")
-        ids = body.get("ids", [])
-
-        qs = User.objects.filter(is_active=True)
-
-        if mode == "selected" and ids:
-            qs = qs.filter(id__in=ids)
-            preserved = Case(*[When(id=pk, then=pos) for pos, pk in enumerate(ids)])
-            qs = qs.order_by(preserved)
-
-        if fmt == "csv":
-            return export_csv(qs, USERS_EXPORT_COLUMNS, filename="usuarios.csv")
-
-        return export_xlsx(
-            qs,
-            USERS_EXPORT_COLUMNS,
-            filename="usuarios.xlsx",
-            sheet_name="Usuarios",
-        )

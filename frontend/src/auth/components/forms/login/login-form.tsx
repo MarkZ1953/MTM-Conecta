@@ -1,104 +1,87 @@
-import { useState } from "react";
-import { Button } from "primereact/button";
+import { FormProvider, useForm } from "react-hook-form";
+import { LoginFormFields } from "./login-form-fields";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { authLoginSchema } from "@/auth/auth.schemas";
+import { useNavigate } from "react-router-dom";
 import { Divider } from "primereact/divider";
-import { LoginFormFields, type LoginFormValues } from "./login-form-fields";
+import { Button } from "primereact/button";
+import { authAPI } from "@/auth/auth.api";
+import { toast } from "@/components";
 
-function validate(values: LoginFormValues) {
-  const errors: Partial<Record<keyof LoginFormValues, string>> = {};
-  if (!values.email.trim()) {
-    errors.email = "El correo es obligatorio.";
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-    errors.email = "Ingresa un correo válido.";
-  }
-  if (!values.password) {
-    errors.password = "La contraseña es obligatoria.";
-  } else if (values.password.length < 6) {
-    errors.password = "Mínimo 6 caracteres.";
-  }
-  return errors;
-}
-
-interface LoginFormProps {
-  onSuccess?: () => void;
-  onNavigateRegister?: () => void;
-}
-
-export function LoginForm({ onSuccess, onNavigateRegister }: LoginFormProps) {
-  const [values, setValues] = useState<LoginFormValues>({
-    email: "",
-    password: "",
+export function LoginForm() {
+  const form = useForm({
+    resolver: yupResolver(authLoginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
   });
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof LoginFormValues, string>>
-  >({});
-  const [loading, setLoading] = useState(false);
 
-  function handleChange(field: keyof LoginFormValues, value: string) {
-    setValues((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
-  }
+  const navigate = useNavigate();
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const validation = validate(values);
-    if (Object.keys(validation).length > 0) {
-      setErrors(validation);
-      return;
-    }
-    setLoading(true);
+  const { isSubmitting } = form.formState;
+
+  const onSubmit = async (data: any) => {
+    console.log(data);
+
     try {
-      // TODO: conectar con auth context / API
-      await new Promise((r) => setTimeout(r, 1000));
-      onSuccess?.();
-    } finally {
-      setLoading(false);
+      const { status } = await authAPI.login({
+        username: data.username,
+        password: data.password,
+      });
+      if (status >= 200 && status < 300) {
+        navigate("/");
+        toast.success("Inicio de sesión exitoso");
+      }
+    } catch (error) {
+      toast.error("Error al iniciar sesión");
     }
-  }
+  };
 
   return (
-    <form className="login-form" onSubmit={handleSubmit} noValidate>
-      <div className="login-form-header">
-        <h1 className="login-form-title">Bienvenida de nuevo</h1>
-        <p className="login-form-subtitle">
-          Accede a tu cuenta de la Fundación MTM y sigue haciendo la diferencia
-        </p>
-      </div>
-
-      <LoginFormFields
-        values={values}
-        onChange={handleChange}
-        errors={errors}
-        loading={loading}
-      />
-
-      <div className="login-forgot">
-        <a href="#" className="login-forgot-link">
-          ¿Olvidaste tu contraseña?
-        </a>
-      </div>
-
-      <Button
-        type="submit"
-        label={loading ? "Ingresando..." : "Iniciar sesión"}
-        className="login-submit-btn"
-        loading={loading}
-        disabled={loading}
-        icon="pi pi-sign-in"
-        iconPos="right"
-      />
-
-      <Divider />
-
-      <p className="login-register-prompt">
-        ¿Eres nueva en la fundación?&nbsp;
-        <button
-          type="button"
-          className="login-register-link"
-          onClick={onNavigateRegister}
+    <>
+      <FormProvider {...form}>
+        <form
+          className="login-form"
+          onSubmit={form.handleSubmit(onSubmit)}
+          noValidate
         >
-          Crea tu cuenta aquí
-        </button>
-      </p>
-    </form>
+          <div className="login-form-header">
+            <h1 className="login-form-title">Bienvenida de nuevo</h1>
+            <p className="login-form-subtitle">
+              Accede a tu cuenta de la Fundación MTM y sigue haciendo la
+              diferencia
+            </p>
+          </div>
+
+          <LoginFormFields />
+
+          <div className="login-forgot">
+            <a href="#" className="login-forgot-link">
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+
+          <Button
+            type="submit"
+            label={isSubmitting ? "Ingresando..." : "Iniciar sesión"}
+            className="login-submit-btn"
+            loading={isSubmitting}
+            disabled={isSubmitting}
+            icon="pi pi-sign-in"
+            iconPos="right"
+          />
+
+          <Divider />
+
+          <p className="login-register-prompt">
+            ¿Eres nueva en la fundación?&nbsp;
+            <button type="button" className="login-register-link">
+              Crea tu cuenta aquí
+            </button>
+          </p>
+        </form>
+      </FormProvider>
+    </>
   );
 }

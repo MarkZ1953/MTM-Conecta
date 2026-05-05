@@ -3,8 +3,9 @@ import { Password } from "primereact/password";
 import { FloatLabel } from "primereact/floatlabel";
 
 export interface RegisterFormValues {
-  name: string;
-  email: string;
+  first_name: string;
+  last_name: string;
+  username: string;
   password: string;
   confirmPassword: string;
 }
@@ -38,40 +39,58 @@ export function RegisterFormFields({
 }: RegisterFormFieldsProps) {
   return (
     <div className="register-fields">
-      {/* Nombre completo */}
+      {/* Nombres */}
       <div className="register-field-wrapper">
         <FloatLabel>
           <InputText
-            id="register-name"
-            value={values.name}
-            onChange={(e) => onChange("name", e.target.value)}
-            className={`register-input${errors.name ? " p-invalid" : ""}`}
+            id="register-first-name"
+            value={values.first_name}
+            onChange={(e) => onChange("first_name", e.target.value)}
+            className={`register-input${errors.first_name ? " p-invalid" : ""}`}
             disabled={loading}
-            autoComplete="name"
+            autoComplete="given-name"
           />
-          <label htmlFor="register-name">Nombre completo</label>
+          <label htmlFor="register-first-name">Nombres</label>
         </FloatLabel>
-        {errors.name && (
-          <small className="register-field-error">{errors.name}</small>
+        {errors.first_name && (
+          <small className="register-field-error">{errors.first_name}</small>
         )}
       </div>
 
-      {/* Email */}
+      {/* Apellidos */}
       <div className="register-field-wrapper">
         <FloatLabel>
           <InputText
-            id="register-email"
-            value={values.email}
-            onChange={(e) => onChange("email", e.target.value)}
-            className={`register-input${errors.email ? " p-invalid" : ""}`}
+            id="register-last-name"
+            value={values.last_name}
+            onChange={(e) => onChange("last_name", e.target.value)}
+            className={`register-input${errors.last_name ? " p-invalid" : ""}`}
             disabled={loading}
-            autoComplete="email"
-            type="email"
+            autoComplete="family-name"
           />
-          <label htmlFor="register-email">Correo electrónico</label>
+          <label htmlFor="register-last-name">Apellidos</label>
         </FloatLabel>
-        {errors.email && (
-          <small className="register-field-error">{errors.email}</small>
+        {errors.last_name && (
+          <small className="register-field-error">{errors.last_name}</small>
+        )}
+      </div>
+
+      {/* Usuario */}
+      <div className="register-field-wrapper">
+        <FloatLabel>
+          <InputText
+            id="register-username"
+            value={values.username}
+            onChange={(e) => onChange("username", e.target.value)}
+            className={`register-input${errors.username ? " p-invalid" : ""}`}
+            disabled={loading}
+            autoComplete="username"
+            type="text"
+          />
+          <label htmlFor="register-username">Nombre de usuario</label>
+        </FloatLabel>
+        {errors.username && (
+          <small className="register-field-error">{errors.username}</small>
         )}
       </div>
 

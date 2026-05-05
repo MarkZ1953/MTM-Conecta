@@ -1,12 +1,7 @@
-import { LoginForm } from "../components/forms/login/login-form";
+import { LoginForm } from "../components";
 import "../styles/auth.css";
 
-interface LoginPageProps {
-  onNavigateRegister?: () => void;
-  onLoginSuccess?: () => void;
-}
-
-export function LoginPage({ onNavigateRegister, onLoginSuccess }: LoginPageProps) {
+export function LoginPage() {
   return (
     <div className="auth-page">
       {/* Panel izquierdo — branding */}
@@ -62,10 +57,8 @@ export function LoginPage({ onNavigateRegister, onLoginSuccess }: LoginPageProps
               <i className="pi pi-heart-fill" /> Juntas hacemos la diferencia
             </span>
           </div>
-          <LoginForm
-            onSuccess={onLoginSuccess}
-            onNavigateRegister={onNavigateRegister}
-          />
+
+          <LoginForm />
         </div>
       </main>
     </div>

@@ -9,15 +9,20 @@ import {
 
 function validate(values: RegisterFormValues) {
   const errors: Partial<Record<keyof RegisterFormValues, string>> = {};
-  if (!values.name.trim()) {
-    errors.name = "El nombre es obligatorio.";
-  } else if (values.name.trim().length < 3) {
-    errors.name = "Mínimo 3 caracteres.";
+  if (!values.first_name.trim()) {
+    errors.first_name = "El nombre es obligatorio.";
+  } else if (values.first_name.trim().length < 2) {
+    errors.first_name = "Mínimo 2 caracteres.";
   }
-  if (!values.email.trim()) {
-    errors.email = "El correo es obligatorio.";
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-    errors.email = "Ingresa un correo válido.";
+  if (!values.last_name.trim()) {
+    errors.last_name = "El apellido es obligatorio.";
+  } else if (values.last_name.trim().length < 2) {
+    errors.last_name = "Mínimo 2 caracteres.";
+  }
+  if (!values.username.trim()) {
+    errors.username = "El usuario es obligatorio.";
+  } else if (values.username.trim().length < 3) {
+    errors.username = "El usuario debe tener al menos 3 caracteres.";
   }
   if (!values.password) {
     errors.password = "La contraseña es obligatoria.";
@@ -39,8 +44,9 @@ interface RegisterFormProps {
 
 export function RegisterForm({ onSuccess, onNavigateLogin }: RegisterFormProps) {
   const [values, setValues] = useState<RegisterFormValues>({
-    name: "",
-    email: "",
+    first_name: "",
+    last_name: "",
+    username: "",
     password: "",
     confirmPassword: "",
   });
