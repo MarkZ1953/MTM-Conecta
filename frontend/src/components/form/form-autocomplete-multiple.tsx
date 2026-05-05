@@ -25,7 +25,7 @@ const CountryService = {
   },
 };
 
-export default function UIAutoCompleteMultiple() {
+export const UIAutoCompleteMultiple = () => {
   const [countries, setCountries] = useState<Country[]>([]);
   const [selectedCountries, setSelectedCountries] = useState<Country[]>([]);
   const [filteredCountries, setFilteredCountries] = useState<Country[]>([]);
@@ -63,4 +63,4 @@ export default function UIAutoCompleteMultiple() {
       />
     </div>
   );
-}
+};
