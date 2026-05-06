@@ -10,4 +10,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('access.urls')),
     path("", include(router.urls)),
+    path("", include('beneficiaries.urls')),
 ]
