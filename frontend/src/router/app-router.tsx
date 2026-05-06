@@ -1,21 +1,24 @@
 import { Route, Routes } from "react-router-dom";
 import { PrivateLayout } from "./private-layout";
 import { PrivateRoute } from "./private-route";
-import { DashboardPage } from "@/core";
+import { DashboardPage, HomePage } from "@/core";
 import { UsersPage } from "@/users";
 import { LoginPage } from "@/auth";
 
 export const AppRouter = () => {
   return (
     <Routes>
+      {/* Public routes */}
+      <Route path="/home" element={<HomePage />} />
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* Private routes */}
       <Route element={<PrivateRoute />}>
         <Route element={<PrivateLayout />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/users" element={<UsersPage />} />
         </Route>
       </Route>
-
-      <Route path="/login" element={<LoginPage />} />
     </Routes>
   );
 };
