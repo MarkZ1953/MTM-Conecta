@@ -1,153 +1,128 @@
-import { useState } from "react";
-import { Button } from "primereact/button";
+import { FormProvider, useForm } from "react-hook-form";
+import { RegisterFormFields } from "./register-form-fields";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { authRegisterSchema } from "@/auth/auth.schemas";
+import { useNavigate } from "react-router-dom";
 import { Divider } from "primereact/divider";
+import { Button } from "primereact/button";
 import { Checkbox } from "primereact/checkbox";
-import {
-  RegisterFormFields,
-  type RegisterFormValues,
-} from "./register-form-fields";
+import { authAPI } from "@/auth/auth.api";
+import { toast } from "@/components";
+import { useState } from "react";
 
-function validate(values: RegisterFormValues) {
-  const errors: Partial<Record<keyof RegisterFormValues, string>> = {};
-  if (!values.first_name.trim()) {
-    errors.first_name = "El nombre es obligatorio.";
-  } else if (values.first_name.trim().length < 2) {
-    errors.first_name = "Mínimo 2 caracteres.";
-  }
-  if (!values.last_name.trim()) {
-    errors.last_name = "El apellido es obligatorio.";
-  } else if (values.last_name.trim().length < 2) {
-    errors.last_name = "Mínimo 2 caracteres.";
-  }
-  if (!values.username.trim()) {
-    errors.username = "El usuario es obligatorio.";
-  } else if (values.username.trim().length < 3) {
-    errors.username = "El usuario debe tener al menos 3 caracteres.";
-  }
-  if (!values.password) {
-    errors.password = "La contraseña es obligatoria.";
-  } else if (values.password.length < 8) {
-    errors.password = "Mínimo 8 caracteres.";
-  }
-  if (!values.confirmPassword) {
-    errors.confirmPassword = "Confirma tu contraseña.";
-  } else if (values.password !== values.confirmPassword) {
-    errors.confirmPassword = "Las contraseñas no coinciden.";
-  }
-  return errors;
-}
-
-interface RegisterFormProps {
-  onSuccess?: () => void;
-  onNavigateLogin?: () => void;
-}
-
-export function RegisterForm({ onSuccess, onNavigateLogin }: RegisterFormProps) {
-  const [values, setValues] = useState<RegisterFormValues>({
-    first_name: "",
-    last_name: "",
-    username: "",
-    password: "",
-    confirmPassword: "",
+export function RegisterForm() {
+  const form = useForm({
+    resolver: yupResolver(authRegisterSchema),
+    defaultValues: {
+      first_name: "",
+      last_name: "",
+      username: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof RegisterFormValues, string>>
-  >({});
-  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+  const { isSubmitting } = form.formState;
+
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [termsError, setTermsError] = useState(false);
 
-  function handleChange(field: keyof RegisterFormValues, value: string) {
-    setValues((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const validation = validate(values);
-    if (!acceptTerms) setTermsError(true);
-    if (Object.keys(validation).length > 0 || !acceptTerms) {
-      setErrors(validation);
+  const onSubmit = async (data: any) => {
+    if (!acceptTerms) {
+      setTermsError(true);
       return;
     }
-    setLoading(true);
+
     try {
-      // TODO: conectar con auth context / API
-      await new Promise((r) => setTimeout(r, 1200));
-      onSuccess?.();
-    } finally {
-      setLoading(false);
+      const { status } = await authAPI.register({
+        data: {
+          first_name: data.first_name,
+          last_name: data.last_name,
+          username: data.username,
+          password: data.password,
+          confirm_password: data.confirmPassword,
+        },
+      });
+      if (status >= 200 && status < 300) {
+        toast.success("Cuenta creada exitosamente");
+        navigate("/login");
+      }
+    } catch (error) {
+      toast.error("Error al crear la cuenta");
     }
-  }
+  };
 
   return (
-    <form className="register-form" onSubmit={handleSubmit} noValidate>
-      <div className="register-form-header">
-        <h1 className="register-form-title">Crea tu cuenta</h1>
-        <p className="register-form-subtitle">
-          Únete a la red de voluntarias de la Fundación MTM y ayuda a niños
-          con cáncer a tener una mejor vida
-        </p>
-      </div>
+    <FormProvider {...form}>
+      <form
+        className="register-form"
+        onSubmit={form.handleSubmit(onSubmit)}
+        noValidate
+      >
+        <div className="register-form-header">
+          <h1 className="register-form-title">Crea tu cuenta</h1>
+          <p className="register-form-subtitle">
+            Únete a la red de voluntarias de la Fundación MTM y ayuda a niños
+            con cáncer a tener una mejor vida
+          </p>
+        </div>
 
-      <RegisterFormFields
-        values={values}
-        onChange={handleChange}
-        errors={errors}
-        loading={loading}
-      />
+        <RegisterFormFields />
 
-      {/* Términos */}
-      <div className="register-terms">
-        <Checkbox
-          inputId="register-terms"
-          checked={acceptTerms}
-          onChange={(e) => {
-            setAcceptTerms(e.checked ?? false);
-            if (e.checked) setTermsError(false);
-          }}
-          disabled={loading}
+        {/* Términos */}
+        <div className="register-terms">
+          <Checkbox
+            inputId="register-terms"
+            checked={acceptTerms}
+            onChange={(e) => {
+              setAcceptTerms(e.checked ?? false);
+              if (e.checked) setTermsError(false);
+            }}
+            disabled={isSubmitting}
+          />
+          <label htmlFor="register-terms" className="register-terms-label">
+            Acepto los&nbsp;
+            <a href="#" className="register-terms-link">
+              Términos de uso
+            </a>
+            &nbsp;y la&nbsp;
+            <a href="#" className="register-terms-link">
+              Política de privacidad
+            </a>
+            &nbsp;de la Fundación MTM
+          </label>
+        </div>
+        {termsError && (
+          <small className="register-field-error register-terms-error">
+            Debes aceptar los términos para continuar.
+          </small>
+        )}
+
+        <Button
+          type="submit"
+          label={isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
+          className="register-submit-btn"
+          loading={isSubmitting}
+          disabled={isSubmitting}
+          icon="pi pi-user-plus"
+          iconPos="right"
         />
-        <label htmlFor="register-terms" className="register-terms-label">
-          Acepto los&nbsp;
-          <a href="#" className="register-terms-link">
-            Términos de uso
-          </a>
-          &nbsp;y la&nbsp;
-          <a href="#" className="register-terms-link">
-            Política de privacidad
-          </a>
-          &nbsp;de la Fundación MTM
-        </label>
-      </div>
-      {termsError && (
-        <small className="register-field-error register-terms-error">
-          Debes aceptar los términos para continuar.
-        </small>
-      )}
 
-      <Button
-        type="submit"
-        label={loading ? "Creando cuenta..." : "Crear cuenta"}
-        className="register-submit-btn"
-        loading={loading}
-        disabled={loading}
-        icon="pi pi-user-plus"
-        iconPos="right"
-      />
+        <Divider />
 
-      <Divider />
-
-      <p className="register-login-prompt">
-        ¿Ya eres parte de la fundación?&nbsp;
-        <button
-          type="button"
-          className="register-login-link"
-          onClick={onNavigateLogin}
-        >
-          Inicia sesión
-        </button>
-      </p>
-    </form>
+        <p className="register-login-prompt">
+          ¿Ya eres parte de la fundación?&nbsp;
+          <button
+            type="button"
+            className="register-login-link"
+            onClick={() => navigate("/login")}
+          >
+            Inicia sesión
+          </button>
+        </p>
+      </form>
+    </FormProvider>
   );
 }
