@@ -8,27 +8,28 @@
    1. Tokens de marca como CSS variables globales
    ---------------------------------------------------------- */
 :root {
-  /* Morados */
-  --mtm-primary: #6a3fa0;
-  --mtm-primary-light: #8e5cc2;
-  --mtm-primary-soft: #ede7f6;
+  /* Morados — identidad visual MTM-Conecta */
+  --mtm-primary: #6A1B9A;
+  --mtm-primary-light: #B39DDB;
+  --mtm-primary-soft: #EDE7F6;
 
-  /* Dorados / Ámbar */
-  --mtm-accent: #f2c94c;
-  --mtm-accent-deep: #e6a800;
-  --mtm-accent-soft: #fff8e1;
+  /* Dorados / Lazo (cáncer infantil) */
+  --mtm-accent: #D4AF37;
+  --mtm-accent-deep: #B8960C;
+  --mtm-accent-soft: #FFF8E1;
 
-  /* Verdes / Teal */
-  --mtm-teal: #2e9b7d;
-  --mtm-teal-deep: #1d9e75;
-  --mtm-teal-soft: #e1f5ee;
+  /* Verde esperanza */
+  --mtm-teal: #81C784;
+  --mtm-teal-deep: #66BB6A;
+  --mtm-teal-soft: #E8F5E9;
 
-  /* Rosa */
-  --mtm-rose: #d4537e;
+  /* Rosa cálido */
+  --mtm-rose: #F45FB1;
 
   /* Neutros */
   --mtm-white: #ffffff;
   --mtm-dark: #2c2c2a;
+  --mtm-gray-bg: #F5F5F5;
   --mtm-border: #d4c8ec;
 }
 

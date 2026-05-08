@@ -1,14 +1,20 @@
 import { Route, Routes } from "react-router-dom";
 import { PrivateLayout } from "./private-layout";
 import { PrivateRoute } from "./private-route";
-import { DashboardPage } from "@/core";
+import { DashboardPage, HomePage } from "@/core";
 import { UsersPage } from "@/users";
 import { BeneficiariesPage } from "@/beneficiaries";
-import { LoginPage } from "@/auth";
+import { LoginPage, RegisterPage } from "@/auth";
 
 export const AppRouter = () => {
   return (
     <Routes>
+      {/* Public routes */}
+      <Route path="/home" element={<HomePage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+
+      {/* Private routes */}
       <Route element={<PrivateRoute />}>
         <Route element={<PrivateLayout />}>
           <Route path="/" element={<DashboardPage />} />
@@ -16,8 +22,6 @@ export const AppRouter = () => {
           <Route path="/beneficiaries" element={<BeneficiariesPage />} />
         </Route>
       </Route>
-
-      <Route path="/login" element={<LoginPage />} />
     </Routes>
   );
 };
