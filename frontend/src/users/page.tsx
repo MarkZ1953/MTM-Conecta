@@ -8,6 +8,8 @@ import { Button } from "primereact/button";
 import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 import { InputText } from "primereact/inputtext";
+import { UIPageHeader } from "@/components";
+
 
 const defaultFilters: DataTableFilterMeta = {
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -139,7 +141,18 @@ export const UsersPage = () => {
   ];
 
   return (
-    <div className="w-full flex-1 flex flex-col">
+    <div className="w-full flex-1 flex flex-column">
+      <UIPageHeader
+        title="Usuarios"
+        description="Administra las cuentas de usuario, permisos y roles del sistema."
+        icon="pi pi-users"
+        actions={
+          <>
+            <Button label="Nuevo Usuario" icon="pi pi-plus" />
+          </>
+        }
+      />
+
       <DataTable
         data={users}
         columns={userColumns}
@@ -151,7 +164,7 @@ export const UsersPage = () => {
         onSortingChange={setSorting}
         onPageChange={setPageIndex}
         isLoading={isLoading}
-        
+
         // Filtros nativos de PrimeReact
         filters={filters}
         onFilter={setFilters}
