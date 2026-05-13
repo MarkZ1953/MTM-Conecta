@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'beneficiaries',
     'donations',
     'access',
+    'audits',
 ]
 
 MIDDLEWARE = [
