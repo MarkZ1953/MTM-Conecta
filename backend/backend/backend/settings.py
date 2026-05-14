@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'donations',
     'access',
     'audits',
+    'projects',
 ]
 
 MIDDLEWARE = [
