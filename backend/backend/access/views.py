@@ -14,7 +14,7 @@ from .filters import UserFilter, GroupFilter
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from django.db.models import Case, When
-# from audits.service import log_event
+from audits.service import log_event
 from rest_framework import filters
 
 from utils.i18n import resolve_lang, t
@@ -78,15 +78,12 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         except AuthenticationFailed:
             username = request.data.get("username", "desconocido")
 
-            # try:
-                # log_event(
-                #     request=request,
-                #     instance=None,
-                #     action="login_failed",
-                #     description=t("access.login.success", "es", username=username),
-                # )
-            # except Exception as log_error:
-            #     print("Error guardando auditoría:", log_error)
+            log_event(
+                request=request,
+                instance=None,
+                action="login_failed",
+                description=f"Intento de inicio de sesión fallido para '{username}'",
+            )
 
             return Response(
                 {"message": t("access.login.invalid_credentials", lang)},
@@ -96,13 +93,13 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         user = serializer.user
         response = Response(serializer.validated_data, status=status.HTTP_200_OK)
 
-        # log_event(
-        #     request=request,
-        #     user=user,
-        #     action="login",
-        #     instance=user,
-        #     description=t("access.login.success", "es", username=user.username),
-        # )
+        log_event(
+            request=request,
+            user=user,
+            action="login",
+            instance=user,
+            description=t("access.login.success", "es", username=user.username),
+        )
 
         refresh_token = response.data.get("refresh")
         access_token = response.data.get("access")
@@ -201,13 +198,13 @@ class LogoutViewSet(viewsets.ViewSet):
         lang = resolve_lang(request.META.get("HTTP_ACCEPT_LANGUAGE"))
 
         try:
-            # log_event(
-            #     request=request,
-            #     user=request.user,
-            #     action="logout",
-            #     description=t("access.logout.success", "es"),
-            #     instance=request.user,
-            # )
+            log_event(
+                request=request,
+                user=request.user if request.user.is_authenticated else None,
+                action="logout",
+                description=t("access.logout.success", "es"),
+                instance=request.user if request.user.is_authenticated else None,
+            )
 
             response = Response(
                 {"message": t("access.logout.success", lang)},

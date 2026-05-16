@@ -12,4 +12,7 @@ urlpatterns = [
     path("", include(router.urls)),
     path("", include('beneficiaries.urls')),
     path("", include('donations.urls')),
+    path("", include('projects.urls')),
+    path("", include('audits.urls')),
+    path("", include('reports.urls')),
 ]
