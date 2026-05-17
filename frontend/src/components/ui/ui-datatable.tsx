@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { DataTable as PrimeDataTable, type DataTablePageEvent, type DataTableSortEvent, type DataTableFilterMeta, type DataTableFilterEvent } from "primereact/datatable";
 import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { Column, type ColumnFilterElementTemplateOptions, type ColumnFilterApplyTemplateOptions, type ColumnFilterClearTemplateOptions } from "primereact/column";
@@ -73,7 +73,6 @@ export const UIDataTable = <TData extends { id?: string | number }>({
   totalCount,
   onPageSizeChange,
   columnVisibility = {},
-  onColumnVisibilityChange,
   sorting,
   onSortingChange,
   filters,
@@ -186,7 +185,7 @@ export const UIDataTable = <TData extends { id?: string | number }>({
   ) : <span />;
 
   return (
-    <div className="w-full flex flex-col gap-4">
+    <div className="w-full flex flex-col gap-2">
       {renderToolbar && renderToolbar(mockTable)}
 
       <PrimeDataTable

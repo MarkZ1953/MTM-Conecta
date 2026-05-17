@@ -1,58 +1,75 @@
+import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
-import { userCreateSchema } from "@/users/users.schemas";
+import { userEditSchema } from "@/users/users.schemas";
 import { usersAPI } from "@/users/users.api";
 import { toast } from "@/components";
-import type { UserPayload } from "@/users/users.types";
+import type { User, UserGroup, UserPayload } from "@/users/users.types";
 import { UsersFormFields } from "./users-form-fields";
 
 type SetRefresh = (value: boolean | ((prev: boolean) => boolean)) => void;
 
-type UsersCreateFormProps = {
+type UsersEditFormProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
+  user: User | null;
   setRefresh: SetRefresh;
 };
 
-const defaultValues: UserPayload = {
-  username: "",
-  first_name: "",
-  last_name: "",
-  email: "",
-  role_ids: null,
-};
+const getDefaultValues = (user?: User | null): UserPayload => ({
+  username: user?.username ?? "",
+  first_name: user?.first_name ?? "",
+  last_name: user?.last_name ?? "",
+  email: user?.email ?? "",
+  role_ids:
+    user?.groups
+      ?.filter((group): group is UserGroup => typeof group === "object" && "id" in group)
+      .map((group) => group.id) ?? null,
+});
 
-export const UsersCreateForm = ({
+export const UsersEditForm = ({
   open,
   setOpen,
+  user,
   setRefresh,
-}: UsersCreateFormProps) => {
+}: UsersEditFormProps) => {
   const form = useForm<UserPayload>({
-    resolver: yupResolver(userCreateSchema),
-    defaultValues,
+    resolver: yupResolver(userEditSchema),
+    defaultValues: getDefaultValues(user),
   });
+
+  useEffect(() => {
+    if (open) {
+      form.reset(getDefaultValues(user));
+    }
+  }, [form, open, user]);
 
   const closeDialog = () => {
     setOpen(false);
-    form.reset(defaultValues);
+    form.reset(getDefaultValues(user));
   };
 
   const onSubmit = async (data: UserPayload) => {
+    if (!user) return;
+
     try {
-      const { status, data: responseData } = await usersAPI.create({ data });
+      const { status, data: responseData } = await usersAPI.update({
+        id: user.id,
+        data,
+      });
 
       if (status >= 200 && status < 300) {
-        toast.success("Usuario creado correctamente.");
+        toast.success("Usuario actualizado correctamente.");
         setRefresh((prev) => !prev);
         closeDialog();
         return;
       }
 
-      throw new Error(responseData ? JSON.stringify(responseData) : "No se pudo crear el usuario.");
+      throw new Error(responseData ? JSON.stringify(responseData) : "No se pudo actualizar el usuario.");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "No se pudo crear el usuario.");
+      toast.error(error instanceof Error ? error.message : "No se pudo actualizar el usuario.");
     }
   };
 
@@ -72,14 +89,14 @@ export const UsersCreateForm = ({
         label={form.formState.isSubmitting ? "Guardando..." : "Guardar"}
         icon={form.formState.isSubmitting ? "pi pi-spin pi-spinner" : "pi pi-save"}
         onClick={form.handleSubmit(onSubmit)}
-        disabled={form.formState.isSubmitting}
+        disabled={form.formState.isSubmitting || !user}
       />
     </div>
   );
 
   return (
     <Dialog
-      header="Crear usuario"
+      header="Editar usuario"
       visible={open}
       onHide={closeDialog}
       modal

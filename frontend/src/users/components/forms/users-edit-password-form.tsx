@@ -1,58 +1,67 @@
+import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
-import { userCreateSchema } from "@/users/users.schemas";
+import { userPasswordEditSchema } from "@/users/users.schemas";
 import { usersAPI } from "@/users/users.api";
 import { toast } from "@/components";
-import type { UserPayload } from "@/users/users.types";
-import { UsersFormFields } from "./users-form-fields";
+import type { User, UserPasswordPayload } from "@/users/users.types";
+import { UsersEditPasswordFormFields } from "./users-edit-password-form-fields";
 
 type SetRefresh = (value: boolean | ((prev: boolean) => boolean)) => void;
 
-type UsersCreateFormProps = {
+type UsersEditPasswordFormProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
+  user: User | null;
   setRefresh: SetRefresh;
 };
 
-const defaultValues: UserPayload = {
-  username: "",
-  first_name: "",
-  last_name: "",
-  email: "",
-  role_ids: null,
+const defaultValues: UserPasswordPayload = {
+  current_password: null,
+  new_password: "",
+  confirm_password: "",
 };
 
-export const UsersCreateForm = ({
+export const UsersEditPasswordForm = ({
   open,
   setOpen,
+  user,
   setRefresh,
-}: UsersCreateFormProps) => {
-  const form = useForm<UserPayload>({
-    resolver: yupResolver(userCreateSchema),
+}: UsersEditPasswordFormProps) => {
+  const form = useForm<UserPasswordPayload>({
+    resolver: yupResolver(userPasswordEditSchema),
     defaultValues,
   });
+
+  useEffect(() => {
+    if (open) {
+      form.reset(defaultValues);
+    }
+  }, [form, open]);
 
   const closeDialog = () => {
     setOpen(false);
     form.reset(defaultValues);
   };
 
-  const onSubmit = async (data: UserPayload) => {
+  const onSubmit = async (data: UserPasswordPayload) => {
+    if (!user) return;
+
     try {
-      const { status, data: responseData } = await usersAPI.create({ data });
+      const { status, data: responseData } = await usersAPI.changePassword(user.id, data);
 
       if (status >= 200 && status < 300) {
-        toast.success("Usuario creado correctamente.");
+        toast.success("Contrasena actualizada correctamente.");
         setRefresh((prev) => !prev);
         closeDialog();
         return;
       }
 
-      throw new Error(responseData ? JSON.stringify(responseData) : "No se pudo crear el usuario.");
+      throw new Error(responseData ? JSON.stringify(responseData) : "No se pudo actualizar la contrasena.");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "No se pudo crear el usuario.");
+      toast.error(error instanceof Error ? error.message : "No se pudo actualizar la contrasena.");
     }
   };
 
@@ -72,14 +81,14 @@ export const UsersCreateForm = ({
         label={form.formState.isSubmitting ? "Guardando..." : "Guardar"}
         icon={form.formState.isSubmitting ? "pi pi-spin pi-spinner" : "pi pi-save"}
         onClick={form.handleSubmit(onSubmit)}
-        disabled={form.formState.isSubmitting}
+        disabled={form.formState.isSubmitting || !user}
       />
     </div>
   );
 
   return (
     <Dialog
-      header="Crear usuario"
+      header="Cambiar contrasena"
       visible={open}
       onHide={closeDialog}
       modal
@@ -88,9 +97,12 @@ export const UsersCreateForm = ({
       contentStyle={{ padding: "0 1.5rem 1rem" }}
       footer={footer}
     >
+      <p className="mt-3 mb-0 text-600">
+        {user ? `Define una nueva contrasena para ${user.username}.` : "Selecciona un usuario."}
+      </p>
       <FormProvider {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <UsersFormFields />
+          <UsersEditPasswordFormFields />
         </form>
       </FormProvider>
     </Dialog>

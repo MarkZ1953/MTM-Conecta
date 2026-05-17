@@ -258,6 +258,26 @@
   background: var(--mtm-primary-soft);
   color: var(--mtm-primary);
 }
+.p-datatable.p-datatable-sm .p-datatable-header {
+  padding: 0.65rem 1rem;
+}
+.p-datatable.p-datatable-sm .p-datatable-thead > tr > th {
+  padding: 0.65rem 0.85rem;
+}
+.p-datatable.p-datatable-sm .p-datatable-tbody > tr > td {
+  padding: 0.55rem 0.85rem;
+}
+.p-datatable.p-datatable-sm .p-paginator {
+  padding: 0.45rem 0.75rem;
+}
+.p-datatable.p-datatable-sm .p-paginator .p-paginator-page,
+.p-datatable.p-datatable-sm .p-paginator .p-paginator-first,
+.p-datatable.p-datatable-sm .p-paginator .p-paginator-prev,
+.p-datatable.p-datatable-sm .p-paginator .p-paginator-next,
+.p-datatable.p-datatable-sm .p-paginator .p-paginator-last {
+  min-width: 2rem;
+  height: 2rem;
+}
 
 /* ----------------------------------------------------------
    14. Tabs

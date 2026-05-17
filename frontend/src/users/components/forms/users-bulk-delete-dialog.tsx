@@ -2,45 +2,40 @@ import { useState } from "react";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { usersAPI } from "@/users/users.api";
-import type { User } from "@/users/users.types";
 import { toast } from "@/components";
 
-type SetRefresh = (value: boolean | ((prev: boolean) => boolean)) => void;
-
-type UsersDeleteDialogProps = {
-  user: User | null;
+type UsersBulkDeleteDialogProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
-  setRefresh: SetRefresh;
+  ids: number[];
+  onSuccess?: () => void;
 };
 
-export function UsersDeleteDialog({
-  user,
+export function UsersBulkDeleteDialog({
   open,
   setOpen,
-  setRefresh,
-}: UsersDeleteDialogProps) {
+  ids,
+  onSuccess,
+}: UsersBulkDeleteDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const closeDialog = () => setOpen(false);
 
   const onConfirm = async () => {
-    if (!user) return;
-
     try {
       setIsDeleting(true);
-      const { status } = await usersAPI.softDelete({ id: user.id });
+      const { status } = await usersAPI.bulkSoftDelete({ ids });
 
       if (status >= 200 && status < 300) {
-        toast.success("Usuario eliminado correctamente.");
-        setRefresh((prev) => !prev);
+        toast.success("Usuarios eliminados correctamente.");
+        onSuccess?.();
         closeDialog();
         return;
       }
 
-      throw new Error("No se pudo eliminar el usuario.");
+      throw new Error("No se pudieron eliminar los usuarios.");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "No se pudo eliminar el usuario.");
+      toast.error(error instanceof Error ? error.message : "No se pudieron eliminar los usuarios.");
     } finally {
       setIsDeleting(false);
     }
@@ -59,18 +54,18 @@ export function UsersDeleteDialog({
       />
       <Button
         type="button"
-        label={isDeleting ? "Eliminando..." : "Eliminar"}
+        label={isDeleting ? "Eliminando..." : "Eliminar seleccionados"}
         icon={isDeleting ? "pi pi-spin pi-spinner" : "pi pi-trash"}
         severity="danger"
         onClick={onConfirm}
-        disabled={isDeleting || !user}
+        disabled={isDeleting || ids.length === 0}
       />
     </div>
   );
 
   return (
     <Dialog
-      header="Eliminar usuario"
+      header="Eliminar usuarios"
       visible={open}
       onHide={closeDialog}
       modal
@@ -81,11 +76,9 @@ export function UsersDeleteDialog({
       <div className="flex align-items-start gap-3">
         <i className="pi pi-exclamation-triangle text-red-500 text-2xl mt-1" />
         <div>
-          <p className="mt-0 mb-2">
-            Esta accion no se puede deshacer.
-          </p>
+          <p className="mt-0 mb-2">Esta accion no se puede deshacer.</p>
           <p className="m-0 text-700">
-            El usuario <strong>{user?.username}</strong> sera eliminado permanentemente.
+            Se eliminaran <strong>{ids.length}</strong> usuarios seleccionados.
           </p>
         </div>
       </div>
