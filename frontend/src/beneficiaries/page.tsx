@@ -373,7 +373,7 @@ export const BeneficiariesPage = () => {
     <div className="w-full flex-1 flex flex-column">
       <UIPageHeader
         title="Beneficiarios"
-        icon="pi pi-users"
+        icon="pi pi-address-book"
         actions={
           <Button
             label="Nuevo beneficiario"

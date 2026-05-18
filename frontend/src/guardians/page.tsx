@@ -390,7 +390,7 @@ export const GuardiansPage = () => {
     <div className="w-full flex-1 flex flex-column">
       <UIPageHeader
         title="Tutores de Beneficiarios"
-        icon="pi pi-users"
+        icon="pi pi-shield"
         actions={
           <Button
             label="Registrar tutor"

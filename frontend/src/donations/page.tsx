@@ -374,7 +374,7 @@ export const DonationsPage = () => {
     <div className="w-full flex-1 flex flex-column">
       <UIPageHeader
         title="Donaciones"
-        icon="pi pi-dollar"
+        icon="pi pi-history"
         actions={
           <Button
             label="Registrar donación"

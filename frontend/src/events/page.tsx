@@ -370,7 +370,7 @@ export const EventsPage = () => {
     <div className="w-full flex-1 flex flex-column">
       <UIPageHeader
         title="Eventos"
-        icon="pi pi-calendar"
+        icon="pi pi-list"
         actions={
           <Button
             label="Nuevo evento"

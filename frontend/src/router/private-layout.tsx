@@ -19,8 +19,8 @@ const navItems: NavItem[] = [
     url: "/beneficiaries",
     icon: "pi-users",
     items: [
-      { title: "Directorio", url: "/beneficiaries" },
-      { title: "Tutores", url: "/beneficiaries/guardians" },
+      { title: "Directorio", url: "/beneficiaries", icon: "pi-address-book" },
+      { title: "Tutores", url: "/beneficiaries/guardians", icon: "pi-shield" },
     ]
   },
   {
@@ -28,10 +28,10 @@ const navItems: NavItem[] = [
     url: "/events",
     icon: "pi-calendar",
     items: [
-      { title: "Lista de Eventos", url: "/events" },
-      { title: "Asistencia", url: "/events/attendance" },
-      { title: "Actas", url: "/events/acts" },
-      { title: "Evidencias", url: "/events/evidences" },
+      { title: "Lista de Eventos", url: "/events", icon: "pi-list" },
+      { title: "Asistencia", url: "/events/attendance", icon: "pi-check-square" },
+      { title: "Actas", url: "/events/acts", icon: "pi-file" },
+      { title: "Evidencias", url: "/events/evidences", icon: "pi-images" },
     ]
   },
   {
@@ -39,8 +39,8 @@ const navItems: NavItem[] = [
     url: "/donations",
     icon: "pi-gift",
     items: [
-      { title: "Historial", url: "/donations" },
-      { title: "Donantes", url: "/donations/donors" },
+      { title: "Historial", url: "/donations", icon: "pi-history" },
+      { title: "Donantes", url: "/donations/donors", icon: "pi-heart" },
     ]
   },
 ];
