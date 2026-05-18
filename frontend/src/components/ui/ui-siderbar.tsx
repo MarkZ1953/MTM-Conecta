@@ -14,8 +14,8 @@ export interface NavPermission {
 export interface NavItem {
   title: string;
   url: string;
-  /** Componente de ícono (e.g. un SVG o ícono de una librería) */
-  icon?: React.ElementType;
+  /** Componente de ícono o clase de PrimeReact */
+  icon?: React.ElementType | string;
   isActive?: boolean;
   permission?: NavPermission;
   items?: NavItem[];
@@ -65,9 +65,13 @@ const NavItemNode = ({ item, depth = 0 }: NavItemNodeProps) => {
           tabIndex={0}
           onKeyDown={(e) => e.key === "Enter" && setOpen((prev) => !prev)}
         >
-          {IconComponent && (
+          {item.icon && (
             <span className="mr-2 flex align-items-center">
-              <IconComponent size={16} weight="regular" />
+              {typeof item.icon === 'string' ? (
+                <i className={`pi ${item.icon}`} style={{ fontSize: '1rem' }} />
+              ) : (
+                <item.icon size={16} weight="regular" />
+              )}
             </span>
           )}
           <span className="font-medium flex-1">{item.title}</span>
@@ -97,9 +101,13 @@ const NavItemNode = ({ item, depth = 0 }: NavItemNodeProps) => {
         className={itemClass}
         style={{ paddingLeft, textDecoration: "none", display: "flex" }}
       >
-        {IconComponent && (
+        {item.icon && (
           <span className="mr-2 flex align-items-center">
-            <IconComponent size={16} weight="regular" />
+            {typeof item.icon === 'string' ? (
+              <i className={`pi ${item.icon}`} style={{ fontSize: '1rem' }} />
+            ) : (
+              <item.icon size={16} weight="regular" />
+            )}
           </span>
         )}
         <span className="font-medium">{item.title}</span>

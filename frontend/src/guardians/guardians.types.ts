@@ -1,22 +1,20 @@
-export interface Beneficiary {
+export interface Guardian {
     id: number;
+    beneficiary: number;
     first_name: string;
     last_name: string;
-    birth_date: string;
     identification_number: string;
-    photo: string | null;
-    authorization_doc: string | null;
-    registration_date: string;
-    notes: string | null;
-    is_active: boolean;
+    phone_number: string;
+    email: string;
 }
 
-export interface BeneficiaryPayload {
+export interface GuardianPayload {
+    beneficiary: number;
     first_name: string;
     last_name: string;
-    birth_date: string;
     identification_number: string;
-    notes?: string | null;
+    phone_number: string;
+    email: string;
 }
 
 export interface PaginatedResponse<T> {

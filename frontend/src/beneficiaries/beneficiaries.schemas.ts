@@ -1,9 +1,12 @@
 import * as yup from "yup";
 
-export const beneficiarySchema = yup.object({
-    first_name: yup.string().required("El nombre es obligatorio"),
-    last_name: yup.string().required("El apellido es obligatorio"),
+export const beneficiaryBaseSchema = yup.object({
+    first_name: yup.string().trim().required("El nombre es obligatorio"),
+    last_name: yup.string().trim().required("El apellido es obligatorio"),
     birth_date: yup.string().required("La fecha de nacimiento es obligatoria"),
-    identification_number: yup.string().required("El número de identificación es obligatorio"),
-    notes: yup.string().optional(),
+    identification_number: yup.string().trim().required("La identificación es obligatoria"),
+    notes: yup.string().trim().nullable().optional(),
 });
+
+export const beneficiaryCreateSchema = beneficiaryBaseSchema;
+export const beneficiaryEditSchema = beneficiaryBaseSchema;
