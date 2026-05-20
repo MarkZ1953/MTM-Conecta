@@ -1,18 +1,8 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "primereact/button";
-import { Checkbox } from "primereact/checkbox";
-import { IconField } from "primereact/iconfield";
-import { InputIcon } from "primereact/inputicon";
-import { InputText } from "primereact/inputtext";
-import { Menu } from "primereact/menu";
-import type { MenuItem } from "primereact/menuitem";
-import { OverlayPanel } from "primereact/overlaypanel";
 import {
   DataTable,
   FilterMatchMode,
-  FilterOperator,
-  UIPageHeader,
   toast,
   type ColumnDef,
   type DataTableFilterMeta,
@@ -27,93 +17,33 @@ import {
   EventsDeleteDialog,
   EventsEditForm,
 } from "./components/forms";
+import "@/components/ui/resource-page.css";
 
 const defaultFilters: DataTableFilterMeta = {
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  title: {
-    operator: FilterOperator.AND,
-    constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-  },
-  location: {
-    operator: FilterOperator.AND,
-    constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
-  },
 };
 
-const COLUMN_VISIBILITY_KEY = "events_table_column_visibility";
-
-const columnLabels: Record<string, string> = {
-  title: "Título",
-  start_date: "Fecha Inicio",
-  end_date: "Fecha Fin",
-  location: "Ubicación",
+const fmt = (n: number) => new Intl.NumberFormat("es-CO").format(n);
+const formatDateTime = (value: string) => {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" }) +
+    " · " + d.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
 };
-
-type RowActionsProps = {
-  eventObj: Event;
-  onEdit: (eventObj: Event) => void;
-  onDelete: (eventObj: Event) => void;
-};
-
-const EventsRowActions = ({
-  eventObj,
-  onEdit,
-  onDelete,
-}: RowActionsProps) => {
-  const menuRef = useRef<Menu>(null);
-
-  const items: MenuItem[] = [
-    {
-      label: "Editar",
-      icon: "pi pi-pencil",
-      command: () => onEdit(eventObj),
-    },
-    { separator: true },
-    {
-      label: "Eliminar",
-      icon: "pi pi-trash",
-      className: "text-red-600",
-      command: () => onDelete(eventObj),
-    },
-  ];
-
-  return (
-    <div className="flex justify-content-end">
-      <Menu ref={menuRef} model={items} popup />
-      <Button
-        type="button"
-        icon="pi pi-ellipsis-v"
-        rounded
-        text
-        size="small"
-        severity="secondary"
-        className="h-2rem w-2rem"
-        aria-label={`Acciones para ${eventObj.title}`}
-        onClick={(e) => menuRef.current?.toggle(e)}
-      />
-    </div>
-  );
+const isUpcoming = (value: string) => {
+  const d = new Date(value);
+  return !Number.isNaN(d.getTime()) && d.getTime() >= Date.now();
 };
 
 export const EventsPage = () => {
   const {
-    filters,
-    setFilters,
-    sorting,
-    setSorting,
-    pageIndex,
-    setPageIndex,
-    pageSize,
-    setPageSize,
-    refresh,
-    setRefresh,
+    filters, setFilters, sorting, setSorting,
+    pageIndex, setPageIndex, pageSize, setPageSize, refresh, setRefresh,
   } = useEventsStore();
 
   const [globalFilterValue, setGlobalFilterValue] = useState(() => {
-    const globalFilter = filters.global;
-    return globalFilter && "value" in globalFilter
-      ? ((globalFilter.value as string) ?? "")
-      : "";
+    const g = filters.global;
+    return g && "value" in g ? ((g.value as string) ?? "") : "";
   });
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -121,39 +51,16 @@ export const EventsPage = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
-  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(() => {
-    try {
-      const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
-  const actionsMenuRef = useRef<Menu>(null);
-  const columnsPanelRef = useRef<OverlayPanel>(null);
 
   useEffect(() => {
-    if (Object.keys(filters).length === 0) {
-      setFilters(defaultFilters);
-    }
+    if (Object.keys(filters).length === 0) setFilters(defaultFilters);
   }, [filters, setFilters]);
-
-  useEffect(() => {
-    localStorage.setItem(COLUMN_VISIBILITY_KEY, JSON.stringify(columnVisibility));
-  }, [columnVisibility]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["events", sorting, filters, pageIndex, pageSize, refresh],
     queryFn: async () => {
-      const params = buildQueryParams({
-        columnFilters: filters,
-        sorting,
-        pageIndex,
-        pageSize,
-      });
-
+      const params = buildQueryParams({ columnFilters: filters, sorting, pageIndex, pageSize });
       const { data } = await eventsAPI.getAll({ params });
-
       return data;
     },
     throwOnError: (error: unknown) => {
@@ -165,267 +72,154 @@ export const EventsPage = () => {
   const eventsList = data?.results ?? [];
   const totalCount = data?.count ?? 0;
   const selectedIds = useMemo(
-    () =>
-      Object.entries(rowSelection)
-        .filter(([, selected]) => selected)
-        .map(([id]) => Number(id))
-        .filter((id) => Number.isFinite(id)),
+    () => Object.entries(rowSelection).filter(([, s]) => s).map(([id]) => Number(id)).filter(Number.isFinite),
     [rowSelection],
   );
 
-  const clearFilter = () => {
-    setFilters(defaultFilters);
-    setGlobalFilterValue("");
+  const upcomingCount = eventsList.filter((e) => isUpcoming(e.start_date)).length;
+  const attendeesSum = eventsList.reduce((acc, e) => acc + (e.attendees_count ?? 0), 0);
+
+  const onGlobalFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    const next = { ...filters };
+    if (!next.global) next.global = { value: null, matchMode: FilterMatchMode.CONTAINS };
+    if ("value" in next.global) next.global.value = value;
+    setFilters(next); setGlobalFilterValue(value); setPageIndex(0);
   };
 
-  const onGlobalFilterChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const nextFilters = { ...filters };
+  const openEdit = (e: Event) => { setSelectedEvent(e); setEditOpen(true); };
+  const openDelete = (e: Event) => { setSelectedEvent(e); setDeleteOpen(true); };
+  const onBulkDeleteSuccess = () => { setRowSelection({}); setRefresh((p) => !p); };
 
-    if (!nextFilters.global) {
-      nextFilters.global = { value: null, matchMode: FilterMatchMode.CONTAINS };
-    }
-
-    if ("value" in nextFilters.global) {
-      nextFilters.global.value = value;
-    }
-
-    setFilters(nextFilters);
-    setGlobalFilterValue(value);
-  };
-
-  const openEdit = (eventObj: Event) => {
-    setSelectedEvent(eventObj);
-    setEditOpen(true);
-  };
-
-  const openDelete = (eventObj: Event) => {
-    setSelectedEvent(eventObj);
-    setDeleteOpen(true);
-  };
-
-  const onBulkDeleteSuccess = () => {
-    setRowSelection({});
-    setRefresh((prev) => !prev);
-  };
-
-  const setColumnVisible = (key: string, visible: boolean) => {
-    setColumnVisibility((prev) => ({
-      ...prev,
-      [key]: visible,
-    }));
-  };
-
-  const resetColumnVisibility = () => setColumnVisibility({});
-
-  const actionMenuItems: MenuItem[] = [
-    {
-      label: "Acciones",
-      items: [
-        {
-          label:
-            selectedIds.length > 0
-              ? `Eliminar seleccionados (${selectedIds.length})`
-              : "Eliminar seleccionados",
-          icon: "pi pi-trash",
-          disabled: selectedIds.length === 0,
-          command: () => setBulkDeleteOpen(true),
-        },
-      ],
-    },
-  ];
-
-  const renderHeader = () => (
-    <div className="flex flex-column gap-2 md:flex-row md:justify-content-between md:align-items-center">
-      <div className="flex flex-wrap align-items-center gap-2">
-        <Button
-          type="button"
-          icon="pi pi-filter-slash"
-          label="Limpiar"
-          outlined
-          size="small"
-          onClick={clearFilter}
-        />
-
-        <Menu ref={actionsMenuRef} model={actionMenuItems} popup />
-        <Button
-          type="button"
-          icon="pi pi-bolt"
-          label="Acciones"
-          outlined
-          size="small"
-          onClick={(e) => actionsMenuRef.current?.toggle(e)}
-          aria-haspopup
-        />
-
-        <OverlayPanel ref={columnsPanelRef}>
-          <div className="w-16rem">
-            <div className="flex align-items-center justify-content-between mb-3">
-              <span className="font-semibold text-900">Columnas</span>
-              <Button
-                type="button"
-                label="Restablecer"
-                text
-                size="small"
-                className="p-0"
-                onClick={resetColumnVisibility}
-              />
-            </div>
-            <div className="flex flex-column gap-3">
-              {Object.entries(columnLabels).map(([key, label]) => (
-                <label
-                  key={key}
-                  htmlFor={`column-${key}`}
-                  className="flex align-items-center gap-2 cursor-pointer"
-                >
-                  <Checkbox
-                    inputId={`column-${key}`}
-                    checked={columnVisibility[key] !== false}
-                    onChange={(e) => setColumnVisible(key, Boolean(e.checked))}
-                  />
-                  <span>{label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        </OverlayPanel>
-        <Button
-          type="button"
-          icon="pi pi-table"
-          label="Columnas"
-          outlined
-          size="small"
-          onClick={(e) => columnsPanelRef.current?.toggle(e)}
-          aria-haspopup
-        />
-
-        {selectedIds.length > 0 && (
-          <Button
-            type="button"
-            icon="pi pi-times"
-            label={`${selectedIds.length} seleccionados`}
-            text
-            size="small"
-            onClick={() => setRowSelection({})}
-          />
-        )}
-      </div>
-
-      <IconField iconPosition="left" className="w-full md:w-auto">
-        <InputIcon className="pi pi-search" />
-        <InputText
-          value={globalFilterValue}
-          onChange={onGlobalFilterChange}
-          placeholder="Búsqueda global..."
-          className="p-inputtext-sm w-full md:w-20rem"
-        />
-      </IconField>
-    </div>
-  );
-
-  const eventColumns: ColumnDef<Event>[] = [
+  const columns: ColumnDef<Event>[] = [
     {
       accessorKey: "title",
-      header: "Título",
-      enableSorting: true,
-      filter: true,
-      filterPlaceholder: "Buscar título",
+      header: "Evento",
+      cell: ({ row: { original: e } }) => (
+        <div className="rp-person">
+          <div className={`rp-avatar rp-av-${Number(e.id) % 6}`}><i className="pi pi-calendar" /></div>
+          <div>
+            <div className="rp-person-name">{e.title}</div>
+            <div className="rp-person-id">ID #{e.id}</div>
+          </div>
+        </div>
+      ),
+    },
+    { accessorKey: "start_date", header: "Inicio", cell: ({ row: { original: e } }) => formatDateTime(e.start_date) },
+    { accessorKey: "end_date", header: "Fin", cell: ({ row: { original: e } }) => formatDateTime(e.end_date) },
+    { accessorKey: "location", header: "Ubicación" },
+    {
+      id: "attendees",
+      header: "Asistentes",
+      enableSorting: false,
+      cell: ({ row: { original: e } }) => fmt(e.attendees_count ?? 0),
     },
     {
-      accessorKey: "start_date",
-      header: "Fecha Inicio",
-      enableSorting: true,
-      filter: false,
-      cell: ({ row }) => new Date(row.original.start_date).toLocaleString(),
-    },
-    {
-      accessorKey: "end_date",
-      header: "Fecha Fin",
-      enableSorting: true,
-      filter: false,
-      cell: ({ row }) => new Date(row.original.end_date).toLocaleString(),
-    },
-    {
-      accessorKey: "location",
-      header: "Ubicación",
-      enableSorting: true,
-      filter: true,
-      filterPlaceholder: "Buscar ubicación",
+      id: "estado",
+      header: "Estado",
+      enableSorting: false,
+      cell: ({ row: { original: e } }) =>
+        isUpcoming(e.start_date)
+          ? <span className="rp-badge upcoming"><span className="dot" /> Próximo</span>
+          : <span className="rp-badge inactive"><span className="dot" /> Finalizado</span>,
     },
     {
       id: "actions",
-      header: "Acciones",
+      header: "",
       enableSorting: false,
-      cell: ({ row }) => (
-        <EventsRowActions
-          eventObj={row.original}
-          onEdit={openEdit}
-          onDelete={openDelete}
-        />
+      align: "right",
+      cell: ({ row: { original: e } }) => (
+        <div className="rp-row-actions">
+          <button className="rp-act" title="Editar" onClick={() => openEdit(e)}><i className="pi pi-pencil" /></button>
+          <button className="rp-act danger" title="Eliminar" onClick={() => openDelete(e)}><i className="pi pi-trash" /></button>
+        </div>
       ),
     },
   ];
 
+  const toolbar = (
+    <>
+      <input className="rp-search" value={globalFilterValue} onChange={onGlobalFilterChange}
+        placeholder="Buscar por título o ubicación…" />
+      {globalFilterValue && (
+        <span className="rp-chip active" onClick={() => onGlobalFilterChange({ target: { value: "" } } as ChangeEvent<HTMLInputElement>)}>
+          Búsqueda: "{globalFilterValue}" <span className="remove">×</span>
+        </span>
+      )}
+    </>
+  );
+
   return (
-    <div className="w-full flex-1 flex flex-column">
-      <UIPageHeader
-        title="Eventos"
-        icon="pi pi-list"
-        actions={
-          <Button
-            label="Nuevo evento"
-            icon="pi pi-plus"
-            size="small"
-            onClick={() => setCreateOpen(true)}
-          />
-        }
-      />
+    <div className="rp">
+      <div className="rp-header">
+        <div>
+          <h1 className="rp-title">Eventos <span className="count">{fmt(totalCount)} en total</span></h1>
+          <p className="rp-sub">Actividades y jornadas organizadas por la fundación.</p>
+        </div>
+        <div className="rp-actions">
+          <button className="rp-btn rp-btn-primary" onClick={() => setCreateOpen(true)}>
+            <i className="pi pi-plus" style={{ fontSize: 13 }} /> Nuevo evento
+          </button>
+        </div>
+      </div>
+
+      <div className="rp-stats">
+        <div className="rp-stat">
+          <div className="rp-stat-pill teal"><i className="pi pi-calendar" /></div>
+          <div className="rp-stat-label">Total eventos</div>
+          <div className="rp-stat-value">{isLoading ? "—" : fmt(totalCount)}</div>
+          <div className="rp-stat-meta">Registrados</div>
+        </div>
+        <div className="rp-stat">
+          <div className="rp-stat-pill lime"><i className="pi pi-clock" /></div>
+          <div className="rp-stat-label">Próximos</div>
+          <div className="rp-stat-value">{fmt(upcomingCount)}</div>
+          <div className="rp-stat-meta">En esta página</div>
+        </div>
+        <div className="rp-stat">
+          <div className="rp-stat-pill pink"><i className="pi pi-users" /></div>
+          <div className="rp-stat-label">Asistentes</div>
+          <div className="rp-stat-value">{fmt(attendeesSum)}</div>
+          <div className="rp-stat-meta">Sumados en esta página</div>
+        </div>
+        <div className="rp-stat">
+          <div className="rp-stat-pill ink"><i className="pi pi-list" /></div>
+          <div className="rp-stat-label">En esta página</div>
+          <div className="rp-stat-value">{fmt(eventsList.length)}</div>
+          <div className="rp-stat-meta">de {fmt(totalCount)} en total</div>
+        </div>
+      </div>
 
       <DataTable
         data={eventsList}
-        columns={eventColumns}
+        columns={columns}
         pageIndex={pageIndex}
         pageSize={pageSize}
         totalCount={totalCount}
         onPageSizeChange={setPageSize}
+        onPageChange={setPageIndex}
         sorting={sorting}
         onSortingChange={setSorting}
-        onPageChange={setPageIndex}
-        isLoading={isLoading}
-        filters={filters}
-        onFilter={setFilters}
-        globalFilterFields={["title", "location"]}
-        header={renderHeader()}
         rowSelection={rowSelection}
         setRowSelection={setRowSelection}
-        columnVisibility={columnVisibility}
-        onColumnVisibilityChange={setColumnVisibility}
-        size="sm"
+        isLoading={isLoading}
+        header={toolbar}
+        selectionActions={
+          <button className="rp-btn rp-btn-danger-ghost" onClick={() => setBulkDeleteOpen(true)}>Eliminar</button>
+        }
+        emptyTitle="No se encontraron eventos"
+        emptyText={globalFilterValue ? "Prueba con otra búsqueda." : "Crea el primer evento para empezar."}
+        emptyAction={!globalFilterValue && (
+          <button className="rp-btn rp-btn-primary" style={{ margin: "0 auto" }} onClick={() => setCreateOpen(true)}>
+            <i className="pi pi-plus" style={{ fontSize: 13 }} /> Nuevo evento
+          </button>
+        )}
       />
 
-      <EventsCreateForm
-        open={createOpen}
-        setOpen={setCreateOpen}
-        setRefresh={setRefresh}
-      />
-      <EventsEditForm
-        open={editOpen}
-        setOpen={setEditOpen}
-        eventObj={selectedEvent}
-        setRefresh={setRefresh}
-      />
-      <EventsDeleteDialog
-        open={deleteOpen}
-        setOpen={setDeleteOpen}
-        eventObj={selectedEvent}
-        setRefresh={setRefresh}
-      />
-      <EventsBulkDeleteDialog
-        open={bulkDeleteOpen}
-        setOpen={setBulkDeleteOpen}
-        ids={selectedIds}
-        onSuccess={onBulkDeleteSuccess}
-      />
+      <EventsCreateForm open={createOpen} setOpen={setCreateOpen} setRefresh={setRefresh} />
+      <EventsEditForm open={editOpen} setOpen={setEditOpen} eventObj={selectedEvent} setRefresh={setRefresh} />
+      <EventsDeleteDialog open={deleteOpen} setOpen={setDeleteOpen} eventObj={selectedEvent} setRefresh={setRefresh} />
+      <EventsBulkDeleteDialog open={bulkDeleteOpen} setOpen={setBulkDeleteOpen} ids={selectedIds} onSuccess={onBulkDeleteSuccess} />
     </div>
   );
 };

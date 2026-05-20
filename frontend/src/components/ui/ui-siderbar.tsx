@@ -1,8 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
-import { Avatar } from "primereact/avatar";
-import { Ripple } from "primereact/ripple";
-import { Button } from "primereact/button";
 import React, { useState } from "react";
+import "./ui-siderbar.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -14,79 +12,72 @@ export interface NavPermission {
 export interface NavItem {
   title: string;
   url: string;
-  /** Componente de ícono o clase de PrimeReact */
+  /** Clase de ícono de PrimeReact (ej: "pi-home") o componente */
   icon?: React.ElementType | string;
   isActive?: boolean;
   permission?: NavPermission;
   items?: NavItem[];
+  /** Etiqueta de sección que se muestra ANTES de este ítem */
+  section?: string;
 }
 
 interface UISidebarProps {
   children?: React.ReactNode;
   navItems?: NavItem[];
   logoText?: string;
-  userAvatar?: string;
+  /** Ruta de la imagen del logo (en /public). Si no carga, usa el texto. */
+  logoSrc?: string;
   userName?: string;
+  userRole?: string;
 }
+
+// ─── Icon helper ────────────────────────────────────────────────────────────
+
+const NavIcon = ({ icon }: { icon?: React.ElementType | string }) => {
+  if (!icon) return null;
+  if (typeof icon === "string") {
+    return <i className={`pi ${icon} mtm-nav-icon`} />;
+  }
+  const Comp = icon;
+  return (
+    <span className="mtm-nav-icon">
+      <Comp size={16} />
+    </span>
+  );
+};
 
 // ─── Recursive Nav Item ───────────────────────────────────────────────────────
 
-interface NavItemNodeProps {
-  item: NavItem;
-  depth?: number;
-}
-
-const NavItemNode = ({ item, depth = 0 }: NavItemNodeProps) => {
+const NavItemNode = ({ item }: { item: NavItem }) => {
   const location = useLocation();
-  const [open, setOpen] = useState<boolean>(item.isActive ?? false);
   const hasChildren = item.items && item.items.length > 0;
-  const IconComponent = item.icon;
-
-  const paddingLeft = depth === 0 ? "0.75rem" : `${0.75 + depth * 0.75}rem`;
+  const childActive = hasChildren && item.items!.some((c) => c.url === location.pathname);
+  const [open, setOpen] = useState<boolean>(item.isActive ?? childActive ?? false);
   const isActive = location.pathname === item.url;
-
-  const itemClass = [
-    "p-ripple flex align-items-center cursor-pointer p-3 border-round",
-    "transition-duration-150 transition-colors w-full",
-    isActive
-      ? "surface-200 text-primary font-semibold"
-      : "text-700 hover:surface-100",
-  ].join(" ");
 
   if (hasChildren) {
     return (
       <li>
-        {/* Trigger: no navega, solo despliega */}
-        <div
-          className={itemClass}
-          style={{ paddingLeft }}
-          onClick={() => setOpen((prev) => !prev)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === "Enter" && setOpen((prev) => !prev)}
+        <button
+          className={`mtm-nav-item ${childActive ? "active" : ""}`}
+          onClick={() => setOpen((p) => !p)}
         >
-          {item.icon && (
-            <span className="mr-2 flex align-items-center">
-              {typeof item.icon === 'string' ? (
-                <i className={`pi ${item.icon}`} style={{ fontSize: '1rem' }} />
-              ) : (
-                <item.icon size={16} weight="regular" />
-              )}
-            </span>
-          )}
-          <span className="font-medium flex-1">{item.title}</span>
-          <i
-            className={`pi ${open ? "pi-chevron-down" : "pi-chevron-right"} ml-auto`}
-            style={{ fontSize: "0.75rem" }}
-          />
-          <Ripple />
-        </div>
+          <NavIcon icon={item.icon} />
+          <span style={{ flex: 1 }}>{item.title}</span>
+          <i className={`pi ${open ? "pi-chevron-down" : "pi-chevron-right"} mtm-chev`} />
+        </button>
 
-        {/* Children */}
         {open && (
-          <ul className="list-none p-0 m-0 overflow-hidden">
+          <ul className="mtm-nav-children">
             {item.items!.map((child, idx) => (
-              <NavItemNode key={child.title + child.url + idx} item={child} depth={depth + 1} />
+              <li key={child.title + child.url + idx}>
+                <Link
+                  to={child.url}
+                  className={`mtm-nav-child ${location.pathname === child.url ? "active" : ""}`}
+                >
+                  {child.title}
+                </Link>
+              </li>
             ))}
           </ul>
         )}
@@ -96,104 +87,127 @@ const NavItemNode = ({ item, depth = 0 }: NavItemNodeProps) => {
 
   return (
     <li>
-      <Link
-        to={item.url}
-        className={itemClass}
-        style={{ paddingLeft, textDecoration: "none", display: "flex" }}
-      >
-        {item.icon && (
-          <span className="mr-2 flex align-items-center">
-            {typeof item.icon === 'string' ? (
-              <i className={`pi ${item.icon}`} style={{ fontSize: '1rem' }} />
-            ) : (
-              <item.icon size={16} weight="regular" />
-            )}
-          </span>
-        )}
-        <span className="font-medium">{item.title}</span>
-        <Ripple />
+      <Link to={item.url} className={`mtm-nav-item ${isActive ? "active" : ""}`}>
+        <NavIcon icon={item.icon} />
+        <span>{item.title}</span>
       </Link>
     </li>
   );
 };
 
+// ─── Breadcrumb ─────────────────────────────────────────────────────────────
+
+type Crumb = { label: string; url: string };
+
+const useBreadcrumb = (navItems: NavItem[]): Crumb[] => {
+  const location = useLocation();
+  const path = location.pathname;
+  const home: Crumb = { label: "Inicio", url: "/" };
+
+  if (path === "/") return [home];
+
+  for (const item of navItems) {
+    if (item.url === path && item.url !== "/") return [home, { label: item.title, url: item.url }];
+    if (item.items) {
+      const child = item.items.find((c) => c.url === path);
+      if (child) return [home, { label: item.title, url: item.url }, { label: child.title, url: child.url }];
+    }
+  }
+  return [home];
+};
+
 // ─── Main Component ───────────────────────────────────────────────────────────
+
+const initials = (name: string) =>
+  name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 
 export const UISidebar = ({
   children,
   navItems = [],
   logoText = "MTM Conecta",
-  userAvatar = "https://primefaces.org/cdn/primereact/images/avatar/amyelsner.png",
+  logoSrc = "/logo-mtm.png",
   userName = "Usuario",
+  userRole = "Administrador",
 }: UISidebarProps) => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
-
-  const sidebarWidth = collapsed ? "0px" : "280px";
+  const [logoError, setLogoError] = useState<boolean>(false);
+  const crumbs = useBreadcrumb(navItems);
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* ── Sidebar Panel ── */}
-      <div
-        id="app-sidebar"
-        className="surface-section flex flex-column flex-shrink-0 transition-all transition-duration-300"
-        style={{
-          width: sidebarWidth,
-          overflow: "hidden",
-          borderRight: collapsed ? "none" : "1px solid var(--surface-border)",
-        }}
-      >
-        <div className="flex flex-column h-full" style={{ width: "280px" }}>
-          {/* Header */}
-          <div className="flex align-items-center px-4 pt-3 pb-2 shrink-0">
-            <span className="font-semibold text-xl text-primary">
-              {logoText}
-            </span>
-          </div>
+    <div className="mtm-shell">
+      {/* ── Sidebar ── */}
+      <aside className="mtm-sidebar" style={{ width: collapsed ? 0 : 264 }}>
+        <div className="mtm-sidebar-inner">
+          {/* Brand (clic → inicio) */}
+          <Link to="/" className="mtm-brand" aria-label="Ir al inicio">
+            {logoSrc && !logoError ? (
+              <img
+                className="mtm-brand-img"
+                src={logoSrc}
+                alt="Fundación MTM"
+                onError={() => setLogoError(true)}
+              />
+            ) : (
+              <>
+                <div className="mtm-brand-mark">M</div>
+                <div>
+                  <div className="mtm-brand-name">{logoText}</div>
+                  <div className="mtm-brand-sub">Mujeres Trabajando por una Meta</div>
+                </div>
+              </>
+            )}
+          </Link>
 
-          {/* Nav Menu */}
-          <div className="overflow-y-auto flex-1">
-            <ul className="list-none pt-2 px-3 m-0">
-              {navItems.map((item, idx) => (
-                <NavItemNode key={item.title + item.url + idx} item={item} depth={0} />
-              ))}
-            </ul>
-          </div>
+          {/* Nav */}
+          <ul className="mtm-nav">
+            {navItems.map((item, idx) => (
+              <React.Fragment key={item.title + item.url + idx}>
+                {item.section && <li className="mtm-nav-section">{item.section}</li>}
+                <NavItemNode item={item} />
+              </React.Fragment>
+            ))}
+          </ul>
 
-          {/* Footer */}
-          <div className="mt-auto">
-            <hr className="mb-3 mx-3 border-top-1 border-none surface-border" />
-            <a className="m-3 flex align-items-center cursor-pointer p-3 gap-2 border-round text-700 hover:surface-100 transition-duration-150 transition-colors p-ripple">
-              <Avatar image={userAvatar} shape="circle" />
-              <span className="font-bold">{userName}</span>
-              <Ripple />
-            </a>
+          {/* User card */}
+          <div className="mtm-user-card">
+            <div className="mtm-user-avatar">{initials(userName)}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="mtm-user-name">{userName}</div>
+              <div className="mtm-user-role">{userRole}</div>
+            </div>
           </div>
         </div>
-      </div>
+      </aside>
 
-      {/* ── Main Content Area ── */}
-      <div className="flex flex-column flex-1 overflow-hidden">
-        {/* Top Bar con botón toggle */}
-        <div
-          className="flex align-items-center px-3 py-2 surface-0 shadow-1 shrink-0"
-          style={{ borderBottom: "1px solid var(--surface-border)" }}
-        >
-          <Button
-            id="sidebar-toggle-btn"
-            type="button"
-            icon={collapsed ? "pi pi-bars" : "pi pi-bars"}
-            onClick={() => setCollapsed((prev) => !prev)}
-            rounded
-            text
-            severity="secondary"
-            aria-label={collapsed ? "Abrir sidebar" : "Cerrar sidebar"}
-            className="mr-2"
-          />
-          <span className="font-semibold text-lg text-900">{logoText}</span>
+      {/* ── Main ── */}
+      <div className="mtm-main">
+        {/* Topbar with breadcrumb */}
+        <div className="mtm-topbar">
+          <button
+            className="mtm-toggle"
+            onClick={() => setCollapsed((p) => !p)}
+            aria-label="Alternar menú"
+          >
+            <i className="pi pi-bars" />
+          </button>
+          <nav className="mtm-crumb">
+            {crumbs.map((c, i) => (
+              <React.Fragment key={c.url + i}>
+                {i > 0 && <span className="sep">›</span>}
+                {i === crumbs.length - 1 ? (
+                  <span className="here">{c.label}</span>
+                ) : (
+                  <Link to={c.url} className="mtm-crumb-link">{c.label}</Link>
+                )}
+              </React.Fragment>
+            ))}
+          </nav>
         </div>
 
-        {/* Page Content */}
-        <div className="flex-1 overflow-auto p-3 flex flex-column">{children}</div>
+        {/* Content */}
+        <div className="mtm-content">
+          <div className="mtm-content-inner">{children}</div>
+        </div>
       </div>
     </div>
   );

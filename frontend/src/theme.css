@@ -7,30 +7,38 @@
 /* ----------------------------------------------------------
    1. Tokens de marca como CSS variables globales
    ---------------------------------------------------------- */
+/* Reset base: elimina el margen del body que genera scroll externo */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
 :root {
-  /* Morados — identidad visual MTM-Conecta */
-  --mtm-primary: #6A1B9A;
-  --mtm-primary-light: #B39DDB;
-  --mtm-primary-soft: #EDE7F6;
+  /* Turquesa — color principal del nuevo logo MTM */
+  --mtm-primary: #2DBFA8;
+  --mtm-primary-light: #5FD0BD;
+  --mtm-primary-soft: #E8F8F5;
+  --mtm-primary-deep: #229B89;
 
-  /* Dorados / Lazo (cáncer infantil) */
-  --mtm-accent: #D4AF37;
-  --mtm-accent-deep: #B8960C;
-  --mtm-accent-soft: #FFF8E1;
+  /* Verde lima — lazo del logo */
+  --mtm-accent: #C5D72E;
+  --mtm-accent-deep: #6F7E0E;
+  --mtm-accent-soft: #F4F8D6;
 
-  /* Verde esperanza */
-  --mtm-teal: #81C784;
-  --mtm-teal-deep: #66BB6A;
-  --mtm-teal-soft: #E8F5E9;
+  /* Verde esperanza (mantiene compatibilidad) */
+  --mtm-teal: #2DBFA8;
+  --mtm-teal-deep: #229B89;
+  --mtm-teal-soft: #E8F8F5;
 
-  /* Rosa cálido */
-  --mtm-rose: #F45FB1;
+  /* Magenta cálido — corazón del logo */
+  --mtm-rose: #E63B7A;
+  --mtm-rose-soft: #FCE6EE;
 
   /* Neutros */
   --mtm-white: #ffffff;
-  --mtm-dark: #2c2c2a;
-  --mtm-gray-bg: #F5F5F5;
-  --mtm-border: #d4c8ec;
+  --mtm-dark: #0F1F2C;
+  --mtm-gray-bg: #F6F8FA;
+  --mtm-border: #E6EBEF;
 }
 
 /* ----------------------------------------------------------
@@ -46,8 +54,8 @@
   border-color: var(--mtm-primary-light);
 }
 .p-button:not(:disabled):active {
-  background-color: #5a3390;
-  border-color: #5a3390;
+  background-color: var(--mtm-primary-deep);
+  border-color: var(--mtm-primary-deep);
 }
 .p-button:focus-visible {
   box-shadow:
@@ -120,7 +128,7 @@
   color: var(--mtm-primary);
 }
 .p-autocomplete-panel .p-autocomplete-item:not(.p-highlight):hover {
-  background: #f0eaf9;
+  background: var(--mtm-primary-soft);
 }
 
 /* ----------------------------------------------------------
@@ -141,7 +149,7 @@
   color: var(--mtm-primary);
 }
 .p-dropdown-panel .p-dropdown-item:not(.p-highlight):hover {
-  background: #f0eaf9;
+  background: var(--mtm-primary-soft);
 }
 
 /* ----------------------------------------------------------
@@ -252,7 +260,7 @@
   color: var(--mtm-primary);
 }
 .p-datatable .p-datatable-tbody > tr:hover {
-  background: #f0eaf9;
+  background: var(--mtm-primary-soft);
 }
 .p-datatable .p-datatable-tbody > tr.p-highlight {
   background: var(--mtm-primary-soft);

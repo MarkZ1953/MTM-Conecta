@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MTM Conecta · Dashboard (Mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal:       #2DBFA8;
+    --teal-dark:  #229B89;
+    --teal-soft:  #E8F8F5;
+    --lime:       #C5D72E;
+    --lime-soft:  #F4F8D6;
+    --pink:       #E63B7A;
+    --pink-soft:  #FCE6EE;
+    --ink:        #0F1F2C;
+    --ink-2:      #2A3B49;
+    --muted:      #6B7C8A;
+    --line:       #E6EBEF;
+    --bg:         #F6F8FA;
+    --card:       #FFFFFF;
+    --radius:     14px;
+    --shadow:     0 1px 2px rgba(15, 31, 44, 0.04), 0 4px 14px rgba(15, 31, 44, 0.04);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  /* ============ LAYOUT ============ */
+  .app { display: grid; grid-template-columns: 264px 1fr; min-height: 100vh; }
+
+  /* ============ SIDEBAR ============ */
+  .sidebar {
+    background: var(--card);
+    border-right: 1px solid var(--line);
+    padding: 22px 14px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; padding: 4px 10px 22px; }
+  .brand-mark {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--teal) 0%, var(--lime) 100%);
+    display: grid; place-items: center;
+    color: white; font-weight: 800; font-size: 16px;
+    box-shadow: 0 4px 12px rgba(45, 191, 168, 0.35);
+  }
+  .brand-name { font-weight: 700; font-size: 16px; letter-spacing: -0.2px; }
+  .brand-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+  .nav-section { padding: 18px 10px 6px; font-size: 10.5px; text-transform: uppercase;
+                 letter-spacing: 0.8px; color: var(--muted); font-weight: 600; }
+  .nav-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 9px 12px; border-radius: 9px; cursor: pointer;
+    color: var(--ink-2); font-size: 14px; font-weight: 500;
+    transition: background .15s ease, color .15s ease;
+  }
+  .nav-item:hover { background: var(--bg); }
+  .nav-item.active { background: var(--teal-soft); color: var(--teal-dark); font-weight: 600; }
+  .nav-item.active .nav-icon { color: var(--teal); }
+  .nav-icon { width: 18px; height: 18px; color: var(--muted); }
+  .nav-item.active .nav-icon { color: var(--teal-dark); }
+  .nav-children { padding-left: 30px; display: flex; flex-direction: column; gap: 1px; margin-top: 2px; }
+  .nav-child {
+    padding: 6.5px 10px; font-size: 13px; color: var(--muted);
+    border-radius: 7px; cursor: pointer;
+  }
+  .nav-child:hover { background: var(--bg); color: var(--ink); }
+
+  .user-card {
+    margin-top: 18px; padding: 12px;
+    border: 1px solid var(--line); border-radius: 12px;
+    display: flex; align-items: center; gap: 11px;
+  }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--pink), var(--teal));
+    display: grid; place-items: center;
+    color: white; font-weight: 700; font-size: 13px;
+  }
+  .user-name { font-weight: 600; font-size: 13px; }
+  .user-role { font-size: 11px; color: var(--muted); }
+
+  /* ============ MAIN ============ */
+  .main { padding: 28px 36px 60px; max-width: 1400px; }
+
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; }
+  .page-title { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin: 0; }
+  .page-sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+  .search {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 10px; padding: 9px 14px 9px 36px;
+    width: 280px; font-size: 13.5px; font-family: inherit;
+    color: var(--ink);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24' stroke='%236B7C8A' stroke-width='2'%3E%3Cpath d='M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: 12px center;
+    outline: none;
+  }
+  .search:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
+
+  .btn {
+    border: none; cursor: pointer; font-family: inherit;
+    padding: 9px 16px; border-radius: 10px;
+    font-size: 13.5px; font-weight: 600; display: inline-flex;
+    align-items: center; gap: 7px; transition: transform .08s ease, box-shadow .15s ease;
+  }
+  .btn-primary { background: var(--teal); color: white; box-shadow: 0 2px 8px rgba(45, 191, 168, 0.3); }
+  .btn-primary:hover { background: var(--teal-dark); transform: translateY(-1px); }
+  .btn-ghost { background: transparent; color: var(--ink-2); border: 1px solid var(--line); }
+  .btn-ghost:hover { background: var(--card); }
+
+  /* ============ KPI ============ */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 24px;
+  }
+  .kpi {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 20px;
+    box-shadow: var(--shadow);
+    position: relative; overflow: hidden;
+  }
+  .kpi-label { color: var(--muted); font-size: 13px; font-weight: 500; }
+  .kpi-value { font-size: 30px; font-weight: 700; margin: 6px 0 4px; letter-spacing: -0.5px; }
+  .kpi-delta { font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+  .kpi-delta.up   { color: #11875A; }
+  .kpi-delta.flat { color: var(--muted); }
+
+  .kpi-icon {
+    position: absolute; top: 18px; right: 18px;
+    width: 36px; height: 36px; border-radius: 9px;
+    display: grid; place-items: center;
+    font-size: 18px;
+  }
+  .kpi-icon.teal { background: var(--teal-soft); color: var(--teal); }
+  .kpi-icon.pink { background: var(--pink-soft); color: var(--pink); }
+  .kpi-icon.lime { background: var(--lime-soft); color: #6F7E0E; }
+  .kpi-icon.ink  { background: #ECF1F4; color: var(--ink-2); }
+
+  /* ============ CONTENT GRID ============ */
+  .grid-2 {
+    display: grid; grid-template-columns: 2fr 1fr;
+    gap: 18px; margin-bottom: 20px;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 22px;
+  }
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .card-title { font-size: 15px; font-weight: 700; margin: 0; }
+  .card-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+  /* Donations sparkline (SVG) */
+  .chart { height: 220px; width: 100%; }
+
+  /* ============ TIMELINE / EVENTS ============ */
+  .events-list { display: flex; flex-direction: column; gap: 14px; }
+  .event-row {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 12px; border-radius: 10px;
+    transition: background .15s ease;
+  }
+  .event-row:hover { background: var(--bg); }
+  .event-date {
+    flex-shrink: 0; width: 46px; text-align: center;
+    background: var(--teal-soft); color: var(--teal-dark);
+    border-radius: 8px; padding: 6px 0;
+  }
+  .event-date .d { font-size: 17px; font-weight: 700; line-height: 1; }
+  .event-date .m { font-size: 10px; text-transform: uppercase; font-weight: 600; }
+  .event-title { font-size: 13.5px; font-weight: 600; margin: 0; }
+  .event-meta  { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  /* ============ RECENT ACTIVITY ============ */
+  .activity-grid {
+    display: grid; grid-template-columns: 1.3fr 1fr;
+    gap: 18px;
+  }
+  .activity-item { display: flex; gap: 12px; padding: 10px 4px; }
+  .activity-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--teal); margin-top: 7px; flex-shrink: 0;
+  }
+  .activity-text { font-size: 13.5px; color: var(--ink-2); }
+  .activity-text strong { color: var(--ink); }
+  .activity-time { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+  /* ============ RING PROGRESS ============ */
+  .ring-wrap { display: flex; align-items: center; gap: 24px; }
+  .ring-list { display: flex; flex-direction: column; gap: 14px; flex: 1; }
+  .ring-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .ring-swatch { width: 10px; height: 10px; border-radius: 3px; }
+  .ring-label { color: var(--ink-2); }
+  .ring-value { margin-left: auto; font-weight: 700; color: var(--ink); }
+
+  /* ============ EMPTY STATE EXAMPLE ============ */
+  .empty {
+    text-align: center; padding: 40px 20px;
+    color: var(--muted);
+  }
+  .empty-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    margin: 0 auto 14px;
+    background: var(--bg);
+    display: grid; place-items: center;
+    color: var(--muted); font-size: 24px;
+  }
+  .empty-title { font-size: 14px; font-weight: 600; color: var(--ink); margin: 0 0 4px; }
+  .empty-text  { font-size: 13px; margin: 0 0 16px; }
+
+  /* ============ FOOTER NOTE ============ */
+  .note {
+    margin-top: 28px;
+    background: linear-gradient(120deg, var(--teal-soft), var(--lime-soft));
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 20px;
+  }
+  .note h3 { margin: 0 0 4px; font-size: 15px; }
+  .note p  { margin: 0; color: var(--muted); font-size: 13px; }
+
+  /* ============ ICONS (inline SVG helper) ============ */
+  .icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .icon-sm { width: 14px; height: 14px; }
+
+  @media (max-width: 1100px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+    .activity-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">M</div>
+      <div>
+        <div class="brand-name">MTM Conecta</div>
+        <div class="brand-sub">Mujeres Trabajando por una Meta</div>
+      </div>
+    </div>
+
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active">
+      <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3v-6h6v6h3a1 1 0 001-1V10"/></svg>
+      Inicio
+    </div>
+    <div class="nav-item">
+      <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Beneficiarios
+    </div>
+    <div class="nav-children">
+      <div class="nav-child">Directorio</div>
+      <div class="nav-child">Acudientes</div>
+    </div>
+
+    <div class="nav-item">
+      <svg class="icon nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Eventos
+    </div>
+    <div class="nav-children">
+      <div class="nav-child">Calendario</div>
+      <div class="nav-child">Asistencia</div>
+      <div class="nav-child">Actas</div>
+      <div class="nav-child">Evidencias</div>
+    </div>
+
+    <div class="nav-item">
+      <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      Donaciones
+    </div>
+    <div class="nav-children">
+      <div class="nav-child">Historial</div>
+      <div class="nav-child">Donantes</div>
+    </div>
+
+    <div class="nav-section">Administración</div>
+    <div class="nav-item">
+      <svg class="icon nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
+      Usuarios
+    </div>
+    <div class="nav-item">
+      <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+      Reportes
+    </div>
+    <div class="nav-item">
+      <svg class="icon nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      Auditoría
+    </div>
+
+    <div class="user-card">
+      <div class="avatar">SC</div>
+      <div style="flex:1; min-width: 0;">
+        <div class="user-name">Santiago C.</div>
+        <div class="user-role">Administrador</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <main class="main">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div>
+        <h1 class="page-title">Buenos días, Santiago</h1>
+        <p class="page-sub">Esto es lo que está pasando en la fundación hoy.</p>
+      </div>
+      <div class="header-actions">
+        <input class="search" placeholder="Buscar beneficiario, donante, evento…" />
+        <button class="btn btn-ghost">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo
+        </button>
+        <button class="btn btn-primary">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" style="stroke:white"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Exportar
+        </button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-icon teal">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        </div>
+        <div class="kpi-label">Beneficiarios activos</div>
+        <div class="kpi-value">248</div>
+        <div class="kpi-delta up">↑ 12 nuevos este mes</div>
+      </div>
+
+      <div class="kpi">
+        <div class="kpi-icon pink">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        </div>
+        <div class="kpi-label">Donaciones del mes</div>
+        <div class="kpi-value">$ 14.2 M</div>
+        <div class="kpi-delta up">↑ 23% vs. mes anterior</div>
+      </div>
+
+      <div class="kpi">
+        <div class="kpi-icon lime">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        </div>
+        <div class="kpi-label">Eventos próximos</div>
+        <div class="kpi-value">6</div>
+        <div class="kpi-delta flat">Próximos 30 días</div>
+      </div>
+
+      <div class="kpi">
+        <div class="kpi-icon ink">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
+        </div>
+        <div class="kpi-label">Donantes recurrentes</div>
+        <div class="kpi-value">37</div>
+        <div class="kpi-delta up">↑ 3 nuevos</div>
+      </div>
+    </div>
+
+    <!-- ROW: CHART + EVENTS -->
+    <div class="grid-2">
+      <!-- CHART -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h3 class="card-title">Donaciones recibidas</h3>
+            <div class="card-sub">Últimos 6 meses</div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-ghost" style="padding: 6px 12px; font-size: 12px;">6M</button>
+            <button class="btn btn-ghost" style="padding: 6px 12px; font-size: 12px;">1A</button>
+            <button class="btn btn-ghost" style="padding: 6px 12px; font-size: 12px; background: var(--teal-soft); color: var(--teal-dark); border-color: var(--teal-soft);">Todo</button>
+          </div>
+        </div>
+
+        <svg viewBox="0 0 600 220" class="chart" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="gradTeal" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2DBFA8" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#2DBFA8" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- Grid lines -->
+          <g stroke="#E6EBEF" stroke-dasharray="3,4">
+            <line x1="0" y1="40"  x2="600" y2="40"/>
+            <line x1="0" y1="90"  x2="600" y2="90"/>
+            <line x1="0" y1="140" x2="600" y2="140"/>
+            <line x1="0" y1="190" x2="600" y2="190"/>
+          </g>
+          <!-- Area -->
+          <path d="M0,160 C60,140 100,90 160,100 C220,110 260,60 320,70 C380,80 420,50 480,40 C540,30 580,55 600,50 L600,220 L0,220 Z"
+                fill="url(#gradTeal)"/>
+          <!-- Line -->
+          <path d="M0,160 C60,140 100,90 160,100 C220,110 260,60 320,70 C380,80 420,50 480,40 C540,30 580,55 600,50"
+                fill="none" stroke="#2DBFA8" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Dots -->
+          <g fill="white" stroke="#2DBFA8" stroke-width="2.5">
+            <circle cx="0"   cy="160" r="4"/>
+            <circle cx="120" cy="108" r="4"/>
+            <circle cx="240" cy="78"  r="4"/>
+            <circle cx="360" cy="70"  r="4"/>
+            <circle cx="480" cy="40"  r="4"/>
+            <circle cx="600" cy="50"  r="4"/>
+          </g>
+          <!-- X axis labels -->
+          <g fill="#6B7C8A" font-family="Plus Jakarta Sans" font-size="11">
+            <text x="0"   y="215">Dic</text>
+            <text x="120" y="215">Ene</text>
+            <text x="240" y="215">Feb</text>
+            <text x="360" y="215">Mar</text>
+            <text x="480" y="215">Abr</text>
+            <text x="565" y="215">May</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- EVENTS -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h3 class="card-title">Próximos eventos</h3>
+            <div class="card-sub">Calendario de actividades</div>
+          </div>
+        </div>
+        <div class="events-list">
+          <div class="event-row">
+            <div class="event-date"><div class="d">22</div><div class="m">May</div></div>
+            <div>
+              <h4 class="event-title">Jornada de salud — Comuna 13</h4>
+              <div class="event-meta">9:00 a.m. · 32 asistentes confirmados</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <div class="event-date"><div class="d">28</div><div class="m">May</div></div>
+            <div>
+              <h4 class="event-title">Entrega de mercados solidarios</h4>
+              <div class="event-meta">2:00 p.m. · 80 beneficiarios</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <div class="event-date"><div class="d">04</div><div class="m">Jun</div></div>
+            <div>
+              <h4 class="event-title">Taller de emprendimiento femenino</h4>
+              <div class="event-meta">10:00 a.m. · 18 cupos disponibles</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <div class="event-date"><div class="d">11</div><div class="m">Jun</div></div>
+            <div>
+              <h4 class="event-title">Cena anual de donantes</h4>
+              <div class="event-meta">7:00 p.m. · Confirmados 24/40</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW: ACTIVITY + DISTRIBUTION -->
+    <div class="card">
+      <div class="activity-grid">
+        <!-- ACTIVITY -->
+        <div>
+          <div class="card-head" style="margin-bottom: 10px;">
+            <div>
+              <h3 class="card-title">Actividad reciente</h3>
+              <div class="card-sub">Últimas acciones en el sistema</div>
+            </div>
+          </div>
+          <div>
+            <div class="activity-item">
+              <div class="activity-dot" style="background: var(--teal)"></div>
+              <div style="flex:1;">
+                <div class="activity-text"><strong>Danna Ríos</strong> registró un nuevo beneficiario: <strong>María José Pérez</strong>.</div>
+                <div class="activity-time">Hace 14 minutos</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot" style="background: var(--pink)"></div>
+              <div style="flex:1;">
+                <div class="activity-text"><strong>Empresa XYZ</strong> realizó una donación de <strong>$ 2.500.000</strong>.</div>
+                <div class="activity-time">Hace 1 hora</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot" style="background: var(--lime)"></div>
+              <div style="flex:1;">
+                <div class="activity-text"><strong>Luis Martínez</strong> publicó el acta del evento <strong>Jornada de salud — Comuna 13</strong>.</div>
+                <div class="activity-time">Hace 3 horas</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot" style="background: var(--teal)"></div>
+              <div style="flex:1;">
+                <div class="activity-text"><strong>Jhon S.</strong> editó la información de <strong>5 beneficiarios</strong>.</div>
+                <div class="activity-time">Ayer · 6:42 p.m.</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot" style="background: var(--pink)"></div>
+              <div style="flex:1;">
+                <div class="activity-text"><strong>Donación recurrente</strong> de Carolina V. procesada por <strong>$ 200.000</strong>.</div>
+                <div class="activity-time">Ayer · 9:00 a.m.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DISTRIBUTION -->
+        <div>
+          <div class="card-head" style="margin-bottom: 10px;">
+            <div>
+              <h3 class="card-title">Distribución de beneficiarios</h3>
+              <div class="card-sub">Por programa social</div>
+            </div>
+          </div>
+
+          <div class="ring-wrap">
+            <svg width="130" height="130" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#F0F3F5" stroke-width="3.4"/>
+              <!-- 45% teal -->
+              <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#2DBFA8" stroke-width="3.4"
+                      stroke-dasharray="45 55" stroke-dashoffset="25" stroke-linecap="round"
+                      transform="rotate(-90 18 18)"/>
+              <!-- 30% pink -->
+              <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#E63B7A" stroke-width="3.4"
+                      stroke-dasharray="30 70" stroke-dashoffset="-20" stroke-linecap="round"
+                      transform="rotate(-90 18 18)"/>
+              <!-- 25% lime -->
+              <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#C5D72E" stroke-width="3.4"
+                      stroke-dasharray="25 75" stroke-dashoffset="-50" stroke-linecap="round"
+                      transform="rotate(-90 18 18)"/>
+              <text x="18" y="19" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="6.5" font-weight="700" fill="#0F1F2C">248</text>
+              <text x="18" y="25" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="3.2" fill="#6B7C8A">total</text>
+            </svg>
+
+            <div class="ring-list">
+              <div class="ring-row">
+                <span class="ring-swatch" style="background: var(--teal);"></span>
+                <span class="ring-label">Apoyo nutricional</span>
+                <span class="ring-value">112</span>
+              </div>
+              <div class="ring-row">
+                <span class="ring-swatch" style="background: var(--pink);"></span>
+                <span class="ring-label">Salud y bienestar</span>
+                <span class="ring-value">74</span>
+              </div>
+              <div class="ring-row">
+                <span class="ring-swatch" style="background: var(--lime);"></span>
+                <span class="ring-label">Educación y talleres</span>
+                <span class="ring-value">62</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMPTY STATE EXAMPLE -->
+    <div class="card" style="margin-top: 18px;">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Reportes guardados</h3>
+          <div class="card-sub">Tus reportes recientes aparecerán aquí</div>
+        </div>
+      </div>
+      <div class="empty">
+        <div class="empty-icon">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        </div>
+        <h4 class="empty-title">Aún no tienes reportes guardados</h4>
+        <p class="empty-text">Genera tu primer reporte y se mostrará aquí para que puedas consultarlo después.</p>
+        <button class="btn btn-primary" style="margin: 0 auto;">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" style="stroke:white"><path d="M12 5v14M5 12h14"/></svg>
+          Crear reporte
+        </button>
+      </div>
+    </div>
+
+    <!-- BANNER -->
+    <div class="note">
+      <div>
+        <h3>El sistema registra todo</h3>
+        <p>Cada acción queda en el módulo de Auditoría — trazabilidad completa para tu equipo y la junta directiva.</p>
+      </div>
+      <button class="btn btn-ghost" style="background: white;">Ver auditoría →</button>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

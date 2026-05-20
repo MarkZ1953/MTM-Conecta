@@ -3,7 +3,8 @@
     "allow": [
       "Bash(../venv/Scripts/python.exe manage.py makemigrations projects audits)",
       "Bash(docker start *)",
-      "Bash(../venv/Scripts/python.exe manage.py check)"
+      "Bash(../venv/Scripts/python.exe manage.py check)",
+      "Bash(../venv/Scripts/python.exe manage.py shell -c ' *)"
     ]
   }
 }

@@ -1,18 +1,8 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "primereact/button";
-import { Checkbox } from "primereact/checkbox";
-import { IconField } from "primereact/iconfield";
-import { InputIcon } from "primereact/inputicon";
-import { InputText } from "primereact/inputtext";
-import { Menu } from "primereact/menu";
-import type { MenuItem } from "primereact/menuitem";
-import { OverlayPanel } from "primereact/overlaypanel";
 import {
   DataTable,
   FilterMatchMode,
-  FilterOperator,
-  UIPageHeader,
   toast,
   type ColumnDef,
   type DataTableFilterMeta,
@@ -27,129 +17,42 @@ import {
   EventActDeleteDialog,
   EventActEditForm,
 } from "./components/forms";
+import "@/components/ui/resource-page.css";
 
 const defaultFilters: DataTableFilterMeta = {
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  event: {
-    operator: FilterOperator.AND,
-    constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-  },
 };
 
-const COLUMN_VISIBILITY_KEY = "event_act_table_column_visibility";
-
-const columnLabels: Record<string, string> = {
-  id: "ID",
-  event: "ID Evento",
-  content: "Contenido",
-  digital_signature_path: "Firma",
-};
-
-type RowActionsProps = {
-  eventActObj: EventAct;
-  onEdit: (eventActObj: EventAct) => void;
-  onDelete: (eventActObj: EventAct) => void;
-};
-
-const EventActRowActions = ({
-  eventActObj,
-  onEdit,
-  onDelete,
-}: RowActionsProps) => {
-  const menuRef = useRef<Menu>(null);
-
-  const items: MenuItem[] = [
-    {
-      label: "Editar",
-      icon: "pi pi-pencil",
-      command: () => onEdit(eventActObj),
-    },
-    { separator: true },
-    {
-      label: "Eliminar",
-      icon: "pi pi-trash",
-      className: "text-red-600",
-      command: () => onDelete(eventActObj),
-    },
-  ];
-
-  return (
-    <div className="flex justify-content-end">
-      <Menu ref={menuRef} model={items} popup />
-      <Button
-        type="button"
-        icon="pi pi-ellipsis-v"
-        rounded
-        text
-        size="small"
-        severity="secondary"
-        className="h-2rem w-2rem"
-        aria-label={`Acciones para el acta ${eventActObj.id}`}
-        onClick={(e) => menuRef.current?.toggle(e)}
-      />
-    </div>
-  );
-};
+const fmt = (n: number) => new Intl.NumberFormat("es-CO").format(n);
+const truncate = (text: string, max = 60) =>
+  !text ? "—" : text.length > max ? text.slice(0, max) + "…" : text;
 
 export const ActsPage = () => {
   const {
-    filters,
-    setFilters,
-    sorting,
-    setSorting,
-    pageIndex,
-    setPageIndex,
-    pageSize,
-    setPageSize,
-    refresh,
-    setRefresh,
+    filters, setFilters, sorting, setSorting,
+    pageIndex, setPageIndex, pageSize, setPageSize, refresh, setRefresh,
   } = useEventActStore();
 
   const [globalFilterValue, setGlobalFilterValue] = useState(() => {
-    const globalFilter = filters.global;
-    return globalFilter && "value" in globalFilter
-      ? ((globalFilter.value as string) ?? "")
-      : "";
+    const g = filters.global;
+    return g && "value" in g ? ((g.value as string) ?? "") : "";
   });
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
-  const [selectedEventAct, setSelectedEventAct] = useState<EventAct | null>(null);
+  const [selectedAct, setSelectedAct] = useState<EventAct | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
-  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(() => {
-    try {
-      const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
-  const actionsMenuRef = useRef<Menu>(null);
-  const columnsPanelRef = useRef<OverlayPanel>(null);
 
   useEffect(() => {
-    if (Object.keys(filters).length === 0) {
-      setFilters(defaultFilters);
-    }
+    if (Object.keys(filters).length === 0) setFilters(defaultFilters);
   }, [filters, setFilters]);
-
-  useEffect(() => {
-    localStorage.setItem(COLUMN_VISIBILITY_KEY, JSON.stringify(columnVisibility));
-  }, [columnVisibility]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["event-acts", sorting, filters, pageIndex, pageSize, refresh],
     queryFn: async () => {
-      const params = buildQueryParams({
-        columnFilters: filters,
-        sorting,
-        pageIndex,
-        pageSize,
-      });
-
+      const params = buildQueryParams({ columnFilters: filters, sorting, pageIndex, pageSize });
       const { data } = await eventActAPI.getAll({ params });
-
       return data;
     },
     throwOnError: (error: unknown) => {
@@ -158,280 +61,161 @@ export const ActsPage = () => {
     },
   });
 
-  const eventActsList = data?.results ?? [];
+  const actsList = data?.results ?? [];
   const totalCount = data?.count ?? 0;
   const selectedIds = useMemo(
-    () =>
-      Object.entries(rowSelection)
-        .filter(([, selected]) => selected)
-        .map(([id]) => Number(id))
-        .filter((id) => Number.isFinite(id)),
+    () => Object.entries(rowSelection).filter(([, s]) => s).map(([id]) => Number(id)).filter(Number.isFinite),
     [rowSelection],
   );
 
-  const clearFilter = () => {
-    setFilters(defaultFilters);
-    setGlobalFilterValue("");
+  const withSignature = actsList.filter((a) => a.digital_signature_path).length;
+  const withoutSignature = actsList.length - withSignature;
+
+  const onGlobalFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    const next = { ...filters };
+    if (!next.global) next.global = { value: null, matchMode: FilterMatchMode.CONTAINS };
+    if ("value" in next.global) next.global.value = value;
+    setFilters(next); setGlobalFilterValue(value); setPageIndex(0);
   };
 
-  const onGlobalFilterChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const nextFilters = { ...filters };
+  const openEdit = (a: EventAct) => { setSelectedAct(a); setEditOpen(true); };
+  const openDelete = (a: EventAct) => { setSelectedAct(a); setDeleteOpen(true); };
+  const onBulkDeleteSuccess = () => { setRowSelection({}); setRefresh((p) => !p); };
 
-    if (!nextFilters.global) {
-      nextFilters.global = { value: null, matchMode: FilterMatchMode.CONTAINS };
-    }
-
-    if ("value" in nextFilters.global) {
-      nextFilters.global.value = value;
-    }
-
-    setFilters(nextFilters);
-    setGlobalFilterValue(value);
-  };
-
-  const openEdit = (eventActObj: EventAct) => {
-    setSelectedEventAct(eventActObj);
-    setEditOpen(true);
-  };
-
-  const openDelete = (eventActObj: EventAct) => {
-    setSelectedEventAct(eventActObj);
-    setDeleteOpen(true);
-  };
-
-  const onBulkDeleteSuccess = () => {
-    setRowSelection({});
-    setRefresh((prev) => !prev);
-  };
-
-  const setColumnVisible = (key: string, visible: boolean) => {
-    setColumnVisibility((prev) => ({
-      ...prev,
-      [key]: visible,
-    }));
-  };
-
-  const resetColumnVisibility = () => setColumnVisibility({});
-
-  const actionMenuItems: MenuItem[] = [
+  const columns: ColumnDef<EventAct>[] = [
     {
-      label: "Acciones",
-      items: [
-        {
-          label:
-            selectedIds.length > 0
-              ? `Eliminar seleccionados (${selectedIds.length})`
-              : "Eliminar seleccionados",
-          icon: "pi pi-trash",
-          disabled: selectedIds.length === 0,
-          command: () => setBulkDeleteOpen(true),
-        },
-      ],
-    },
-  ];
-
-  const renderHeader = () => (
-    <div className="flex flex-column gap-2 md:flex-row md:justify-content-between md:align-items-center">
-      <div className="flex flex-wrap align-items-center gap-2">
-        <Button
-          type="button"
-          icon="pi pi-filter-slash"
-          label="Limpiar"
-          outlined
-          size="small"
-          onClick={clearFilter}
-        />
-
-        <Menu ref={actionsMenuRef} model={actionMenuItems} popup />
-        <Button
-          type="button"
-          icon="pi pi-bolt"
-          label="Acciones"
-          outlined
-          size="small"
-          onClick={(e) => actionsMenuRef.current?.toggle(e)}
-          aria-haspopup
-        />
-
-        <OverlayPanel ref={columnsPanelRef}>
-          <div className="w-16rem">
-            <div className="flex align-items-center justify-content-between mb-3">
-              <span className="font-semibold text-900">Columnas</span>
-              <Button
-                type="button"
-                label="Restablecer"
-                text
-                size="small"
-                className="p-0"
-                onClick={resetColumnVisibility}
-              />
-            </div>
-            <div className="flex flex-column gap-3">
-              {Object.entries(columnLabels).map(([key, label]) => (
-                <label
-                  key={key}
-                  htmlFor={`column-${key}`}
-                  className="flex align-items-center gap-2 cursor-pointer"
-                >
-                  <Checkbox
-                    inputId={`column-${key}`}
-                    checked={columnVisibility[key] !== false}
-                    onChange={(e) => setColumnVisible(key, Boolean(e.checked))}
-                  />
-                  <span>{label}</span>
-                </label>
-              ))}
-            </div>
+      id: "acta",
+      header: "Acta",
+      enableSorting: false,
+      cell: ({ row: { original: a } }) => (
+        <div className="rp-person">
+          <div className={`rp-avatar rp-av-${Number(a.id) % 6}`}><i className="pi pi-file" /></div>
+          <div>
+            <div className="rp-person-name">Acta #{a.id}</div>
+            <div className="rp-person-id">Documento</div>
           </div>
-        </OverlayPanel>
-        <Button
-          type="button"
-          icon="pi pi-table"
-          label="Columnas"
-          outlined
-          size="small"
-          onClick={(e) => columnsPanelRef.current?.toggle(e)}
-          aria-haspopup
-        />
-
-        {selectedIds.length > 0 && (
-          <Button
-            type="button"
-            icon="pi pi-times"
-            label={`${selectedIds.length} seleccionados`}
-            text
-            size="small"
-            onClick={() => setRowSelection({})}
-          />
-        )}
-      </div>
-
-      <IconField iconPosition="left" className="w-full md:w-auto">
-        <InputIcon className="pi pi-search" />
-        <InputText
-          value={globalFilterValue}
-          onChange={onGlobalFilterChange}
-          placeholder="Búsqueda global..."
-          className="p-inputtext-sm w-full md:w-20rem"
-        />
-      </IconField>
-    </div>
-  );
-
-  const eventActColumns: ColumnDef<EventAct>[] = [
-    {
-      accessorKey: "id",
-      header: "ID",
-      enableSorting: true,
-      filter: true,
-      filterPlaceholder: "Buscar ID",
-    },
-    {
-      accessorKey: "event",
-      header: "ID Evento",
-      enableSorting: true,
-      filter: true,
-      filterPlaceholder: "Buscar evento",
-    },
-    {
-      accessorKey: "content",
-      header: "Contenido",
-      enableSorting: true,
-      filter: false,
-      cell: ({ row }) => (
-        <span className="text-overflow-ellipsis white-space-nowrap overflow-hidden block" style={{ maxWidth: "300px" }}>
-          {row.original.content}
-        </span>
+        </div>
       ),
     },
     {
-      accessorKey: "digital_signature_path",
+      id: "event",
+      header: "Evento",
+      enableSorting: false,
+      cell: ({ row: { original: a } }) => <span className="rp-badge inactive"><span className="dot" /> Evento #{a.event}</span>,
+    },
+    {
+      id: "content",
+      header: "Contenido",
+      enableSorting: false,
+      cell: ({ row: { original: a } }) => truncate(a.content),
+    },
+    {
+      id: "signature",
       header: "Firma",
       enableSorting: false,
-      filter: false,
-      cell: ({ row }) => row.original.digital_signature_path ? (
-        <a href={row.original.digital_signature_path} target="_blank" rel="noreferrer" className="text-primary hover:underline">
-          Ver Firma
-        </a>
-      ) : (
-        <span className="text-500">Sin firma</span>
-      ),
+      cell: ({ row: { original: a } }) =>
+        a.digital_signature_path
+          ? <span className="rp-badge active"><span className="dot" /> Firmada</span>
+          : <span className="rp-badge pending"><span className="dot" /> Sin firma</span>,
     },
     {
       id: "actions",
-      header: "Acciones",
+      header: "",
       enableSorting: false,
-      cell: ({ row }) => (
-        <EventActRowActions
-          eventActObj={row.original}
-          onEdit={openEdit}
-          onDelete={openDelete}
-        />
+      align: "right",
+      cell: ({ row: { original: a } }) => (
+        <div className="rp-row-actions">
+          <button className="rp-act" title="Editar" onClick={() => openEdit(a)}><i className="pi pi-pencil" /></button>
+          <button className="rp-act danger" title="Eliminar" onClick={() => openDelete(a)}><i className="pi pi-trash" /></button>
+        </div>
       ),
     },
   ];
 
+  const toolbar = (
+    <>
+      <input className="rp-search" value={globalFilterValue} onChange={onGlobalFilterChange}
+        placeholder="Buscar acta…" />
+      {globalFilterValue && (
+        <span className="rp-chip active" onClick={() => onGlobalFilterChange({ target: { value: "" } } as ChangeEvent<HTMLInputElement>)}>
+          Búsqueda: "{globalFilterValue}" <span className="remove">×</span>
+        </span>
+      )}
+    </>
+  );
+
   return (
-    <div className="w-full flex-1 flex flex-column">
-      <UIPageHeader
-        title="Actas de Eventos"
-        icon="pi pi-file"
-        actions={
-          <Button
-            label="Registrar acta"
-            icon="pi pi-plus"
-            size="small"
-            onClick={() => setCreateOpen(true)}
-          />
-        }
-      />
+    <div className="rp">
+      <div className="rp-header">
+        <div>
+          <h1 className="rp-title">Actas de eventos <span className="count">{fmt(totalCount)} registradas</span></h1>
+          <p className="rp-sub">Documentación formal de las actividades realizadas.</p>
+        </div>
+        <div className="rp-actions">
+          <button className="rp-btn rp-btn-primary" onClick={() => setCreateOpen(true)}>
+            <i className="pi pi-plus" style={{ fontSize: 13 }} /> Nueva acta
+          </button>
+        </div>
+      </div>
+
+      <div className="rp-stats">
+        <div className="rp-stat">
+          <div className="rp-stat-pill teal"><i className="pi pi-file" /></div>
+          <div className="rp-stat-label">Total actas</div>
+          <div className="rp-stat-value">{isLoading ? "—" : fmt(totalCount)}</div>
+          <div className="rp-stat-meta">Registradas</div>
+        </div>
+        <div className="rp-stat">
+          <div className="rp-stat-pill lime"><i className="pi pi-list" /></div>
+          <div className="rp-stat-label">En esta página</div>
+          <div className="rp-stat-value">{fmt(actsList.length)}</div>
+          <div className="rp-stat-meta">de {fmt(totalCount)} en total</div>
+        </div>
+        <div className="rp-stat">
+          <div className="rp-stat-pill ink"><i className="pi pi-verified" /></div>
+          <div className="rp-stat-label">Firmadas</div>
+          <div className="rp-stat-value">{fmt(withSignature)}</div>
+          <div className="rp-stat-meta">En esta página</div>
+        </div>
+        <div className="rp-stat">
+          <div className="rp-stat-pill pink"><i className="pi pi-pencil" /></div>
+          <div className="rp-stat-label">Sin firma</div>
+          <div className="rp-stat-value">{fmt(withoutSignature)}</div>
+          <div className="rp-stat-meta">En esta página</div>
+        </div>
+      </div>
 
       <DataTable
-        data={eventActsList}
-        columns={eventActColumns}
+        data={actsList}
+        columns={columns}
         pageIndex={pageIndex}
         pageSize={pageSize}
         totalCount={totalCount}
         onPageSizeChange={setPageSize}
+        onPageChange={setPageIndex}
         sorting={sorting}
         onSortingChange={setSorting}
-        onPageChange={setPageIndex}
-        isLoading={isLoading}
-        filters={filters}
-        onFilter={setFilters}
-        globalFilterFields={["id", "event", "content"]}
-        header={renderHeader()}
         rowSelection={rowSelection}
         setRowSelection={setRowSelection}
-        columnVisibility={columnVisibility}
-        onColumnVisibilityChange={setColumnVisibility}
-        size="sm"
+        isLoading={isLoading}
+        header={toolbar}
+        selectionActions={
+          <button className="rp-btn rp-btn-danger-ghost" onClick={() => setBulkDeleteOpen(true)}>Eliminar</button>
+        }
+        emptyTitle="No se encontraron actas"
+        emptyText={globalFilterValue ? "Prueba con otra búsqueda." : "Crea la primera acta para empezar."}
+        emptyAction={!globalFilterValue && (
+          <button className="rp-btn rp-btn-primary" style={{ margin: "0 auto" }} onClick={() => setCreateOpen(true)}>
+            <i className="pi pi-plus" style={{ fontSize: 13 }} /> Nueva acta
+          </button>
+        )}
       />
 
-      <EventActCreateForm
-        open={createOpen}
-        setOpen={setCreateOpen}
-        setRefresh={setRefresh}
-      />
-      <EventActEditForm
-        open={editOpen}
-        setOpen={setEditOpen}
-        eventActObj={selectedEventAct}
-        setRefresh={setRefresh}
-      />
-      <EventActDeleteDialog
-        open={deleteOpen}
-        setOpen={setDeleteOpen}
-        eventActObj={selectedEventAct}
-        setRefresh={setRefresh}
-      />
-      <EventActBulkDeleteDialog
-        open={bulkDeleteOpen}
-        setOpen={setBulkDeleteOpen}
-        ids={selectedIds}
-        onSuccess={onBulkDeleteSuccess}
-      />
+      <EventActCreateForm open={createOpen} setOpen={setCreateOpen} setRefresh={setRefresh} />
+      <EventActEditForm open={editOpen} setOpen={setEditOpen} eventActObj={selectedAct} setRefresh={setRefresh} />
+      <EventActDeleteDialog open={deleteOpen} setOpen={setDeleteOpen} eventActObj={selectedAct} setRefresh={setRefresh} />
+      <EventActBulkDeleteDialog open={bulkDeleteOpen} setOpen={setBulkDeleteOpen} ids={selectedIds} onSuccess={onBulkDeleteSuccess} />
     </div>
   );
 };
