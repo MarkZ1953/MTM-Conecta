@@ -1,15 +1,7 @@
 import { RegisterForm } from "../components/forms/register/register-form";
 import "../styles/auth.css";
 
-interface RegisterPageProps {
-  onNavigateLogin?: () => void;
-  onRegisterSuccess?: () => void;
-}
-
-export function RegisterPage({
-  onNavigateLogin,
-  onRegisterSuccess,
-}: RegisterPageProps) {
+export function RegisterPage() {
   return (
     <div className="auth-page auth-page--register">
       {/* Panel izquierdo — formulario en register */}
@@ -20,10 +12,7 @@ export function RegisterPage({
               <i className="pi pi-heart-fill" /> Juntas hacemos la diferencia
             </span>
           </div>
-          <RegisterForm
-            onSuccess={onRegisterSuccess}
-            onNavigateLogin={onNavigateLogin}
-          />
+          <RegisterForm />
         </div>
       </main>
 

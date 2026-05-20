@@ -7,29 +7,38 @@
 /* ----------------------------------------------------------
    1. Tokens de marca como CSS variables globales
    ---------------------------------------------------------- */
+/* Reset base: elimina el margen del body que genera scroll externo */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
 :root {
-  /* Morados */
-  --mtm-primary: #6a3fa0;
-  --mtm-primary-light: #8e5cc2;
-  --mtm-primary-soft: #ede7f6;
+  /* Turquesa — color principal del nuevo logo MTM */
+  --mtm-primary: #2DBFA8;
+  --mtm-primary-light: #5FD0BD;
+  --mtm-primary-soft: #E8F8F5;
+  --mtm-primary-deep: #229B89;
 
-  /* Dorados / Ámbar */
-  --mtm-accent: #f2c94c;
-  --mtm-accent-deep: #e6a800;
-  --mtm-accent-soft: #fff8e1;
+  /* Verde lima — lazo del logo */
+  --mtm-accent: #C5D72E;
+  --mtm-accent-deep: #6F7E0E;
+  --mtm-accent-soft: #F4F8D6;
 
-  /* Verdes / Teal */
-  --mtm-teal: #2e9b7d;
-  --mtm-teal-deep: #1d9e75;
-  --mtm-teal-soft: #e1f5ee;
+  /* Verde esperanza (mantiene compatibilidad) */
+  --mtm-teal: #2DBFA8;
+  --mtm-teal-deep: #229B89;
+  --mtm-teal-soft: #E8F8F5;
 
-  /* Rosa */
-  --mtm-rose: #d4537e;
+  /* Magenta cálido — corazón del logo */
+  --mtm-rose: #E63B7A;
+  --mtm-rose-soft: #FCE6EE;
 
   /* Neutros */
   --mtm-white: #ffffff;
-  --mtm-dark: #2c2c2a;
-  --mtm-border: #d4c8ec;
+  --mtm-dark: #0F1F2C;
+  --mtm-gray-bg: #F6F8FA;
+  --mtm-border: #E6EBEF;
 }
 
 /* ----------------------------------------------------------
@@ -45,8 +54,8 @@
   border-color: var(--mtm-primary-light);
 }
 .p-button:not(:disabled):active {
-  background-color: #5a3390;
-  border-color: #5a3390;
+  background-color: var(--mtm-primary-deep);
+  border-color: var(--mtm-primary-deep);
 }
 .p-button:focus-visible {
   box-shadow:
@@ -119,7 +128,7 @@
   color: var(--mtm-primary);
 }
 .p-autocomplete-panel .p-autocomplete-item:not(.p-highlight):hover {
-  background: #f0eaf9;
+  background: var(--mtm-primary-soft);
 }
 
 /* ----------------------------------------------------------
@@ -140,7 +149,7 @@
   color: var(--mtm-primary);
 }
 .p-dropdown-panel .p-dropdown-item:not(.p-highlight):hover {
-  background: #f0eaf9;
+  background: var(--mtm-primary-soft);
 }
 
 /* ----------------------------------------------------------
@@ -251,11 +260,31 @@
   color: var(--mtm-primary);
 }
 .p-datatable .p-datatable-tbody > tr:hover {
-  background: #f0eaf9;
+  background: var(--mtm-primary-soft);
 }
 .p-datatable .p-datatable-tbody > tr.p-highlight {
   background: var(--mtm-primary-soft);
   color: var(--mtm-primary);
+}
+.p-datatable.p-datatable-sm .p-datatable-header {
+  padding: 0.65rem 1rem;
+}
+.p-datatable.p-datatable-sm .p-datatable-thead > tr > th {
+  padding: 0.65rem 0.85rem;
+}
+.p-datatable.p-datatable-sm .p-datatable-tbody > tr > td {
+  padding: 0.55rem 0.85rem;
+}
+.p-datatable.p-datatable-sm .p-paginator {
+  padding: 0.45rem 0.75rem;
+}
+.p-datatable.p-datatable-sm .p-paginator .p-paginator-page,
+.p-datatable.p-datatable-sm .p-paginator .p-paginator-first,
+.p-datatable.p-datatable-sm .p-paginator .p-paginator-prev,
+.p-datatable.p-datatable-sm .p-paginator .p-paginator-next,
+.p-datatable.p-datatable-sm .p-paginator .p-paginator-last {
+  min-width: 2rem;
+  height: 2rem;
 }
 
 /* ----------------------------------------------------------

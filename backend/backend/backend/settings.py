@@ -48,6 +48,10 @@ INSTALLED_APPS = [
     'beneficiaries',
     'donations',
     'access',
+    'projects',
+    'audits',
+    'reports',
+    'events',
 ]
 
 MIDDLEWARE = [

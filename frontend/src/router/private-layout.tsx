@@ -1,0 +1,56 @@
+import { UISidebar } from "@/components";
+import type { NavItem } from "@/components";
+import { Outlet } from "react-router-dom";
+
+
+const navItems: NavItem[] = [
+  {
+    section: "Principal",
+    title: "Inicio",
+    url: "/",
+    icon: "pi-home",
+  },
+  {
+    title: "Beneficiarios",
+    url: "/beneficiaries",
+    icon: "pi-users",
+    items: [
+      { title: "Directorio", url: "/beneficiaries", icon: "pi-address-book" },
+      { title: "Acudientes", url: "/beneficiaries/guardians", icon: "pi-shield" },
+    ]
+  },
+  {
+    title: "Eventos",
+    url: "/events",
+    icon: "pi-calendar",
+    items: [
+      { title: "Lista de Eventos", url: "/events", icon: "pi-list" },
+      { title: "Asistencia", url: "/events/attendance", icon: "pi-check-square" },
+      { title: "Actas", url: "/events/acts", icon: "pi-file" },
+      { title: "Evidencias", url: "/events/evidences", icon: "pi-images" },
+    ]
+  },
+  {
+    title: "Donaciones",
+    url: "/donations",
+    icon: "pi-gift",
+    items: [
+      { title: "Historial", url: "/donations", icon: "pi-history" },
+      { title: "Donantes", url: "/donations/donors", icon: "pi-heart" },
+    ]
+  },
+  {
+    section: "Administración",
+    title: "Usuarios",
+    url: "/users",
+    icon: "pi-user",
+  },
+];
+
+export const PrivateLayout = () => {
+  return (
+    <UISidebar navItems={navItems} logoText="MTM Conecta">
+      <Outlet />
+    </UISidebar>
+  );
+};

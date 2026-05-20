@@ -18,12 +18,10 @@ export function LoginForm() {
   });
 
   const navigate = useNavigate();
-
+ 
   const { isSubmitting } = form.formState;
 
   const onSubmit = async (data: any) => {
-    console.log(data);
-
     try {
       const { status } = await authAPI.login({
         username: data.username,
@@ -76,7 +74,11 @@ export function LoginForm() {
 
           <p className="login-register-prompt">
             ¿Eres nueva en la fundación?&nbsp;
-            <button type="button" className="login-register-link">
+            <button
+              type="button"
+              className="login-register-link"
+              onClick={() => navigate("/register")}
+            >
               Crea tu cuenta aquí
             </button>
           </p>
