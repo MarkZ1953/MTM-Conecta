@@ -1,0 +1,151 @@
+/* ==========================================================
+   MTM-Conecta — Sidebar + Topbar
+   Diseño basado en el mockup aprobado.
+   ========================================================== */
+
+.mtm-shell {
+  --s-teal: #2DBFA8;
+  --s-teal-dark: #229B89;
+  --s-teal-soft: #E8F8F5;
+  --s-lime: #C5D72E;
+  --s-pink: #E63B7A;
+  --s-ink: #0F1F2C;
+  --s-ink-2: #2A3B49;
+  --s-muted: #6B7C8A;
+  --s-line: #E6EBEF;
+  --s-bg: #F6F8FA;
+  --s-card: #FFFFFF;
+
+  display: flex;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--s-bg);
+}
+
+/* ---------- Sidebar ---------- */
+.mtm-sidebar {
+  background: var(--s-card);
+  border-right: 1px solid var(--s-line);
+  flex-shrink: 0;
+  transition: width .25s ease;
+  overflow: hidden;
+}
+.mtm-sidebar-inner {
+  width: 264px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 14px;
+}
+
+/* Brand */
+.mtm-brand { display: flex; align-items: center; gap: 12px; padding: 4px 10px 20px; text-decoration: none; cursor: pointer; }
+.mtm-brand:hover { opacity: 0.85; }
+.mtm-brand-img {
+  width: auto;
+  max-width: 100%;
+  height: 64px;              /* tamaño moderado */
+  object-fit: contain;       /* muestra el logo completo, sin cortar */
+  display: block;
+  margin: 2px auto 0;        /* centrado */
+}
+.mtm-brand-mark {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--s-teal) 0%, var(--s-lime) 100%);
+  display: grid; place-items: center;
+  color: white; font-weight: 800; font-size: 16px;
+  box-shadow: 0 4px 12px rgba(45, 191, 168, 0.35);
+  flex-shrink: 0;
+}
+.mtm-brand-name { font-weight: 700; font-size: 16px; letter-spacing: -0.2px; color: var(--s-ink); }
+.mtm-brand-sub { font-size: 11px; color: var(--s-muted); margin-top: 1px; }
+
+/* Section label */
+.mtm-nav-section {
+  padding: 16px 10px 6px;
+  font-size: 10.5px; text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--s-muted); font-weight: 600;
+}
+
+/* Nav list */
+.mtm-nav { list-style: none; padding: 0; margin: 0; flex: 1; overflow-y: auto; }
+.mtm-nav-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 9px 12px; border-radius: 9px; cursor: pointer;
+  color: var(--s-ink-2); font-size: 14px; font-weight: 500;
+  transition: background .15s ease, color .15s ease;
+  text-decoration: none; width: 100%;
+  border: none; background: transparent; font-family: inherit; text-align: left;
+}
+.mtm-nav-item:hover { background: var(--s-bg); }
+.mtm-nav-item.active { background: var(--s-teal-soft); color: var(--s-teal-dark); font-weight: 600; }
+.mtm-nav-item .mtm-nav-icon { width: 18px; color: var(--s-muted); font-size: 15px; }
+.mtm-nav-item.active .mtm-nav-icon { color: var(--s-teal-dark); }
+.mtm-nav-item .mtm-chev { margin-left: auto; font-size: 11px; color: var(--s-muted); }
+
+.mtm-nav-children { list-style: none; padding-left: 30px; margin: 2px 0 0; display: flex; flex-direction: column; gap: 1px; }
+.mtm-nav-child {
+  padding: 6.5px 10px; font-size: 13px; color: var(--s-muted);
+  border-radius: 7px; cursor: pointer; text-decoration: none; display: block;
+}
+.mtm-nav-child:hover { background: var(--s-bg); color: var(--s-ink); }
+.mtm-nav-child.active { background: var(--s-teal-soft); color: var(--s-teal-dark); font-weight: 600; }
+
+/* User card */
+.mtm-user-card {
+  margin-top: 14px; padding: 12px;
+  border: 1px solid var(--s-line); border-radius: 12px;
+  display: flex; align-items: center; gap: 11px;
+}
+.mtm-user-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--s-pink), var(--s-teal));
+  display: grid; place-items: center; color: white; font-weight: 700; font-size: 13px;
+  flex-shrink: 0;
+}
+.mtm-user-name { font-weight: 600; font-size: 13px; color: var(--s-ink); }
+.mtm-user-role { font-size: 11px; color: var(--s-muted); }
+
+/* ---------- Main + Topbar ---------- */
+.mtm-main { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.mtm-topbar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 24px; background: var(--s-card);
+  border-bottom: 1px solid var(--s-line); flex-shrink: 0;
+}
+.mtm-toggle {
+  width: 36px; height: 36px; border-radius: 9px;
+  border: none; background: transparent; cursor: pointer;
+  display: grid; place-items: center; color: var(--s-ink-2); font-size: 16px;
+}
+.mtm-toggle:hover { background: var(--s-bg); }
+
+.mtm-crumb { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--s-muted); }
+.mtm-crumb .sep { opacity: .5; }
+.mtm-crumb .here { color: var(--s-ink); font-weight: 600; }
+.mtm-crumb-link { color: var(--s-muted); text-decoration: none; transition: color .15s ease; }
+.mtm-crumb-link:hover { color: var(--s-teal-dark); }
+
+.mtm-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: none;      /* evita el rebote y el scroll en cadena */
+  padding: 28px 36px 60px;
+  /* Scroll funcional pero sin barra visible */
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE/Edge antiguo */
+}
+.mtm-content::-webkit-scrollbar { /* Chrome/Safari/Edge */
+  display: none;
+}
+.mtm-content-inner { max-width: 1400px; }
+
+/* La navegación del sidebar también scrollea sin barra visible */
+.mtm-nav { scrollbar-width: none; -ms-overflow-style: none; }
+.mtm-nav::-webkit-scrollbar { display: none; }
+
+@media (max-width: 900px) {
+  .mtm-content { padding: 20px 16px 40px; }
+}

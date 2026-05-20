@@ -1,18 +1,8 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "primereact/button";
-import { Checkbox } from "primereact/checkbox";
-import { IconField } from "primereact/iconfield";
-import { InputIcon } from "primereact/inputicon";
-import { InputText } from "primereact/inputtext";
-import { Menu } from "primereact/menu";
-import type { MenuItem } from "primereact/menuitem";
-import { OverlayPanel } from "primereact/overlaypanel";
 import {
   DataTable,
   FilterMatchMode,
-  FilterOperator,
-  UIPageHeader,
   toast,
   type ColumnDef,
   type DataTableFilterMeta,
@@ -27,90 +17,36 @@ import {
   DonationsDeleteDialog,
   DonationsEditForm,
 } from "./components/forms";
+import "@/components/ui/resource-page.css";
 
 const defaultFilters: DataTableFilterMeta = {
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  status: {
-    operator: FilterOperator.AND,
-    constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-  },
 };
 
-const COLUMN_VISIBILITY_KEY = "donations_table_column_visibility";
-
-const columnLabels: Record<string, string> = {
-  id: "ID Donación",
-  donor: "ID Donante",
-  amount: "Monto",
-  status: "Estado",
-  date: "Fecha",
+const fmt = (n: number) => new Intl.NumberFormat("es-CO").format(n);
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(value || 0);
+const formatDate = (value: string) => {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
 };
 
-type RowActionsProps = {
-  donationObj: Donation;
-  onEdit: (donationObj: Donation) => void;
-  onDelete: (donationObj: Donation) => void;
-};
-
-const DonationsRowActions = ({
-  donationObj,
-  onEdit,
-  onDelete,
-}: RowActionsProps) => {
-  const menuRef = useRef<Menu>(null);
-
-  const items: MenuItem[] = [
-    {
-      label: "Editar",
-      icon: "pi pi-pencil",
-      command: () => onEdit(donationObj),
-    },
-    { separator: true },
-    {
-      label: "Eliminar",
-      icon: "pi pi-trash",
-      className: "text-red-600",
-      command: () => onDelete(donationObj),
-    },
-  ];
-
-  return (
-    <div className="flex justify-content-end">
-      <Menu ref={menuRef} model={items} popup />
-      <Button
-        type="button"
-        icon="pi pi-ellipsis-v"
-        rounded
-        text
-        size="small"
-        severity="secondary"
-        className="h-2rem w-2rem"
-        aria-label={`Acciones para la donación ${donationObj.id}`}
-        onClick={(e) => menuRef.current?.toggle(e)}
-      />
-    </div>
-  );
+const STATUS: Record<Donation["status"], { label: string; cls: string }> = {
+  COMPLETED: { label: "Completada", cls: "completed" },
+  PENDING: { label: "Pendiente", cls: "pending" },
+  FAILED: { label: "Fallida", cls: "failed" },
 };
 
 export const DonationsPage = () => {
   const {
-    filters,
-    setFilters,
-    sorting,
-    setSorting,
-    pageIndex,
-    setPageIndex,
-    pageSize,
-    setPageSize,
-    refresh,
-    setRefresh,
+    filters, setFilters, sorting, setSorting,
+    pageIndex, setPageIndex, pageSize, setPageSize, refresh, setRefresh,
   } = useDonationsStore();
 
   const [globalFilterValue, setGlobalFilterValue] = useState(() => {
-    const globalFilter = filters.global;
-    return globalFilter && "value" in globalFilter
-      ? ((globalFilter.value as string) ?? "")
-      : "";
+    const g = filters.global;
+    return g && "value" in g ? ((g.value as string) ?? "") : "";
   });
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null);
@@ -118,39 +54,16 @@ export const DonationsPage = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
-  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(() => {
-    try {
-      const saved = localStorage.getItem(COLUMN_VISIBILITY_KEY);
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
-  const actionsMenuRef = useRef<Menu>(null);
-  const columnsPanelRef = useRef<OverlayPanel>(null);
 
   useEffect(() => {
-    if (Object.keys(filters).length === 0) {
-      setFilters(defaultFilters);
-    }
+    if (Object.keys(filters).length === 0) setFilters(defaultFilters);
   }, [filters, setFilters]);
-
-  useEffect(() => {
-    localStorage.setItem(COLUMN_VISIBILITY_KEY, JSON.stringify(columnVisibility));
-  }, [columnVisibility]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["donations", sorting, filters, pageIndex, pageSize, refresh],
     queryFn: async () => {
-      const params = buildQueryParams({
-        columnFilters: filters,
-        sorting,
-        pageIndex,
-        pageSize,
-      });
-
+      const params = buildQueryParams({ columnFilters: filters, sorting, pageIndex, pageSize });
       const { data } = await donationsAPI.getAll({ params });
-
       return data;
     },
     throwOnError: (error: unknown) => {
@@ -162,274 +75,159 @@ export const DonationsPage = () => {
   const donationsList = data?.results ?? [];
   const totalCount = data?.count ?? 0;
   const selectedIds = useMemo(
-    () =>
-      Object.entries(rowSelection)
-        .filter(([, selected]) => selected)
-        .map(([id]) => Number(id))
-        .filter((id) => Number.isFinite(id)),
+    () => Object.entries(rowSelection).filter(([, s]) => s).map(([id]) => Number(id)).filter(Number.isFinite),
     [rowSelection],
   );
 
-  const clearFilter = () => {
-    setFilters(defaultFilters);
-    setGlobalFilterValue("");
+  const pageAmount = donationsList.reduce((acc, d) => acc + parseFloat(d.amount || "0"), 0);
+  const completedCount = donationsList.filter((d) => d.status === "COMPLETED").length;
+
+  const onGlobalFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    const next = { ...filters };
+    if (!next.global) next.global = { value: null, matchMode: FilterMatchMode.CONTAINS };
+    if ("value" in next.global) next.global.value = value;
+    setFilters(next); setGlobalFilterValue(value); setPageIndex(0);
   };
 
-  const onGlobalFilterChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const nextFilters = { ...filters };
+  const openEdit = (d: Donation) => { setSelectedDonation(d); setEditOpen(true); };
+  const openDelete = (d: Donation) => { setSelectedDonation(d); setDeleteOpen(true); };
+  const onBulkDeleteSuccess = () => { setRowSelection({}); setRefresh((p) => !p); };
 
-    if (!nextFilters.global) {
-      nextFilters.global = { value: null, matchMode: FilterMatchMode.CONTAINS };
-    }
-
-    if ("value" in nextFilters.global) {
-      nextFilters.global.value = value;
-    }
-
-    setFilters(nextFilters);
-    setGlobalFilterValue(value);
-  };
-
-  const openEdit = (donationObj: Donation) => {
-    setSelectedDonation(donationObj);
-    setEditOpen(true);
-  };
-
-  const openDelete = (donationObj: Donation) => {
-    setSelectedDonation(donationObj);
-    setDeleteOpen(true);
-  };
-
-  const onBulkDeleteSuccess = () => {
-    setRowSelection({});
-    setRefresh((prev) => !prev);
-  };
-
-  const setColumnVisible = (key: string, visible: boolean) => {
-    setColumnVisibility((prev) => ({
-      ...prev,
-      [key]: visible,
-    }));
-  };
-
-  const resetColumnVisibility = () => setColumnVisibility({});
-
-  const actionMenuItems: MenuItem[] = [
+  const columns: ColumnDef<Donation>[] = [
     {
-      label: "Acciones",
-      items: [
-        {
-          label:
-            selectedIds.length > 0
-              ? `Eliminar seleccionados (${selectedIds.length})`
-              : "Eliminar seleccionados",
-          icon: "pi pi-trash",
-          disabled: selectedIds.length === 0,
-          command: () => setBulkDeleteOpen(true),
-        },
-      ],
-    },
-  ];
-
-  const renderHeader = () => (
-    <div className="flex flex-column gap-2 md:flex-row md:justify-content-between md:align-items-center">
-      <div className="flex flex-wrap align-items-center gap-2">
-        <Button
-          type="button"
-          icon="pi pi-filter-slash"
-          label="Limpiar"
-          outlined
-          size="small"
-          onClick={clearFilter}
-        />
-
-        <Menu ref={actionsMenuRef} model={actionMenuItems} popup />
-        <Button
-          type="button"
-          icon="pi pi-bolt"
-          label="Acciones"
-          outlined
-          size="small"
-          onClick={(e) => actionsMenuRef.current?.toggle(e)}
-          aria-haspopup
-        />
-
-        <OverlayPanel ref={columnsPanelRef}>
-          <div className="w-16rem">
-            <div className="flex align-items-center justify-content-between mb-3">
-              <span className="font-semibold text-900">Columnas</span>
-              <Button
-                type="button"
-                label="Restablecer"
-                text
-                size="small"
-                className="p-0"
-                onClick={resetColumnVisibility}
-              />
-            </div>
-            <div className="flex flex-column gap-3">
-              {Object.entries(columnLabels).map(([key, label]) => (
-                <label
-                  key={key}
-                  htmlFor={`column-${key}`}
-                  className="flex align-items-center gap-2 cursor-pointer"
-                >
-                  <Checkbox
-                    inputId={`column-${key}`}
-                    checked={columnVisibility[key] !== false}
-                    onChange={(e) => setColumnVisible(key, Boolean(e.checked))}
-                  />
-                  <span>{label}</span>
-                </label>
-              ))}
-            </div>
+      id: "donation",
+      header: "Donación",
+      enableSorting: false,
+      cell: ({ row: { original: d } }) => (
+        <div className="rp-person">
+          <div className={`rp-avatar rp-av-${Number(d.id) % 6}`}><i className="pi pi-gift" /></div>
+          <div>
+            <div className="rp-person-name">Donación #{d.id}</div>
+            <div className="rp-person-id">Registrada</div>
           </div>
-        </OverlayPanel>
-        <Button
-          type="button"
-          icon="pi pi-table"
-          label="Columnas"
-          outlined
-          size="small"
-          onClick={(e) => columnsPanelRef.current?.toggle(e)}
-          aria-haspopup
-        />
-
-        {selectedIds.length > 0 && (
-          <Button
-            type="button"
-            icon="pi pi-times"
-            label={`${selectedIds.length} seleccionados`}
-            text
-            size="small"
-            onClick={() => setRowSelection({})}
-          />
-        )}
-      </div>
-
-      <IconField iconPosition="left" className="w-full md:w-auto">
-        <InputIcon className="pi pi-search" />
-        <InputText
-          value={globalFilterValue}
-          onChange={onGlobalFilterChange}
-          placeholder="Búsqueda global..."
-          className="p-inputtext-sm w-full md:w-20rem"
-        />
-      </IconField>
-    </div>
-  );
-
-  const donationColumns: ColumnDef<Donation>[] = [
-    {
-      accessorKey: "id",
-      header: "ID",
-      enableSorting: true,
-      filter: true,
-      filterPlaceholder: "Buscar ID",
+        </div>
+      ),
     },
     {
-      accessorKey: "donor",
-      header: "ID Donante",
-      enableSorting: true,
-      filter: true,
-      filterPlaceholder: "Buscar donante",
+      id: "donor",
+      header: "Donante",
+      enableSorting: false,
+      cell: ({ row: { original: d } }) => <span className="rp-badge inactive"><span className="dot" /> Donante #{d.donor}</span>,
     },
     {
       accessorKey: "amount",
       header: "Monto",
-      enableSorting: true,
-      filter: false,
-      cell: ({ row }) => `$${row.original.amount}`,
+      cell: ({ row: { original: d } }) => (
+        <span style={{ fontWeight: 600, color: "var(--rp-ink)" }}>{formatCurrency(parseFloat(d.amount || "0"))}</span>
+      ),
     },
+    { accessorKey: "date", header: "Fecha", cell: ({ row: { original: d } }) => formatDate(d.date) },
     {
       accessorKey: "status",
       header: "Estado",
-      enableSorting: true,
-      filter: true,
-      filterPlaceholder: "Buscar estado",
-    },
-    {
-      accessorKey: "date",
-      header: "Fecha",
-      enableSorting: true,
-      filter: false,
-      cell: ({ row }) => new Date(row.original.date).toLocaleString(),
+      cell: ({ row: { original: d } }) => {
+        const st = STATUS[d.status] ?? { label: d.status, cls: "inactive" };
+        return <span className={`rp-badge ${st.cls}`}><span className="dot" /> {st.label}</span>;
+      },
     },
     {
       id: "actions",
-      header: "Acciones",
+      header: "",
       enableSorting: false,
-      cell: ({ row }) => (
-        <DonationsRowActions
-          donationObj={row.original}
-          onEdit={openEdit}
-          onDelete={openDelete}
-        />
+      align: "right",
+      cell: ({ row: { original: d } }) => (
+        <div className="rp-row-actions">
+          <button className="rp-act" title="Editar" onClick={() => openEdit(d)}><i className="pi pi-pencil" /></button>
+          <button className="rp-act danger" title="Eliminar" onClick={() => openDelete(d)}><i className="pi pi-trash" /></button>
+        </div>
       ),
     },
   ];
 
+  const toolbar = (
+    <>
+      <input className="rp-search" value={globalFilterValue} onChange={onGlobalFilterChange}
+        placeholder="Buscar donación…" />
+      {globalFilterValue && (
+        <span className="rp-chip active" onClick={() => onGlobalFilterChange({ target: { value: "" } } as ChangeEvent<HTMLInputElement>)}>
+          Búsqueda: "{globalFilterValue}" <span className="remove">×</span>
+        </span>
+      )}
+    </>
+  );
+
   return (
-    <div className="w-full flex-1 flex flex-column">
-      <UIPageHeader
-        title="Donaciones"
-        icon="pi pi-history"
-        actions={
-          <Button
-            label="Registrar donación"
-            icon="pi pi-plus"
-            size="small"
-            onClick={() => setCreateOpen(true)}
-          />
-        }
-      />
+    <div className="rp">
+      <div className="rp-header">
+        <div>
+          <h1 className="rp-title">Donaciones <span className="count">{fmt(totalCount)} registradas</span></h1>
+          <p className="rp-sub">Aportes recibidos por la fundación.</p>
+        </div>
+        <div className="rp-actions">
+          <button className="rp-btn rp-btn-primary" onClick={() => setCreateOpen(true)}>
+            <i className="pi pi-plus" style={{ fontSize: 13 }} /> Nueva donación
+          </button>
+        </div>
+      </div>
+
+      <div className="rp-stats">
+        <div className="rp-stat">
+          <div className="rp-stat-pill pink"><i className="pi pi-heart" /></div>
+          <div className="rp-stat-label">Total donaciones</div>
+          <div className="rp-stat-value">{isLoading ? "—" : fmt(totalCount)}</div>
+          <div className="rp-stat-meta">Registradas</div>
+        </div>
+        <div className="rp-stat">
+          <div className="rp-stat-pill teal"><i className="pi pi-dollar" /></div>
+          <div className="rp-stat-label">Monto en esta página</div>
+          <div className="rp-stat-value">{formatCurrency(pageAmount)}</div>
+          <div className="rp-stat-meta">{fmt(donationsList.length)} donaciones</div>
+        </div>
+        <div className="rp-stat">
+          <div className="rp-stat-pill lime"><i className="pi pi-check-circle" /></div>
+          <div className="rp-stat-label">Completadas</div>
+          <div className="rp-stat-value">{fmt(completedCount)}</div>
+          <div className="rp-stat-meta">En esta página</div>
+        </div>
+        <div className="rp-stat">
+          <div className="rp-stat-pill ink"><i className="pi pi-list" /></div>
+          <div className="rp-stat-label">En esta página</div>
+          <div className="rp-stat-value">{fmt(donationsList.length)}</div>
+          <div className="rp-stat-meta">de {fmt(totalCount)} en total</div>
+        </div>
+      </div>
 
       <DataTable
         data={donationsList}
-        columns={donationColumns}
+        columns={columns}
         pageIndex={pageIndex}
         pageSize={pageSize}
         totalCount={totalCount}
         onPageSizeChange={setPageSize}
+        onPageChange={setPageIndex}
         sorting={sorting}
         onSortingChange={setSorting}
-        onPageChange={setPageIndex}
-        isLoading={isLoading}
-        filters={filters}
-        onFilter={setFilters}
-        globalFilterFields={["id", "donor", "status"]}
-        header={renderHeader()}
         rowSelection={rowSelection}
         setRowSelection={setRowSelection}
-        columnVisibility={columnVisibility}
-        onColumnVisibilityChange={setColumnVisibility}
-        size="sm"
+        isLoading={isLoading}
+        header={toolbar}
+        selectionActions={
+          <button className="rp-btn rp-btn-danger-ghost" onClick={() => setBulkDeleteOpen(true)}>Eliminar</button>
+        }
+        emptyTitle="No se encontraron donaciones"
+        emptyText={globalFilterValue ? "Prueba con otra búsqueda." : "Registra la primera donación para empezar."}
+        emptyAction={!globalFilterValue && (
+          <button className="rp-btn rp-btn-primary" style={{ margin: "0 auto" }} onClick={() => setCreateOpen(true)}>
+            <i className="pi pi-plus" style={{ fontSize: 13 }} /> Nueva donación
+          </button>
+        )}
       />
 
-      <DonationsCreateForm
-        open={createOpen}
-        setOpen={setCreateOpen}
-        setRefresh={setRefresh}
-      />
-      <DonationsEditForm
-        open={editOpen}
-        setOpen={setEditOpen}
-        donationObj={selectedDonation}
-        setRefresh={setRefresh}
-      />
-      <DonationsDeleteDialog
-        open={deleteOpen}
-        setOpen={setDeleteOpen}
-        donationObj={selectedDonation}
-        setRefresh={setRefresh}
-      />
-      <DonationsBulkDeleteDialog
-        open={bulkDeleteOpen}
-        setOpen={setBulkDeleteOpen}
-        ids={selectedIds}
-        onSuccess={onBulkDeleteSuccess}
-      />
+      <DonationsCreateForm open={createOpen} setOpen={setCreateOpen} setRefresh={setRefresh} />
+      <DonationsEditForm open={editOpen} setOpen={setEditOpen} donationObj={selectedDonation} setRefresh={setRefresh} />
+      <DonationsDeleteDialog open={deleteOpen} setOpen={setDeleteOpen} donationObj={selectedDonation} setRefresh={setRefresh} />
+      <DonationsBulkDeleteDialog open={bulkDeleteOpen} setOpen={setBulkDeleteOpen} ids={selectedIds} onSuccess={onBulkDeleteSuccess} />
     </div>
   );
 };

@@ -5,14 +5,10 @@ import { Outlet } from "react-router-dom";
 
 const navItems: NavItem[] = [
   {
+    section: "Principal",
     title: "Inicio",
     url: "/",
     icon: "pi-home",
-  },
-  {
-    title: "Usuarios",
-    url: "/users",
-    icon: "pi-user",
   },
   {
     title: "Beneficiarios",
@@ -20,7 +16,7 @@ const navItems: NavItem[] = [
     icon: "pi-users",
     items: [
       { title: "Directorio", url: "/beneficiaries", icon: "pi-address-book" },
-      { title: "Tutores", url: "/beneficiaries/guardians", icon: "pi-shield" },
+      { title: "Acudientes", url: "/beneficiaries/guardians", icon: "pi-shield" },
     ]
   },
   {
@@ -42,6 +38,12 @@ const navItems: NavItem[] = [
       { title: "Historial", url: "/donations", icon: "pi-history" },
       { title: "Donantes", url: "/donations/donors", icon: "pi-heart" },
     ]
+  },
+  {
+    section: "Administración",
+    title: "Usuarios",
+    url: "/users",
+    icon: "pi-user",
   },
 ];
 
