@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'events',
     'cloudinary_storage',
     'cloudinary',
+    'anymail',
 ]
 
 MIDDLEWARE = [
@@ -175,3 +176,12 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
+
+
+EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
+
+ANYMAIL = {
+    "BREVO_API_KEY": config("BREVO_API_KEY"),
+}
+
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
