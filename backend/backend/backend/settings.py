@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'audits',
     'reports',
     'events',
+    'cloudinary_storage',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -150,3 +152,26 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+
+# ---------------------------------------------------------------------------
+# Cloudinary — almacenamiento de archivos multimedia
+# ---------------------------------------------------------------------------
+
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": config("CLOUDINARY_CLOUD_NAME"),
+    "API_KEY": config("CLOUDINARY_API_KEY"),
+    "API_SECRET": config("CLOUDINARY_API_SECRET"),
+}
+
+# Django 6 usa STORAGES (no DEFAULT_FILE_STORAGE).
+# 'default' = dónde se guardan los archivos subidos (media) → Cloudinary
+# 'staticfiles' = CSS/JS estáticos → se quedan locales
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
