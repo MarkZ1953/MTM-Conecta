@@ -3,6 +3,9 @@ from .models import Beneficiary, Guardian
 
 
 class BeneficiaryFilter(django_filters.FilterSet):
+    full_name = django_filters.CharFilter(
+        method='filter_full_name', label='Full Name')
+
     class Meta:
         model = Beneficiary
         fields = {
@@ -13,8 +16,18 @@ class BeneficiaryFilter(django_filters.FilterSet):
             'is_active': ['exact'],
         }
 
+    def filter_full_name(self, queryset, name, value):
+        return queryset.filter(
+            first_name__icontains=value
+        ) | queryset.filter(
+            last_name__icontains=value
+        )
+
 
 class GuardianFilter(django_filters.FilterSet):
+    full_name = django_filters.CharFilter(
+        method='filter_full_name', label='Full Name')
+
     class Meta:
         model = Guardian
         fields = {
@@ -25,3 +38,10 @@ class GuardianFilter(django_filters.FilterSet):
             'beneficiary': ['exact'],
             'is_active': ['exact'],
         }
+
+    def filter_full_name(self, queryset, name, value):
+        return queryset.filter(
+            first_name__icontains=value
+        ) | queryset.filter(
+            last_name__icontains=value
+        )

@@ -2,6 +2,11 @@ import { useFormContext, Controller } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { donorsAPI } from "@/donors";
+import { ComboboxObject } from "@/components";
+import API_BASE_URL from "@/config/api.config";
 
 const statusOptions = [
   { label: "Pendiente", value: "PENDING" },
@@ -10,28 +15,90 @@ const statusOptions = [
 ];
 
 export const DonationsFormFields = () => {
-  const { control, formState: { errors } } = useFormContext();
+  const { control, watch, formState: { errors } } = useFormContext();
+
+  const [searchDonor, setSearchDonor] = useState<string>("");
+  const donorId = watch("donor");
+
+  // Query to fetch selected donor
+  const { data: selectedDonor, isFetching: isLoadingSelected } = useQuery({
+    queryKey: ["donor", donorId],
+    queryFn: async () => {
+      if (!donorId || typeof donorId !== "number") return null;
+      const response = await fetch(`${API_BASE_URL}/donors/${donorId}/`, {
+        method: "GET",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) return null;
+      const data = await response.json();
+      return {
+        ...data,
+        fullName: `${data.first_name} ${data.last_name}`,
+      };
+    },
+    enabled: !!donorId && typeof donorId === "number",
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Query to search donors
+  const { data: donors = [] } = useQuery({
+    queryKey: ["donors", searchDonor],
+    queryFn: async () => {
+      const response = await donorsAPI.getAll({
+        params: { search: searchDonor },
+      });
+      return (response.data.results ?? []).map((d) => ({
+        id: d.id,
+        name: `${d.first_name} ${d.last_name}`,
+      }));
+    },
+    enabled: !!searchDonor,
+    staleTime: 5 * 60 * 1000,
+  });
 
   return (
     <div className="grid formgrid p-fluid pt-3 row-gap-3">
       <div className="field col-12 md:col-6 mb-2">
         <label htmlFor="donor" className="block mb-2 font-medium text-700">
           <i className="pi pi-user mr-2 text-primary" />
-          ID del Donante
+          Donante
         </label>
         <Controller
           name="donor"
           control={control}
-          render={({ field }) => (
-            <InputNumber
-              id={field.name}
-              value={field.value}
-              onValueChange={(e) => field.onChange(e.value)}
-              className={errors.donor?.message ? "p-invalid w-full" : "w-full"}
-              placeholder="Ej: 1"
-              useGrouping={false}
-            />
-          )}
+          render={({ field }) => {
+            const comboboxValue = selectedDonor
+              ? {
+                  id: selectedDonor.id,
+                  name: selectedDonor.fullName,
+                }
+              : null;
+
+            const comboboxItems = [...donors];
+            if (comboboxValue) {
+              const exists = comboboxItems.some((item) => String(item.id) === String(comboboxValue.id));
+              if (!exists) {
+                comboboxItems.push(comboboxValue);
+              }
+            }
+
+            return (
+              <ComboboxObject
+                items={comboboxItems}
+                value={comboboxValue}
+                onValueChange={(val) => {
+                  field.onChange(val ? val.id : null);
+                }}
+                onSearch={setSearchDonor}
+                onHide={() => setSearchDonor("")}
+                placeholder="Busca y selecciona un donante..."
+                emptyMessage="No se encontraron donantes"
+                className={errors.donor?.message ? "p-invalid w-full" : "w-full"}
+                loading={isLoadingSelected}
+              />
+            );
+          }}
         />
         {errors.donor?.message && <small className="p-error">{errors.donor.message.toString()}</small>}
       </div>
