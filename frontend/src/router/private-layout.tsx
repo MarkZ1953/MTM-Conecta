@@ -40,6 +40,12 @@ const navItems: NavItem[] = [
     ]
   },
   {
+    section: "Comunicación",
+    title: "Campañas",
+    url: "/campaigns",
+    icon: "pi-megaphone",
+  },
+  {
     section: "Administración",
     title: "Usuarios",
     url: "/users",

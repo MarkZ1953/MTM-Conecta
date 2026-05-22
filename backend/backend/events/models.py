@@ -1,3 +1,4 @@
+from cloudinary_storage.storage import RawMediaCloudinaryStorage
 from django.db import models
 from app.models import BaseModel
 from beneficiaries.models import Beneficiary
@@ -83,7 +84,10 @@ class Evidence(BaseModel):
         on_delete=models.CASCADE,
         related_name='evidences'
     )
-    file = models.FileField(upload_to='events/evidence/')
+    file = models.FileField(
+        upload_to='events/evidence/',
+        storage=RawMediaCloudinaryStorage(),
+    )
     description = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
