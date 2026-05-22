@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     'anymail',
+    'campaigns',
 ]
 
 MIDDLEWARE = [
