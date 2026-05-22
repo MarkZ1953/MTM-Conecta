@@ -1,3 +1,4 @@
+from cloudinary_storage.storage import RawMediaCloudinaryStorage
 from app.models import BaseModel
 from django.db import models
 
@@ -41,6 +42,7 @@ class Beneficiary(BaseModel):
 
     authorization_doc = models.FileField(
         upload_to=generate_beneficiary_auth_path,
+        storage=RawMediaCloudinaryStorage(),
         null=True,
         blank=True
     )

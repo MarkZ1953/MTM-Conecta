@@ -13,3 +13,6 @@ PyJWT==2.12.1
 python-decouple==3.8
 sqlparse==0.5.5
 tzdata==2026.2
+cloudinary
+django-cloudinary-storage
+django-anymail[brevo]
