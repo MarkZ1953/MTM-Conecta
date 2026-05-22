@@ -140,7 +140,7 @@
 .mtm-content::-webkit-scrollbar { /* Chrome/Safari/Edge */
   display: none;
 }
-.mtm-content-inner { max-width: 1400px; }
+.mtm-content-inner { width: 100%; }
 
 /* La navegación del sidebar también scrollea sin barra visible */
 .mtm-nav { scrollbar-width: none; -ms-overflow-style: none; }
