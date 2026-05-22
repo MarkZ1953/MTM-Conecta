@@ -12,4 +12,4 @@ class CampaignSerializer(serializers.ModelSerializer):
             'status', 'sent_at', 'sent_count', 'is_active',
         ]
         # El usuario NO controla estos: los maneja el sistema al enviar
-        read_only_fields = ['status', 'sent_at', 'sent_count']
+        read_only_fields = ['status', 'sent_at', 'sent_count', 'is_active']
