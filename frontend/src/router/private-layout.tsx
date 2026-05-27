@@ -4,7 +4,6 @@ import { AuthContext } from "@/auth";
 import { useContext } from "react";
 import { Outlet } from "react-router-dom";
 
-
 const navItems: NavItem[] = [
   {
     section: "Principal",
@@ -19,7 +18,7 @@ const navItems: NavItem[] = [
     items: [
       { title: "Directorio", url: "/beneficiaries", icon: "pi-address-book" },
       { title: "Cuidadores", url: "/beneficiaries/guardians", icon: "pi-shield" },
-    ]
+    ],
   },
   {
     title: "Eventos",
@@ -27,10 +26,14 @@ const navItems: NavItem[] = [
     icon: "pi-calendar",
     items: [
       { title: "Lista de Eventos", url: "/events", icon: "pi-list" },
-      { title: "Asistencia", url: "/events/attendance", icon: "pi-check-square" },
+      {
+        title: "Asistencia",
+        url: "/events/attendance",
+        icon: "pi-check-square",
+      },
       { title: "Actas", url: "/events/acts", icon: "pi-file" },
       { title: "Evidencias", url: "/events/evidences", icon: "pi-images" },
-    ]
+    ],
   },
   {
     title: "Donaciones",
@@ -39,7 +42,7 @@ const navItems: NavItem[] = [
     items: [
       { title: "Historial", url: "/donations", icon: "pi-history" },
       { title: "Donantes", url: "/donations/donors", icon: "pi-heart" },
-    ]
+    ],
   },
   {
     section: "Comunicación",

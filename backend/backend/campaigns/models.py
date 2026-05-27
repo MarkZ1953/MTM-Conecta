@@ -11,7 +11,7 @@ class CampaignContentType(models.TextChoices):
 
 class CampaignRecipientGroup(models.TextChoices):
     DONORS = 'DONORS', 'Donantes'
-    GUARDIANS = 'GUARDIANS', 'Acudientes'
+    GUARDIANS = 'GUARDIANS', 'Cuidadores'
     USERS = 'USERS', 'Usuarios'
     ALL = 'ALL', 'Todos'
 
