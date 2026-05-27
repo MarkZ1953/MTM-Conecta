@@ -39,7 +39,7 @@ const CONTENT_LABEL: Record<Campaign["content_type"], string> = {
 
 const RECIPIENT_LABEL: Record<Campaign["recipient_group"], string> = {
   DONORS: "Donantes",
-  GUARDIANS: "Acudientes",
+  GUARDIANS: "Cuidadores",
   USERS: "Usuarios",
   ALL: "Todos",
 };
@@ -183,7 +183,7 @@ export const CampaignsPage = () => {
       <div className="rp-header">
         <div>
           <h1 className="rp-title">Campañas <span className="count">{fmt(totalCount)} en total</span></h1>
-          <p className="rp-sub">Correos promocionales enviados a donantes, acudientes o usuarios.</p>
+          <p className="rp-sub">Correos promocionales enviados a donantes, cuidadores o usuarios.</p>
         </div>
         <div className="rp-actions">
           <button className="rp-btn rp-btn-primary" onClick={() => navigate("/campaigns/nueva")}>

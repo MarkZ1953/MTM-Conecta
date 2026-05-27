@@ -138,7 +138,7 @@ export const GuardiansPage = () => {
       <div className="rp-header">
         <div>
           <h1 className="rp-title">Cuidadores <span className="count">{fmt(totalCount)} registrados</span></h1>
-          <p className="rp-sub">Personas responsables del acompañamiento de los beneficiarios.</p>
+          <p className="rp-sub">Padres, madres o tutores legales a cargo de los beneficiarios.</p>
         </div>
         <div className="rp-actions">
           <button className="rp-btn rp-btn-primary" onClick={() => setCreateOpen(true)}>
