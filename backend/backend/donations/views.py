@@ -20,7 +20,11 @@ class DonorViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     ]
 
     filterset_class = DonorFilter
-    ordering_fields = ['id', 'first_name', 'last_name', 'email']
+    search_fields = ['first_name', 'last_name', 'email', 'organization_name']
+    ordering_fields = [
+        'id', 'donor_type', 'organization_name',
+        'first_name', 'last_name', 'email'
+    ]
     ordering = ['-id']
 
 
@@ -36,5 +40,9 @@ class DonationViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     ]
 
     filterset_class = DonationFilter
-    ordering_fields = ['id', 'amount', 'date', 'status']
+    search_fields = [
+        'donor__first_name', 'donor__last_name',
+        'donor__email', 'donor__organization_name'
+    ]
+    ordering_fields = ['id', 'amount', 'donation_type', 'date', 'status']
     ordering = ['-date']

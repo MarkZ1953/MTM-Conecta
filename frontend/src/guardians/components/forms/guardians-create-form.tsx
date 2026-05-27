@@ -45,15 +45,15 @@ export const GuardiansCreateForm = ({
       const { status, data: responseData } = await guardiansAPI.create({ data });
 
       if (status >= 200 && status < 300) {
-        toast.success("Tutor registrado correctamente.");
+        toast.success("Cuidador registrado correctamente.");
         setRefresh((prev) => !prev);
         closeDialog();
         return;
       }
 
-      throw new Error(responseData ? JSON.stringify(responseData) : "No se pudo registrar el tutor.");
+      throw new Error(responseData ? JSON.stringify(responseData) : "No se pudo registrar el cuidador.");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "No se pudo registrar el tutor.");
+      toast.error(error instanceof Error ? error.message : "No se pudo registrar el cuidador.");
     }
   };
 
@@ -80,7 +80,7 @@ export const GuardiansCreateForm = ({
 
   return (
     <Dialog
-      header="Registrar Tutor"
+      header="Registrar cuidador"
       visible={open}
       onHide={closeDialog}
       modal

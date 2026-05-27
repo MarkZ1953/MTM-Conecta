@@ -21,7 +21,11 @@ class BeneficiaryViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     ]
 
     filterset_class = BeneficiaryFilter
-    ordering_fields = ['id', 'first_name', 'last_name', 'birth_date']
+    search_fields = ['first_name', 'last_name', 'identification_number', 'municipality', 'treatment_status']
+    ordering_fields = [
+        'id', 'first_name', 'last_name', 'birth_date',
+        'municipality', 'treatment_stage', 'treatment_status'
+    ]
     ordering = ['-id']
 
 

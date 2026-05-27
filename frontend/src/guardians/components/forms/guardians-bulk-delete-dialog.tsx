@@ -33,17 +33,17 @@ export function GuardiansBulkDeleteDialog({
       const failedCount = results.filter((r) => r.status === "rejected").length;
 
       if (failedCount === 0) {
-        toast.success(`${ids.length} tutores eliminados correctamente.`);
+        toast.success(`${ids.length} cuidadores eliminados correctamente.`);
       } else {
-        toast.warning(
-          `Se eliminaron ${ids.length - failedCount} tutores, pero fallaron ${failedCount}.`,
+        toast.warn(
+          `Se eliminaron ${ids.length - failedCount} cuidadores, pero fallaron ${failedCount}.`,
         );
       }
 
       onSuccess();
       closeDialog();
     } catch (error) {
-      toast.error("Ocurrió un error al eliminar los tutores.");
+      toast.error("Ocurrió un error al eliminar los cuidadores.");
     } finally {
       setIsDeleting(false);
     }
@@ -73,7 +73,7 @@ export function GuardiansBulkDeleteDialog({
 
   return (
     <Dialog
-      header="Eliminar Tutores Seleccionados"
+      header="Eliminar cuidadores seleccionados"
       visible={open}
       onHide={closeDialog}
       modal
@@ -88,7 +88,7 @@ export function GuardiansBulkDeleteDialog({
             Esta acción no se puede deshacer.
           </p>
           <p className="m-0 text-700">
-            ¿Estás seguro de que deseas eliminar permanentemente <strong>{ids.length}</strong> tutor(es) seleccionado(s)?
+            ¿Estás seguro de que deseas eliminar permanentemente <strong>{ids.length}</strong> cuidador(es) seleccionado(s)?
           </p>
         </div>
       </div>

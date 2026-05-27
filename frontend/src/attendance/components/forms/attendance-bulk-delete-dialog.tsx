@@ -35,7 +35,7 @@ export function AttendanceBulkDeleteDialog({
       if (failedCount === 0) {
         toast.success(`${ids.length} registros eliminados correctamente.`);
       } else {
-        toast.warning(
+        toast.warn(
           `Se eliminaron ${ids.length - failedCount} registros, pero fallaron ${failedCount}.`,
         );
       }

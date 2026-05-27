@@ -1,5 +1,7 @@
 import { UISidebar } from "@/components";
 import type { NavItem } from "@/components";
+import { AuthContext } from "@/auth";
+import { useContext } from "react";
 import { Outlet } from "react-router-dom";
 
 const navItems: NavItem[] = [
@@ -15,11 +17,7 @@ const navItems: NavItem[] = [
     icon: "pi-users",
     items: [
       { title: "Directorio", url: "/beneficiaries", icon: "pi-address-book" },
-      {
-        title: "Cuidadores",
-        url: "/beneficiaries/guardians",
-        icon: "pi-shield",
-      },
+      { title: "Cuidadores", url: "/beneficiaries/guardians", icon: "pi-shield" },
     ],
   },
   {
@@ -61,8 +59,22 @@ const navItems: NavItem[] = [
 ];
 
 export const PrivateLayout = () => {
+  const { user, logout } = useContext(AuthContext);
+  const profile = user?.user ?? user;
+  const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ");
+  const userName = fullName || profile?.username || "Usuario";
+  const userRole = profile?.is_superuser
+    ? "Administrador"
+    : profile?.groups?.[0]?.name || "Usuario";
+
   return (
-    <UISidebar navItems={navItems} logoText="MTM Conecta">
+    <UISidebar
+      navItems={navItems}
+      logoText="MTM Conecta"
+      userName={userName}
+      userRole={userRole}
+      onLogout={logout}
+    >
       <Outlet />
     </UISidebar>
   );

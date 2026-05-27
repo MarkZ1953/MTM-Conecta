@@ -7,8 +7,10 @@ class BeneficiarySerializer(serializers.ModelSerializer):
         model = Beneficiary
         fields = [
             'id', 'first_name', 'last_name', 'birth_date',
-            'identification_number', 'photo', 'authorization_doc',
-            'registration_date', 'notes', 'is_active'
+            'identification_number', 'municipality', 'treatment_stage',
+            'treatment_status', 'received_aid', 'follow_up_notes',
+            'photo', 'authorization_doc', 'registration_date', 'notes',
+            'is_active'
         ]
         read_only_fields = ['registration_date']
 

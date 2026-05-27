@@ -3,58 +3,53 @@ import "../styles/auth.css";
 
 export function LoginPage() {
   return (
-    <div className="auth-page">
-      {/* Panel izquierdo — branding */}
+    <div className="auth-page auth-page--login">
       <aside className="auth-brand-panel">
         <div className="auth-brand-content">
-          <div className="auth-brand-logo">
-            <span className="auth-brand-icon">
-              <i className="pi pi-heart-fill" />
-            </span>
+          <div className="auth-brand-logo auth-brand-logo--image">
+            <img src="/logo-mtm.png" alt="Fundación MTM" />
           </div>
-          <h2 className="auth-brand-name">Fundación MTM</h2>
+          <span className="auth-brand-eyebrow">Plataforma administrativa</span>
+          <h2 className="auth-brand-name">MTM Conecta</h2>
           <p className="auth-brand-tagline">
-            Juntas transformamos la esperanza en acción. Apoyamos a niñas y
-            niños con cáncer y a las familias que los rodean con amor y
-            dedicación.
+            Gestiona beneficiarios, eventos, donaciones y campañas desde un
+            espacio claro, seguro y pensado para el trabajo diario de la
+            fundación.
           </p>
 
-          {/* Decoración de paleta */}
-          <div className="auth-brand-palette">
-            <span className="auth-palette-dot dot-rose" />
-            <span className="auth-palette-dot dot-primary" />
-            <span className="auth-palette-dot dot-teal" />
-            <span className="auth-palette-dot dot-accent" />
+          <div className="auth-brand-snapshot" aria-label="Resumen de módulos">
+            <div>
+              <strong>360°</strong>
+              <span>Gestión integral</span>
+            </div>
+            <div>
+              <strong>24/7</strong>
+              <span>Información disponible</span>
+            </div>
           </div>
 
           <ul className="auth-brand-features">
             <li>
-              <i className="pi pi-heart" />
-              Acompañamiento integral a niños con cáncer
-            </li>
-            <li>
-              <i className="pi pi-users" />
-              Red de voluntarias comprometidas con la causa
+              <i className="pi pi-check-circle" />
+              Datos organizados para decisiones rápidas
             </li>
             <li>
               <i className="pi pi-shield" />
-              Gestión transparente de recursos y actividades
+              Acceso privado para equipos autorizados
+            </li>
+            <li>
+              <i className="pi pi-chart-line" />
+              Reportes y trazabilidad en un solo lugar
             </li>
           </ul>
         </div>
-
-        {/* Formas decorativas */}
-        <div className="auth-brand-shape shape-1" />
-        <div className="auth-brand-shape shape-2" />
-        <div className="auth-brand-shape shape-3" />
       </aside>
 
-      {/* Panel derecho — formulario */}
       <main className="auth-form-panel">
         <div className="auth-form-container">
           <div className="auth-form-mission">
             <span className="auth-mission-badge">
-              <i className="pi pi-heart-fill" /> Juntas hacemos la diferencia
+              <i className="pi pi-lock" /> Acceso seguro
             </span>
           </div>
 

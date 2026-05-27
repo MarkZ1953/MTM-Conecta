@@ -1,5 +1,4 @@
 import { useFormContext, Controller } from "react-hook-form";
-import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
 import { useState } from "react";
@@ -7,12 +6,17 @@ import { useQuery } from "@tanstack/react-query";
 import { donorsAPI } from "@/donors";
 import { ComboboxObject } from "@/components";
 import API_BASE_URL from "@/config/api.config";
+import { donationStatusLabels, donationTypeLabels } from "@/donations/donations.types";
 
-const statusOptions = [
-  { label: "Pendiente", value: "PENDING" },
-  { label: "Completada", value: "COMPLETED" },
-  { label: "Fallida", value: "FAILED" },
-];
+const statusOptions = Object.entries(donationStatusLabels).map(([value, label]) => ({
+  value,
+  label,
+}));
+
+const donationTypeOptions = Object.entries(donationTypeLabels).map(([value, label]) => ({
+  value,
+  label,
+}));
 
 export const DonationsFormFields = () => {
   const { control, watch, formState: { errors } } = useFormContext();
@@ -104,6 +108,32 @@ export const DonationsFormFields = () => {
       </div>
 
       <div className="field col-12 md:col-6 mb-2">
+        <label htmlFor="donation_type" className="block mb-2 font-medium text-700">
+          <i className="pi pi-tags mr-2 text-primary" />
+          Tipo de donación
+        </label>
+        <Controller
+          name="donation_type"
+          control={control}
+          render={({ field }) => (
+            <Dropdown
+              id={field.name}
+              value={field.value}
+              onChange={(e) => field.onChange(e.value)}
+              options={donationTypeOptions}
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Seleccionar tipo"
+              className={errors.donation_type?.message ? "p-invalid w-full" : "w-full"}
+            />
+          )}
+        />
+        {errors.donation_type?.message && (
+          <small className="p-error">{errors.donation_type.message.toString()}</small>
+        )}
+      </div>
+
+      <div className="field col-12 md:col-6 mb-2">
         <label htmlFor="amount" className="block mb-2 font-medium text-700">
           <i className="pi pi-dollar mr-2 text-primary" />
           Monto
@@ -117,10 +147,10 @@ export const DonationsFormFields = () => {
               value={field.value}
               onValueChange={(e) => field.onChange(e.value)}
               mode="currency"
-              currency="USD"
-              locale="en-US"
+              currency="COP"
+              locale="es-CO"
               className={errors.amount?.message ? "p-invalid w-full" : "w-full"}
-              placeholder="Ej: 100.00"
+              placeholder="Ej: 100.000"
             />
           )}
         />
@@ -142,6 +172,7 @@ export const DonationsFormFields = () => {
               onChange={(e) => field.onChange(e.value)}
               options={statusOptions}
               optionLabel="label"
+              optionValue="value"
               placeholder="Seleccionar Estado"
               className={errors.status?.message ? "p-invalid w-full" : "w-full"}
             />

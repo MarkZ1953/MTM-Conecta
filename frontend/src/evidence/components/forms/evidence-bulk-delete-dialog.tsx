@@ -35,7 +35,7 @@ export function EvidenceBulkDeleteDialog({
       if (failedCount === 0) {
         toast.success(`${ids.length} evidencias eliminadas correctamente.`);
       } else {
-        toast.warning(
+        toast.warn(
           `Se eliminaron ${ids.length - failedCount} evidencias, pero fallaron ${failedCount}.`,
         );
       }

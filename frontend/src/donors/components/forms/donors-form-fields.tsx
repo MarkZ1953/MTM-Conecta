@@ -1,10 +1,17 @@
 import { useFormContext, Controller } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
+import { Dropdown } from "primereact/dropdown";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { usersAPI } from "@/users";
 import { ComboboxObject } from "@/components";
 import API_BASE_URL from "@/config/api.config";
+import { donorTypeLabels } from "@/donors/donors.types";
+
+const donorTypeOptions = Object.entries(donorTypeLabels).map(([value, label]) => ({
+  value,
+  label,
+}));
 
 const getUserName = (u: any) => {
   const full = `${u.first_name || ""} ${u.last_name || ""}`.trim();
@@ -98,9 +105,58 @@ export const DonorsFormFields = () => {
       </div>
 
       <div className="field col-12 md:col-6 mb-2">
+        <label htmlFor="donor_type" className="block mb-2 font-medium text-700">
+          <i className="pi pi-id-card mr-2 text-primary" />
+          Tipo de donante
+        </label>
+        <Controller
+          name="donor_type"
+          control={control}
+          render={({ field }) => (
+            <Dropdown
+              id={field.name}
+              value={field.value}
+              onChange={(e) => field.onChange(e.value)}
+              options={donorTypeOptions}
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Seleccionar tipo"
+              className={errors.donor_type?.message ? "p-invalid w-full" : "w-full"}
+            />
+          )}
+        />
+        {errors.donor_type?.message && (
+          <small className="p-error">{errors.donor_type.message.toString()}</small>
+        )}
+      </div>
+
+      <div className="field col-12 md:col-6 mb-2">
+        <label htmlFor="organization_name" className="block mb-2 font-medium text-700">
+          <i className="pi pi-building mr-2 text-primary" />
+          Familia o empresa
+        </label>
+        <Controller
+          name="organization_name"
+          control={control}
+          render={({ field }) => (
+            <InputText
+              id={field.name}
+              value={field.value || ""}
+              onChange={(e) => field.onChange(e.target.value)}
+              className={errors.organization_name?.message ? "p-invalid w-full" : "w-full"}
+              placeholder="Nombre de familia o empresa"
+            />
+          )}
+        />
+        {errors.organization_name?.message && (
+          <small className="p-error">{errors.organization_name.message.toString()}</small>
+        )}
+      </div>
+
+      <div className="field col-12 md:col-6 mb-2">
         <label htmlFor="first_name" className="block mb-2 font-medium text-700">
           <i className="pi pi-id-card mr-2 text-primary" />
-          Nombres
+          Nombre de contacto
         </label>
         <Controller
           name="first_name"
@@ -111,7 +167,7 @@ export const DonorsFormFields = () => {
               value={field.value || ""}
               onChange={(e) => field.onChange(e.target.value)}
               className={errors.first_name?.message ? "p-invalid w-full" : "w-full"}
-              placeholder="Nombres del donante"
+              placeholder="Nombre del contacto"
             />
           )}
         />
@@ -121,7 +177,7 @@ export const DonorsFormFields = () => {
       <div className="field col-12 md:col-6 mb-2">
         <label htmlFor="last_name" className="block mb-2 font-medium text-700">
           <i className="pi pi-id-card mr-2 text-primary" />
-          Apellidos
+          Apellido de contacto
         </label>
         <Controller
           name="last_name"
@@ -132,7 +188,7 @@ export const DonorsFormFields = () => {
               value={field.value || ""}
               onChange={(e) => field.onChange(e.target.value)}
               className={errors.last_name?.message ? "p-invalid w-full" : "w-full"}
-              placeholder="Apellidos del donante"
+              placeholder="Apellido del contacto"
             />
           )}
         />

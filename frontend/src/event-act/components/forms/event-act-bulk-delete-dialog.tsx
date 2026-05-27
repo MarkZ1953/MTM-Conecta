@@ -35,7 +35,7 @@ export function EventActBulkDeleteDialog({
       if (failedCount === 0) {
         toast.success(`${ids.length} actas eliminadas correctamente.`);
       } else {
-        toast.warning(
+        toast.warn(
           `Se eliminaron ${ids.length - failedCount} actas, pero fallaron ${failedCount}.`,
         );
       }

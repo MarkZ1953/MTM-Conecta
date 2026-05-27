@@ -12,6 +12,9 @@ class BeneficiaryFilter(django_filters.FilterSet):
             'first_name': ['exact', 'icontains', 'istartswith'],
             'last_name': ['exact', 'icontains', 'istartswith'],
             'identification_number': ['exact', 'icontains'],
+            'municipality': ['exact', 'icontains'],
+            'treatment_stage': ['exact'],
+            'treatment_status': ['exact', 'icontains'],
             'birth_date': ['exact', 'lt', 'gt', 'lte', 'gte'],
             'is_active': ['exact'],
         }

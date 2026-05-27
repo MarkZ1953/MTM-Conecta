@@ -6,10 +6,11 @@ type DonationsQueryParams = {
   page_size?: number;
   ordering?: string;
   status?: string;
+  donation_type?: string;
   [key: string]: string | number | boolean | null | undefined;
 };
 
-class DonationsAPI extends ResourceAPI<Donation> {
+class DonationsAPI extends ResourceAPI<any> {
     constructor() {
         super({ resource: "donations" });
     }
@@ -41,7 +42,7 @@ class DonationsAPI extends ResourceAPI<Donation> {
     }
 
     async softDelete({ id }: { id: number }): Promise<{ status: number; data: any }> {
-        return super.delete(id) as any;
+        return super.softDelete({ id }) as any;
     }
 }
 

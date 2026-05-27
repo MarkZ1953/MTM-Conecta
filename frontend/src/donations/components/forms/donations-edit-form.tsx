@@ -21,6 +21,7 @@ type DonationsEditFormProps = {
 const getDefaultValues = (donationObj?: Donation | null): DonationPayload => ({
   donor: donationObj?.donor ?? 0,
   amount: donationObj ? parseFloat(donationObj.amount) : 0,
+  donation_type: donationObj?.donation_type ?? "ECOAPORTE",
   status: donationObj?.status ?? "PENDING",
 });
 

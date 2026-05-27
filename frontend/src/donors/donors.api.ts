@@ -5,6 +5,7 @@ type DonorQueryParams = {
   page?: number;
   page_size?: number;
   ordering?: string;
+  donor_type?: string;
   [key: string]: string | number | boolean | null | undefined;
 };
 
@@ -40,7 +41,7 @@ class DonorsAPI extends ResourceAPI<Donor> {
     }
 
     async softDelete({ id }: { id: number }): Promise<{ status: number; data: any }> {
-        return super.delete(id) as any;
+        return super.softDelete({ id }) as any;
     }
 }
 
