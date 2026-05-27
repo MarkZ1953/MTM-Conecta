@@ -62,10 +62,11 @@ export function RegisterForm() {
         noValidate
       >
         <div className="register-form-header">
+          <span className="register-form-kicker">Registro</span>
           <h1 className="register-form-title">Crea tu cuenta</h1>
           <p className="register-form-subtitle">
-            Únete a la red de voluntarias de la Fundación MTM y ayuda a niños
-            con cáncer a tener una mejor vida
+            Registra un usuario para acceder a la plataforma administrativa de
+            la Fundación MTM.
           </p>
         </div>
 
@@ -113,7 +114,7 @@ export function RegisterForm() {
         <Divider />
 
         <p className="register-login-prompt">
-          ¿Ya eres parte de la fundación?&nbsp;
+          ¿Ya tienes un usuario?&nbsp;
           <button
             type="button"
             className="register-login-link"

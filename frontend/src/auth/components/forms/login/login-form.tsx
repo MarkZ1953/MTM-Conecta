@@ -46,10 +46,10 @@ export function LoginForm() {
         >
           <div className="login-form-header">
             <span className="login-form-kicker">Inicio de sesión</span>
-            <h1 className="login-form-title">Bienvenida de nuevo</h1>
+            <h1 className="login-form-title">Bienvenido de nuevo</h1>
             <p className="login-form-subtitle">
-              Ingresa tus credenciales para continuar con la gestión de MTM
-              Conecta.
+              Ingresa tus credenciales para continuar con la gestión interna de
+              MTM Conecta.
             </p>
           </div>
 
@@ -74,7 +74,7 @@ export function LoginForm() {
           <Divider />
 
           <p className="login-register-prompt">
-            ¿Eres nueva en la fundación?&nbsp;
+            ¿Necesitas crear un usuario?&nbsp;
             <button
               type="button"
               className="login-register-link"
