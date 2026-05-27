@@ -10,7 +10,7 @@ import {
 import { buildQueryParams } from "@/utils";
 import { donationsAPI } from "./donations.api";
 import { useDonationsStore } from "./donations.store";
-import type { Donation } from "./donations.types";
+import { donationStatusLabels, donationTypeLabels, type Donation } from "./donations.types";
 import {
   DonationsBulkDeleteDialog,
   DonationsCreateForm,
@@ -33,9 +33,9 @@ const formatDate = (value: string) => {
 };
 
 const STATUS: Record<Donation["status"], { label: string; cls: string }> = {
-  COMPLETED: { label: "Completada", cls: "completed" },
-  PENDING: { label: "Pendiente", cls: "pending" },
-  FAILED: { label: "Fallida", cls: "failed" },
+  COMPLETED: { label: donationStatusLabels.COMPLETED, cls: "completed" },
+  PENDING: { label: donationStatusLabels.PENDING, cls: "pending" },
+  FAILED: { label: donationStatusLabels.FAILED, cls: "failed" },
 };
 
 export const DonationsPage = () => {
@@ -81,6 +81,8 @@ export const DonationsPage = () => {
 
   const pageAmount = donationsList.reduce((acc, d) => acc + parseFloat(d.amount || "0"), 0);
   const completedCount = donationsList.filter((d) => d.status === "COMPLETED").length;
+  const ecoaporteCount = donationsList.filter((d) => d.donation_type === "ECOAPORTE").length;
+  const sponsorDonationCount = donationsList.filter((d) => d.donation_type === "PERMANENT_SPONSOR").length;
 
   const onGlobalFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -107,6 +109,13 @@ export const DonationsPage = () => {
             <div className="rp-person-id">Registrada</div>
           </div>
         </div>
+      ),
+    },
+    {
+      accessorKey: "donation_type",
+      header: "Tipo",
+      cell: ({ row: { original: d } }) => (
+        <span className="rp-badge active"><span className="dot" /> {donationTypeLabels[d.donation_type]}</span>
       ),
     },
     {
@@ -191,10 +200,10 @@ export const DonationsPage = () => {
           <div className="rp-stat-meta">En esta página</div>
         </div>
         <div className="rp-stat">
-          <div className="rp-stat-pill ink"><i className="pi pi-list" /></div>
-          <div className="rp-stat-label">En esta página</div>
-          <div className="rp-stat-value">{fmt(donationsList.length)}</div>
-          <div className="rp-stat-meta">de {fmt(totalCount)} en total</div>
+          <div className="rp-stat-pill ink"><i className="pi pi-tags" /></div>
+          <div className="rp-stat-label">Ecoaportes</div>
+          <div className="rp-stat-value">{fmt(ecoaporteCount)}</div>
+          <div className="rp-stat-meta">{fmt(sponsorDonationCount)} padrino permanente</div>
         </div>
       </div>
 

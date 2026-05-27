@@ -137,7 +137,7 @@ export const GuardiansFormFields = () => {
               className={
                 errors.first_name?.message ? "p-invalid w-full" : "w-full"
               }
-              placeholder="Nombres del tutor"
+              placeholder="Nombres del cuidador"
             />
           )}
         />
@@ -164,7 +164,7 @@ export const GuardiansFormFields = () => {
               className={
                 errors.last_name?.message ? "p-invalid w-full" : "w-full"
               }
-              placeholder="Apellidos del tutor"
+              placeholder="Apellidos del cuidador"
             />
           )}
         />

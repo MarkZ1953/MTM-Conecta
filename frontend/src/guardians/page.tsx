@@ -57,7 +57,7 @@ export const GuardiansPage = () => {
       return data;
     },
     throwOnError: (error: unknown) => {
-      toast.error(error instanceof Error ? error.message : "No se pudieron cargar los acudientes.");
+      toast.error(error instanceof Error ? error.message : "No se pudieron cargar los cuidadores.");
       return false;
     },
   });
@@ -87,7 +87,7 @@ export const GuardiansPage = () => {
   const columns: ColumnDef<Guardian>[] = [
     {
       accessorKey: "first_name",
-      header: "Acudiente",
+      header: "Cuidador",
       cell: ({ row: { original: g } }) => (
         <div className="rp-person">
           <div className={`rp-avatar rp-av-${Number(g.id) % 6}`}>{initials(g)}</div>
@@ -137,12 +137,12 @@ export const GuardiansPage = () => {
     <div className="rp">
       <div className="rp-header">
         <div>
-          <h1 className="rp-title">Acudientes <span className="count">{fmt(totalCount)} registrados</span></h1>
-          <p className="rp-sub">Responsables y tutores asociados a los beneficiarios.</p>
+          <h1 className="rp-title">Cuidadores <span className="count">{fmt(totalCount)} registrados</span></h1>
+          <p className="rp-sub">Personas responsables del acompañamiento de los beneficiarios.</p>
         </div>
         <div className="rp-actions">
           <button className="rp-btn rp-btn-primary" onClick={() => setCreateOpen(true)}>
-            <i className="pi pi-plus" style={{ fontSize: 13 }} /> Registrar acudiente
+            <i className="pi pi-plus" style={{ fontSize: 13 }} /> Registrar cuidador
           </button>
         </div>
       </div>
@@ -152,7 +152,7 @@ export const GuardiansPage = () => {
           <div className="rp-stat-pill teal"><i className="pi pi-shield" /></div>
           <div className="rp-stat-label">Total registrados</div>
           <div className="rp-stat-value">{isLoading ? "—" : fmt(totalCount)}</div>
-          <div className="rp-stat-meta">Acudientes activos</div>
+          <div className="rp-stat-meta">Cuidadores activos</div>
         </div>
         <div className="rp-stat">
           <div className="rp-stat-pill lime"><i className="pi pi-list" /></div>
@@ -191,11 +191,11 @@ export const GuardiansPage = () => {
         selectionActions={
           <button className="rp-btn rp-btn-danger-ghost" onClick={() => setBulkDeleteOpen(true)}>Eliminar</button>
         }
-        emptyTitle="No se encontraron acudientes"
-        emptyText={globalFilterValue ? "Prueba con otra búsqueda." : "Registra el primer acudiente para empezar."}
+        emptyTitle="No se encontraron cuidadores"
+        emptyText={globalFilterValue ? "Prueba con otra búsqueda." : "Registra el primer cuidador para empezar."}
         emptyAction={!globalFilterValue && (
           <button className="rp-btn rp-btn-primary" style={{ margin: "0 auto" }} onClick={() => setCreateOpen(true)}>
-            <i className="pi pi-plus" style={{ fontSize: 13 }} /> Registrar acudiente
+            <i className="pi pi-plus" style={{ fontSize: 13 }} /> Registrar cuidador
           </button>
         )}
       />

@@ -6,7 +6,8 @@ class DonorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Donor
         fields = [
-            'id', 'user', 'first_name', 'last_name', 'email', 'is_active'
+            'id', 'user', 'donor_type', 'organization_name',
+            'first_name', 'last_name', 'email', 'is_active'
         ]
 
 
@@ -14,6 +15,7 @@ class DonationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Donation
         fields = [
-            'id', 'donor', 'amount', 'date', 'status', 'is_active'
+            'id', 'donor', 'amount', 'donation_type', 'date',
+            'status', 'is_active'
         ]
         read_only_fields = ['date']

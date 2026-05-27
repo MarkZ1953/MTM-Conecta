@@ -45,10 +45,11 @@ export function LoginForm() {
           noValidate
         >
           <div className="login-form-header">
+            <span className="login-form-kicker">Inicio de sesión</span>
             <h1 className="login-form-title">Bienvenida de nuevo</h1>
             <p className="login-form-subtitle">
-              Accede a tu cuenta de la Fundación MTM y sigue haciendo la
-              diferencia
+              Ingresa tus credenciales para continuar con la gestión de MTM
+              Conecta.
             </p>
           </div>
 
@@ -66,7 +67,7 @@ export function LoginForm() {
             className="login-submit-btn"
             loading={isSubmitting}
             disabled={isSubmitting}
-            icon="pi pi-sign-in"
+            icon="pi pi-arrow-right"
             iconPos="right"
           />
 

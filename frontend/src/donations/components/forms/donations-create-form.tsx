@@ -19,6 +19,7 @@ type DonationsCreateFormProps = {
 const defaultValues: DonationPayload = {
   donor: 0,
   amount: 0,
+  donation_type: "ECOAPORTE",
   status: "PENDING",
 };
 

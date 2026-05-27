@@ -32,15 +32,15 @@ export function GuardiansDeleteDialog({
       const { status } = await guardiansAPI.softDelete({ id: guardianObj.id });
 
       if (status >= 200 && status < 300) {
-        toast.success("Tutor eliminado correctamente.");
+        toast.success("Cuidador eliminado correctamente.");
         setRefresh((prev) => !prev);
         closeDialog();
         return;
       }
 
-      throw new Error("No se pudo eliminar el tutor.");
+      throw new Error("No se pudo eliminar el cuidador.");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "No se pudo eliminar el tutor.");
+      toast.error(error instanceof Error ? error.message : "No se pudo eliminar el cuidador.");
     } finally {
       setIsDeleting(false);
     }
@@ -70,7 +70,7 @@ export function GuardiansDeleteDialog({
 
   return (
     <Dialog
-      header="Eliminar Tutor"
+      header="Eliminar cuidador"
       visible={open}
       onHide={closeDialog}
       modal
@@ -85,7 +85,7 @@ export function GuardiansDeleteDialog({
             Esta acción no se puede deshacer.
           </p>
           <p className="m-0 text-700">
-            El tutor <strong>{guardianObj?.first_name} {guardianObj?.last_name}</strong> será eliminado permanentemente.
+            El cuidador <strong>{guardianObj?.first_name} {guardianObj?.last_name}</strong> será eliminado permanentemente.
           </p>
         </div>
       </div>

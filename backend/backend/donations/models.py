@@ -9,6 +9,17 @@ class StatusDonation(models.TextChoices):
     FAILED = 'FAILED', 'Fallida'
 
 
+class DonorType(models.TextChoices):
+    PERSON = 'PERSON', 'Persona natural'
+    FAMILY = 'FAMILY', 'Familia'
+    COMPANY = 'COMPANY', 'Empresa'
+
+
+class DonationType(models.TextChoices):
+    ECOAPORTE = 'ECOAPORTE', 'Bono Donación / Ecoaporte'
+    PERMANENT_SPONSOR = 'PERMANENT_SPONSOR', 'Padrino Permanente'
+
+
 class Donor(BaseModel):
     user = models.OneToOneField(
         User,
@@ -16,6 +27,20 @@ class Donor(BaseModel):
         null=False,
         blank=False,
         related_name='donor'
+    )
+
+    donor_type = models.CharField(
+        max_length=16,
+        choices=DonorType.choices,
+        default=DonorType.PERSON,
+        null=False,
+        blank=False
+    )
+
+    organization_name = models.CharField(
+        max_length=128,
+        blank=True,
+        default=''
     )
 
     first_name = models.CharField(
@@ -57,6 +82,14 @@ class Donation(BaseModel):
     amount = models.DecimalField(
         max_digits=12,
         decimal_places=2,
+        null=False,
+        blank=False
+    )
+
+    donation_type = models.CharField(
+        max_length=32,
+        choices=DonationType.choices,
+        default=DonationType.ECOAPORTE,
         null=False,
         blank=False
     )

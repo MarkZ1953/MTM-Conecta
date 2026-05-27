@@ -35,7 +35,7 @@ export function DonorsBulkDeleteDialog({
       if (failedCount === 0) {
         toast.success(`${ids.length} donantes eliminados correctamente.`);
       } else {
-        toast.warning(
+        toast.warn(
           `Se eliminaron ${ids.length - failedCount} donantes, pero fallaron ${failedCount}.`,
         );
       }

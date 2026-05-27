@@ -83,7 +83,7 @@ export const buildQueryParams = ({
     }
 
     // Iteramos cada restricción para este campo
-    constraints.forEach((constraint, index) => {
+      constraints.forEach((constraint) => {
       const val = constraint.value;
       if (val === null || val === undefined || val === "") return;
 

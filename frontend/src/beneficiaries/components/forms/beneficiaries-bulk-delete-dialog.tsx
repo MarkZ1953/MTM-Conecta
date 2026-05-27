@@ -35,7 +35,7 @@ export function BeneficiariesBulkDeleteDialog({
       if (failedCount === 0) {
         toast.success(`${ids.length} beneficiarios eliminados correctamente.`);
       } else {
-        toast.warning(
+        toast.warn(
           `Se eliminaron ${ids.length - failedCount} beneficiarios, pero fallaron ${failedCount}.`,
         );
       }

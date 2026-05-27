@@ -11,7 +11,11 @@ import {
 import { buildQueryParams } from "@/utils";
 import { beneficiariesAPI } from "./beneficiaries.api";
 import { useBeneficiariesStore } from "./beneficiaries.store";
-import type { Beneficiary } from "./beneficiaries.types";
+import {
+  beneficiaryTreatmentStageLabels,
+  type Beneficiary,
+  type BeneficiaryTreatmentStage,
+} from "./beneficiaries.types";
 import {
   BeneficiariesBulkDeleteDialog,
   BeneficiariesCreateForm,
@@ -25,6 +29,8 @@ const defaultFilters: DataTableFilterMeta = {
   first_name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
   last_name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
   identification_number: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+  municipality: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+  treatment_stage: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
 };
 
 const initials = (b: Beneficiary) => `${b.first_name?.[0] ?? ""}${b.last_name?.[0] ?? ""}`.toUpperCase();
@@ -38,11 +44,8 @@ const age = (birthDate: string) => {
   if (m < 0 || (m === 0 && now.getDate() < d.getDate())) years--;
   return years;
 };
-const formatDate = (value: string) => {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
-};
+const getStageLabel = (stage: BeneficiaryTreatmentStage) =>
+  beneficiaryTreatmentStageLabels[stage] ?? "Sin clasificar";
 
 export const BeneficiariesPage = () => {
   const {
@@ -85,8 +88,9 @@ export const BeneficiariesPage = () => {
     [rowSelection],
   );
 
-  const pendingDocs = beneficiaries.filter((b) => !b.authorization_doc).length;
-  const withDocs = beneficiaries.length - pendingDocs;
+  const initialSupportCount = beneficiaries.filter((b) => b.treatment_stage === "INITIAL_SUPPORT").length;
+  const midTreatmentCount = beneficiaries.filter((b) => b.treatment_stage === "MID_TREATMENT").length;
+  const survivorCount = beneficiaries.filter((b) => b.treatment_stage === "SURVIVOR").length;
 
   const onGlobalFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -117,6 +121,7 @@ export const BeneficiariesPage = () => {
       ),
     },
     { accessorKey: "identification_number", header: "Identificación" },
+    { accessorKey: "municipality", header: "Municipio" },
     {
       accessorKey: "birth_date",
       header: "Edad",
@@ -126,6 +131,17 @@ export const BeneficiariesPage = () => {
       },
     },
     {
+      accessorKey: "treatment_stage",
+      header: "Etapa",
+      cell: ({ row: { original: b } }) =>
+        <span className="rp-badge active"><span className="dot" /> {getStageLabel(b.treatment_stage)}</span>,
+    },
+    {
+      accessorKey: "treatment_status",
+      header: "Estado tratamiento",
+      cell: ({ row: { original: b } }) => b.treatment_status || "—",
+    },
+    {
       id: "documento",
       header: "Documento",
       enableSorting: false,
@@ -133,21 +149,6 @@ export const BeneficiariesPage = () => {
         b.authorization_doc
           ? <span className="rp-badge active"><span className="dot" /> Cargado</span>
           : <span className="rp-badge pending"><span className="dot" /> Pendiente</span>,
-    },
-    {
-      id: "estado",
-      header: "Estado",
-      enableSorting: false,
-      cell: ({ row: { original: b } }) =>
-        b.is_active
-          ? <span className="rp-badge active"><span className="dot" /> Activo</span>
-          : <span className="rp-badge inactive"><span className="dot" /> Inactivo</span>,
-    },
-    {
-      id: "registrado",
-      header: "Registrado",
-      enableSorting: false,
-      cell: ({ row: { original: b } }) => formatDate(b.registration_date),
     },
     {
       id: "actions",
@@ -199,22 +200,22 @@ export const BeneficiariesPage = () => {
           <div className="rp-stat-meta">Beneficiarios activos</div>
         </div>
         <div className="rp-stat">
-          <div className="rp-stat-pill lime"><i className="pi pi-list" /></div>
-          <div className="rp-stat-label">En esta página</div>
-          <div className="rp-stat-value">{fmt(beneficiaries.length)}</div>
-          <div className="rp-stat-meta">de {fmt(totalCount)} en total</div>
+          <div className="rp-stat-pill lime"><i className="pi pi-heart" /></div>
+          <div className="rp-stat-label">Apoyo inicial</div>
+          <div className="rp-stat-value">{fmt(initialSupportCount)}</div>
+          <div className="rp-stat-meta">En esta página</div>
         </div>
         <div className="rp-stat">
-          <div className="rp-stat-pill ink"><i className="pi pi-check-circle" /></div>
-          <div className="rp-stat-label">Con documentos</div>
-          <div className="rp-stat-value">{fmt(withDocs)}</div>
-          <div className="rp-stat-meta">Autorización cargada</div>
+          <div className="rp-stat-pill ink"><i className="pi pi-chart-line" /></div>
+          <div className="rp-stat-label">Mitad de tratamiento</div>
+          <div className="rp-stat-value">{fmt(midTreatmentCount)}</div>
+          <div className="rp-stat-meta">En esta página</div>
         </div>
         <div className="rp-stat">
-          <div className="rp-stat-pill pink"><i className="pi pi-file" /></div>
-          <div className="rp-stat-label">Documentos pendientes</div>
-          <div className="rp-stat-value">{fmt(pendingDocs)}</div>
-          <div className="rp-stat-meta">Requieren autorización</div>
+          <div className="rp-stat-pill pink"><i className="pi pi-star" /></div>
+          <div className="rp-stat-label">Sobrevivientes</div>
+          <div className="rp-stat-value">{fmt(survivorCount)}</div>
+          <div className="rp-stat-meta">En esta página</div>
         </div>
       </div>
 

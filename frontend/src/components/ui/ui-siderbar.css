@@ -95,8 +95,10 @@
 /* User card */
 .mtm-user-card {
   margin-top: 14px; padding: 12px;
-  border: 1px solid var(--s-line); border-radius: 12px;
+  border: 1px solid var(--s-line); border-radius: 8px;
   display: flex; align-items: center; gap: 11px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FBFCFD 100%);
+  box-shadow: 0 8px 22px rgba(15, 31, 44, 0.05);
 }
 .mtm-user-avatar {
   width: 36px; height: 36px; border-radius: 50%;
@@ -106,6 +108,26 @@
 }
 .mtm-user-name { font-weight: 600; font-size: 13px; color: var(--s-ink); }
 .mtm-user-role { font-size: 11px; color: var(--s-muted); }
+.mtm-logout-btn {
+  width: 34px; height: 34px; border-radius: 8px;
+  border: 1px solid transparent; background: transparent; cursor: pointer;
+  display: grid; place-items: center; color: var(--s-muted);
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+  flex-shrink: 0;
+}
+.mtm-logout-btn:hover:not(:disabled) {
+  background: #FFF2F6;
+  border-color: #F8C0D0;
+  color: var(--s-pink);
+}
+.mtm-logout-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(230, 59, 122, 0.16);
+}
+.mtm-logout-btn:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
 
 /* ---------- Main + Topbar ---------- */
 .mtm-main { display: flex; flex-direction: column; flex: 1; overflow: hidden; }

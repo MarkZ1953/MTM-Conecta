@@ -43,8 +43,8 @@ class BeneficiariesAPI extends ResourceAPI<Beneficiary> {
     }
 
     async softDelete({ id }: { id: number }): Promise<{ status: number; data: any }> {
-        return super.delete(id) as any;
-    }
+    return super.softDelete({ id }) as any;
+}
 }
 
 export const beneficiariesAPI = new BeneficiariesAPI();

@@ -59,15 +59,15 @@ export const GuardiansEditForm = ({
       });
 
       if (status >= 200 && status < 300) {
-        toast.success("Tutor actualizado correctamente.");
+        toast.success("Cuidador actualizado correctamente.");
         setRefresh((prev) => !prev);
         closeDialog();
         return;
       }
 
-      throw new Error(responseData ? JSON.stringify(responseData) : "No se pudo actualizar el tutor.");
+      throw new Error(responseData ? JSON.stringify(responseData) : "No se pudo actualizar el cuidador.");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "No se pudo actualizar el tutor.");
+      toast.error(error instanceof Error ? error.message : "No se pudo actualizar el cuidador.");
     }
   };
 
@@ -94,7 +94,7 @@ export const GuardiansEditForm = ({
 
   return (
     <Dialog
-      header="Editar Tutor"
+      header="Editar cuidador"
       visible={open}
       onHide={closeDialog}
       modal
