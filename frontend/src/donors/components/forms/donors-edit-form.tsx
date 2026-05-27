@@ -20,6 +20,8 @@ type DonorsEditFormProps = {
 
 const getDefaultValues = (donorObj?: Donor | null): DonorPayload => ({
   user: donorObj?.user ?? 0,
+  donor_type: donorObj?.donor_type ?? "PERSON",
+  organization_name: donorObj?.organization_name ?? "",
   first_name: donorObj?.first_name ?? "",
   last_name: donorObj?.last_name ?? "",
   email: donorObj?.email ?? "",

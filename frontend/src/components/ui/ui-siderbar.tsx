@@ -29,6 +29,7 @@ interface UISidebarProps {
   logoSrc?: string;
   userName?: string;
   userRole?: string;
+  onLogout?: () => Promise<void> | void;
 }
 
 // ─── Icon helper ────────────────────────────────────────────────────────────
@@ -128,10 +129,23 @@ export const UISidebar = ({
   logoSrc = "/logo-mtm.png",
   userName = "Usuario",
   userRole = "Administrador",
+  onLogout,
 }: UISidebarProps) => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [logoError, setLogoError] = useState<boolean>(false);
+  const [loggingOut, setLoggingOut] = useState<boolean>(false);
   const crumbs = useBreadcrumb(navItems);
+
+  const handleLogout = async () => {
+    if (!onLogout || loggingOut) return;
+
+    setLoggingOut(true);
+    try {
+      await onLogout();
+    } finally {
+      setLoggingOut(false);
+    }
+  };
 
   return (
     <div className="mtm-shell">
@@ -168,13 +182,25 @@ export const UISidebar = ({
             ))}
           </ul>
 
-          {/* User card */}
+          {/* User profile */}
           <div className="mtm-user-card">
             <div className="mtm-user-avatar">{initials(userName)}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="mtm-user-name">{userName}</div>
               <div className="mtm-user-role">{userRole}</div>
             </div>
+            {onLogout && (
+              <button
+                type="button"
+                className="mtm-logout-btn"
+                onClick={handleLogout}
+                disabled={loggingOut}
+                title="Cerrar sesión"
+                aria-label="Cerrar sesión"
+              >
+                <i className={`pi ${loggingOut ? "pi-spin pi-spinner" : "pi-sign-out"}`} />
+              </button>
+            )}
           </div>
         </div>
       </aside>

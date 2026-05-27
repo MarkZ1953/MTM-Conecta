@@ -23,6 +23,11 @@ const getDefaultValues = (beneficiary?: Beneficiary | null): BeneficiaryPayload 
   last_name: beneficiary?.last_name ?? "",
   identification_number: beneficiary?.identification_number ?? "",
   birth_date: beneficiary?.birth_date ?? "",
+  municipality: beneficiary?.municipality ?? "",
+  treatment_stage: beneficiary?.treatment_stage ?? "INITIAL_SUPPORT",
+  treatment_status: beneficiary?.treatment_status ?? "",
+  received_aid: beneficiary?.received_aid ?? "",
+  follow_up_notes: beneficiary?.follow_up_notes ?? "",
   notes: beneficiary?.notes ?? "",
 });
 

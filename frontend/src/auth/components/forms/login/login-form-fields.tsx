@@ -1,5 +1,4 @@
 import { useFormContext, Controller } from "react-hook-form";
-import { FloatLabel } from "primereact/floatlabel";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 
@@ -13,22 +12,26 @@ export function LoginFormFields() {
 
   return (
     <div className="login-fields">
-      {/* Usuario */}
       <div className="login-field-wrapper">
+        <label htmlFor="login-username" className="login-label">
+          Usuario
+        </label>
         <Controller
           name="username"
           control={control}
           render={({ field }) => (
-            <FloatLabel>
+            <span className="login-control">
+              <i className="pi pi-user" aria-hidden="true" />
               <InputText
                 id="login-username"
                 className={`login-input${errors.username ? " p-invalid" : ""}`}
                 {...field}
                 autoComplete="username"
+                placeholder="tu.usuario"
                 type="text"
+                autoFocus
               />
-              <label htmlFor="login-username">Nombre de usuario</label>
-            </FloatLabel>
+            </span>
           )}
         />
         {errors.username && (
@@ -38,26 +41,29 @@ export function LoginFormFields() {
         )}
       </div>
 
-      {/* Contraseña */}
       <div className="login-field-wrapper">
+        <label htmlFor="login-password" className="login-label">
+          Contraseña
+        </label>
         <Controller
           name="password"
           control={control}
           render={({ field }) => (
-            <FloatLabel>
+            <span className="login-control login-control--password">
+              <i className="pi pi-lock" aria-hidden="true" />
               <Password
-                inputId="password"
+                inputId="login-password"
                 className={`login-input${errors.password ? " p-invalid" : ""}`}
                 toggleMask
                 feedback={false}
                 autoComplete="current-password"
+                placeholder="Ingresa tu contraseña"
                 {...field}
                 pt={{
                   input: { style: { width: "100%" } },
                 }}
               />
-              <label htmlFor="password">Contraseña</label>
-            </FloatLabel>
+            </span>
           )}
         />
         {errors.password && (

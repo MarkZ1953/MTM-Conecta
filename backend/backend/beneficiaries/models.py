@@ -11,6 +11,11 @@ def generate_beneficiary_auth_path(instance, filename):
     
 
 class Beneficiary(BaseModel):
+    class TreatmentStage(models.TextChoices):
+        INITIAL_SUPPORT = 'INITIAL_SUPPORT', 'Apoyo integral inicial'
+        MID_TREATMENT = 'MID_TREATMENT', 'Mitad de tratamiento'
+        SURVIVOR = 'SURVIVOR', 'Sobreviviente'
+
     first_name = models.CharField(
         max_length=64,
         null=False,
@@ -32,6 +37,36 @@ class Beneficiary(BaseModel):
         max_length=32,
         null=False,
         blank=False
+    )
+
+    municipality = models.CharField(
+        max_length=128,
+        blank=True,
+        default=''
+    )
+
+    treatment_stage = models.CharField(
+        max_length=32,
+        choices=TreatmentStage.choices,
+        default=TreatmentStage.INITIAL_SUPPORT,
+        null=False,
+        blank=False
+    )
+
+    treatment_status = models.CharField(
+        max_length=128,
+        blank=True,
+        default=''
+    )
+
+    received_aid = models.TextField(
+        blank=True,
+        default=''
+    )
+
+    follow_up_notes = models.TextField(
+        blank=True,
+        default=''
     )
 
     photo = models.ImageField(

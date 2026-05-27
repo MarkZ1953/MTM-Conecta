@@ -18,6 +18,8 @@ type DonorsCreateFormProps = {
 
 const defaultValues: DonorPayload = {
   user: 0,
+  donor_type: "PERSON",
+  organization_name: "",
   first_name: "",
   last_name: "",
   email: "",

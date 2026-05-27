@@ -1,7 +1,8 @@
 import { UISidebar } from "@/components";
 import type { NavItem } from "@/components";
+import { AuthContext } from "@/auth";
+import { useContext } from "react";
 import { Outlet } from "react-router-dom";
-
 
 const navItems: NavItem[] = [
   {
@@ -16,8 +17,8 @@ const navItems: NavItem[] = [
     icon: "pi-users",
     items: [
       { title: "Directorio", url: "/beneficiaries", icon: "pi-address-book" },
-      { title: "Acudientes", url: "/beneficiaries/guardians", icon: "pi-shield" },
-    ]
+      { title: "Cuidadores", url: "/beneficiaries/guardians", icon: "pi-shield" },
+    ],
   },
   {
     title: "Eventos",
@@ -25,10 +26,14 @@ const navItems: NavItem[] = [
     icon: "pi-calendar",
     items: [
       { title: "Lista de Eventos", url: "/events", icon: "pi-list" },
-      { title: "Asistencia", url: "/events/attendance", icon: "pi-check-square" },
+      {
+        title: "Asistencia",
+        url: "/events/attendance",
+        icon: "pi-check-square",
+      },
       { title: "Actas", url: "/events/acts", icon: "pi-file" },
       { title: "Evidencias", url: "/events/evidences", icon: "pi-images" },
-    ]
+    ],
   },
   {
     title: "Donaciones",
@@ -37,7 +42,7 @@ const navItems: NavItem[] = [
     items: [
       { title: "Historial", url: "/donations", icon: "pi-history" },
       { title: "Donantes", url: "/donations/donors", icon: "pi-heart" },
-    ]
+    ],
   },
   {
     section: "Comunicación",
@@ -54,8 +59,22 @@ const navItems: NavItem[] = [
 ];
 
 export const PrivateLayout = () => {
+  const { user, logout } = useContext(AuthContext);
+  const profile = user?.user ?? user;
+  const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ");
+  const userName = fullName || profile?.username || "Usuario";
+  const userRole = profile?.is_superuser
+    ? "Administrador"
+    : profile?.groups?.[0]?.name || "Usuario";
+
   return (
-    <UISidebar navItems={navItems} logoText="MTM Conecta">
+    <UISidebar
+      navItems={navItems}
+      logoText="MTM Conecta"
+      userName={userName}
+      userRole={userRole}
+      onLogout={logout}
+    >
       <Outlet />
     </UISidebar>
   );

@@ -10,7 +10,7 @@ import {
 import { buildQueryParams } from "@/utils";
 import { donorsAPI } from "./donors.api";
 import { useDonorsStore } from "./donors.store";
-import type { Donor } from "./donors.types";
+import { donorTypeLabels, type Donor } from "./donors.types";
 import {
   DonorsBulkDeleteDialog,
   DonorsCreateForm,
@@ -23,7 +23,12 @@ const defaultFilters: DataTableFilterMeta = {
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
 };
 
-const initials = (d: Donor) => `${d.first_name?.[0] ?? ""}${d.last_name?.[0] ?? ""}`.toUpperCase();
+const getDonorDisplayName = (d: Donor) =>
+  d.organization_name || `${d.first_name} ${d.last_name}`.trim();
+const initials = (d: Donor) => {
+  const displayName = getDonorDisplayName(d);
+  return displayName.split(" ").map((word) => word[0]).slice(0, 2).join("").toUpperCase();
+};
 const fmt = (n: number) => new Intl.NumberFormat("es-CO").format(n);
 
 export const DonorsPage = () => {
@@ -69,6 +74,7 @@ export const DonorsPage = () => {
 
   const withEmail = donorsList.filter((d) => d.email).length;
   const linkedUsers = new Set(donorsList.map((d) => d.user)).size;
+  const companyCount = donorsList.filter((d) => d.donor_type === "COMPANY").length;
 
   const onGlobalFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -90,10 +96,17 @@ export const DonorsPage = () => {
         <div className="rp-person">
           <div className={`rp-avatar rp-av-${Number(d.id) % 6}`}>{initials(d)}</div>
           <div>
-            <div className="rp-person-name">{d.first_name} {d.last_name}</div>
-            <div className="rp-person-id">ID #{d.id}</div>
+            <div className="rp-person-name">{getDonorDisplayName(d)}</div>
+            <div className="rp-person-id">{d.first_name} {d.last_name} · ID #{d.id}</div>
           </div>
         </div>
+      ),
+    },
+    {
+      accessorKey: "donor_type",
+      header: "Tipo",
+      cell: ({ row: { original: d } }) => (
+        <span className="rp-badge active"><span className="dot" /> {donorTypeLabels[d.donor_type]}</span>
       ),
     },
     { accessorKey: "email", header: "Correo" },
@@ -163,10 +176,10 @@ export const DonorsPage = () => {
           <div className="rp-stat-meta">Contacto disponible</div>
         </div>
         <div className="rp-stat">
-          <div className="rp-stat-pill ink"><i className="pi pi-user" /></div>
-          <div className="rp-stat-label">Usuarios vinculados</div>
-          <div className="rp-stat-value">{fmt(linkedUsers)}</div>
-          <div className="rp-stat-meta">En esta página</div>
+          <div className="rp-stat-pill ink"><i className="pi pi-building" /></div>
+          <div className="rp-stat-label">Empresas</div>
+          <div className="rp-stat-value">{fmt(companyCount)}</div>
+          <div className="rp-stat-meta">{fmt(linkedUsers)} usuarios vinculados</div>
         </div>
       </div>
 

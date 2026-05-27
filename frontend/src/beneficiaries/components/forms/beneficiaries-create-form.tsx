@@ -21,6 +21,11 @@ const defaultValues: BeneficiaryPayload = {
   last_name: "",
   identification_number: "",
   birth_date: "",
+  municipality: "",
+  treatment_stage: "INITIAL_SUPPORT",
+  treatment_status: "",
+  received_aid: "",
+  follow_up_notes: "",
   notes: "",
 };
 

@@ -35,7 +35,7 @@ export function EventsBulkDeleteDialog({
       if (failedCount === 0) {
         toast.success(`${ids.length} eventos eliminados correctamente.`);
       } else {
-        toast.warning(
+        toast.warn(
           `Se eliminaron ${ids.length - failedCount} eventos, pero fallaron ${failedCount}.`,
         );
       }

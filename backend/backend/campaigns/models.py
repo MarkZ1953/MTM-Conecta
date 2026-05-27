@@ -11,7 +11,7 @@ class CampaignContentType(models.TextChoices):
 
 class CampaignRecipientGroup(models.TextChoices):
     DONORS = 'DONORS', 'Donantes'
-    GUARDIANS = 'GUARDIANS', 'Acudientes'
+    GUARDIANS = 'GUARDIANS', 'Cuidadores'
     USERS = 'USERS', 'Usuarios'
     ALL = 'ALL', 'Todos'
 
@@ -37,6 +37,12 @@ class Campaign(BaseModel):
     )
 
     html_content = models.TextField(
+        blank=True,
+        default=''
+    )
+
+    # Diseño del editor visual (Unlayer) en JSON, para poder re-editar la plantilla
+    design_json = models.TextField(
         blank=True,
         default=''
     )
@@ -101,4 +107,35 @@ class Campaign(BaseModel):
         db_table = 'campaigns'
         verbose_name = 'Campaign'
         verbose_name_plural = 'Campaigns'
+        ordering = ['-id']
+
+
+class CampaignTemplate(BaseModel):
+    """
+    Plantilla reutilizable de correo. Guarda el diseño del editor visual
+    (Unlayer) para poder cargarlo al crear una nueva campaña.
+    """
+    name = models.CharField(
+        max_length=128,
+        null=False,
+        blank=False
+    )
+
+    design_json = models.TextField(
+        blank=True,
+        default=''
+    )
+
+    html_content = models.TextField(
+        blank=True,
+        default=''
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = 'campaign_templates'
+        verbose_name = 'Campaign Template'
+        verbose_name_plural = 'Campaign Templates'
         ordering = ['-id']

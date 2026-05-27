@@ -8,10 +8,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from audits.service import log_event
-from .serializers import CampaignSerializer
+from .serializers import CampaignSerializer, CampaignTemplateSerializer
 from .paginations import CampaignPagination
 from .filters import CampaignFilter
-from .models import Campaign, CampaignStatus
+from .models import Campaign, CampaignStatus, CampaignTemplate
 from .email_utils import build_html, get_recipient_emails
 
 
@@ -94,3 +94,19 @@ class CampaignViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
                 {"detail": f"Error al enviar: {str(e)}"},
                 status=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+class CampaignTemplateViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
+    queryset = CampaignTemplate.objects.filter(is_active=True)
+    serializer_class = CampaignTemplateSerializer
+    pagination_class = CampaignPagination
+
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+
+    search_fields = ['name']
+    ordering_fields = ['id', 'name']
+    ordering = ['-id']

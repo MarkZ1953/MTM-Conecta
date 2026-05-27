@@ -62,6 +62,15 @@ class CampaignsAPI {
     return { status: response.status, data: await response.json() };
   }
 
+  async getById({ id }: { id: number }): Promise<{ status: number; data: Campaign }> {
+    const response = await fetch(`${this.baseUrl}/${this.resource}/${id}/`, {
+      method: "GET",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+    return { status: response.status, data: await response.json() };
+  }
+
   /**
    * Crea una campaña enviando multipart/form-data.
    * NO se setea Content-Type: el navegador lo pone con el boundary correcto.

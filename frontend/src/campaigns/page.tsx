@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   DataTable,
@@ -13,9 +14,7 @@ import { useCampaignsStore } from "./campaigns.store";
 import type { Campaign } from "./campaigns.types";
 import {
   CampaignsBulkDeleteDialog,
-  CampaignsCreateForm,
   CampaignsDeleteDialog,
-  CampaignsEditForm,
   CampaignsSendDialog,
 } from "./components/forms";
 import "@/components/ui/resource-page.css";
@@ -40,7 +39,7 @@ const CONTENT_LABEL: Record<Campaign["content_type"], string> = {
 
 const RECIPIENT_LABEL: Record<Campaign["recipient_group"], string> = {
   DONORS: "Donantes",
-  GUARDIANS: "Acudientes",
+  GUARDIANS: "Cuidadores",
   USERS: "Usuarios",
   ALL: "Todos",
 };
@@ -53,6 +52,7 @@ const STATUS: Record<Campaign["status"], { label: string; cls: string }> = {
 };
 
 export const CampaignsPage = () => {
+  const navigate = useNavigate();
   const {
     filters, setFilters, sorting, setSorting,
     pageIndex, setPageIndex, pageSize, setPageSize, refresh, setRefresh,
@@ -64,8 +64,6 @@ export const CampaignsPage = () => {
   });
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
-  const [createOpen, setCreateOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [sendOpen, setSendOpen] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
@@ -105,7 +103,7 @@ export const CampaignsPage = () => {
     setFilters(next); setGlobalFilterValue(value); setPageIndex(0);
   };
 
-  const openEdit = (c: Campaign) => { setSelectedCampaign(c); setEditOpen(true); };
+  const openEdit = (c: Campaign) => navigate(`/campaigns/${c.id}/editar`);
   const openDelete = (c: Campaign) => { setSelectedCampaign(c); setDeleteOpen(true); };
   const openSend = (c: Campaign) => { setSelectedCampaign(c); setSendOpen(true); };
   const onBulkDeleteSuccess = () => { setRowSelection({}); setRefresh((p) => !p); };
@@ -185,10 +183,10 @@ export const CampaignsPage = () => {
       <div className="rp-header">
         <div>
           <h1 className="rp-title">Campañas <span className="count">{fmt(totalCount)} en total</span></h1>
-          <p className="rp-sub">Correos promocionales enviados a donantes, acudientes o usuarios.</p>
+          <p className="rp-sub">Correos promocionales enviados a donantes, cuidadores o usuarios.</p>
         </div>
         <div className="rp-actions">
-          <button className="rp-btn rp-btn-primary" onClick={() => setCreateOpen(true)}>
+          <button className="rp-btn rp-btn-primary" onClick={() => navigate("/campaigns/nueva")}>
             <i className="pi pi-plus" style={{ fontSize: 13 }} /> Nueva campaña
           </button>
         </div>
@@ -241,14 +239,12 @@ export const CampaignsPage = () => {
         emptyTitle="No se encontraron campañas"
         emptyText={globalFilterValue ? "Prueba con otra búsqueda." : "Crea tu primera campaña para empezar."}
         emptyAction={!globalFilterValue && (
-          <button className="rp-btn rp-btn-primary" style={{ margin: "0 auto" }} onClick={() => setCreateOpen(true)}>
+          <button className="rp-btn rp-btn-primary" style={{ margin: "0 auto" }} onClick={() => navigate("/campaigns/nueva")}>
             <i className="pi pi-plus" style={{ fontSize: 13 }} /> Nueva campaña
           </button>
         )}
       />
 
-      <CampaignsCreateForm open={createOpen} setOpen={setCreateOpen} setRefresh={setRefresh} />
-      <CampaignsEditForm open={editOpen} setOpen={setEditOpen} campaignObj={selectedCampaign} setRefresh={setRefresh} />
       <CampaignsSendDialog open={sendOpen} setOpen={setSendOpen} campaignObj={selectedCampaign} setRefresh={setRefresh} />
       <CampaignsDeleteDialog open={deleteOpen} setOpen={setDeleteOpen} campaignObj={selectedCampaign} setRefresh={setRefresh} />
       <CampaignsBulkDeleteDialog open={bulkDeleteOpen} setOpen={setBulkDeleteOpen} ids={selectedIds} onSuccess={onBulkDeleteSuccess} />

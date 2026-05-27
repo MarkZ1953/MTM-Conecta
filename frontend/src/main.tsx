@@ -7,7 +7,7 @@ import { UIToast } from "./components";
 import "primeicons/primeicons.css";
 import { StrictMode } from "react";
 import "primeflex/primeflex.css";
-import App from "./app.tsx";
+import App from "./App";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
