@@ -16,9 +16,9 @@ type CampaignsSendDialogProps = {
 
 const recipientLabel: Record<string, string> = {
   DONORS: "los donantes",
-  GUARDIANS: "los acudientes",
+  GUARDIANS: "los cuidadores",
   USERS: "los usuarios del sistema",
-  ALL: "donantes y acudientes",
+  ALL: "donantes y cuidadores",
 };
 
 export function CampaignsSendDialog({

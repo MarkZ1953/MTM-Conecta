@@ -12,9 +12,9 @@ const contentTypeOptions = [
 
 const recipientOptions = [
   { label: "Donantes", value: "DONORS" },
-  { label: "Acudientes", value: "GUARDIANS" },
+  { label: "Cuidadores", value: "GUARDIANS" },
   { label: "Usuarios", value: "USERS" },
-  { label: "Todos (donantes + acudientes)", value: "ALL" },
+  { label: "Todos (donantes + cuidadores)", value: "ALL" },
 ];
 
 type CampaignsFormFieldsProps = {
