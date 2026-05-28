@@ -9,7 +9,7 @@
   --public-rose: #e63b7a;
   background: #fff;
   color: var(--public-ink);
-  font-family: Inter, "Segoe UI", system-ui, sans-serif;
+  font-family: var(--mtm-font-body);
   overflow-x: hidden;
 }
 
@@ -24,6 +24,10 @@
 .public-site h3,
 .public-site p {
   margin: 0;
+}
+
+.public-site [id] {
+  scroll-margin-top: 260px;
 }
 
 .public-nav {
@@ -147,62 +151,149 @@
 }
 
 .public-hero {
-  align-items: center;
-  background-position: center;
-  background-size: cover;
-  display: flex;
-  min-height: 86vh;
-  padding: 112px clamp(20px, 6vw, 72px) 84px;
+  background: #fff;
+  overflow: hidden;
+  position: relative;
 }
 
-.public-hero-content {
-  max-width: 720px;
+.public-hero::after {
+  background:
+    linear-gradient(180deg, rgba(15,31,44,.36), rgba(15,31,44,0) 24%),
+    linear-gradient(0deg, rgba(15,31,44,.36), rgba(15,31,44,0) 34%);
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+}
+
+.public-hero-track {
+  display: grid;
+  position: relative;
+  width: 100%;
+}
+
+.public-hero-slide {
+  grid-area: 1 / 1;
+  opacity: 0;
+  pointer-events: none;
+  position: relative;
+  transition:
+    opacity .75s ease;
+}
+
+.public-hero-slide.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.public-hero-image {
+  display: block;
+  height: auto;
+  object-fit: contain;
+  width: 100%;
+  vertical-align: top;
+}
+
+.public-hero-controls {
+  align-items: center;
+  display: block;
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
+}
+
+.public-hero-arrow,
+.public-hero-dots button {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.public-hero-arrow {
+  align-items: center;
+  background: rgba(255,255,255,.86);
+  border-radius: 50%;
+  color: var(--public-ink);
+  display: inline-flex;
+  height: 50px;
+  justify-content: center;
+  pointer-events: auto;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transition:
+    background-color .25s ease,
+    color .25s ease,
+    transform .25s ease;
+  width: 50px;
+}
+
+.public-hero-arrow:first-child {
+  left: clamp(18px, 3vw, 40px);
+}
+
+.public-hero-arrow:last-child {
+  right: clamp(18px, 3vw, 40px);
+}
+
+.public-hero-arrow:hover {
+  background: var(--public-lime);
+  color: var(--public-ink);
+  transform: translateY(-50%) scale(1.04);
+}
+
+.public-hero-dots {
+  align-items: center;
+  background: rgba(15,31,44,.42);
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 999px;
+  bottom: clamp(18px, 3vw, 34px);
+  box-shadow: 0 18px 48px rgba(0,0,0,.22);
+  display: flex;
+  gap: 8px;
+  left: 50%;
+  padding: 12px 14px;
+  pointer-events: auto;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.public-hero-dots button {
+  background: rgba(255,255,255,.58);
+  border-radius: 999px;
+  height: 9px;
+  padding: 0;
+  transition:
+    background-color .25s ease,
+    width .25s ease;
+  width: 9px;
+}
+
+.public-hero-dots button.is-active {
+  background: var(--public-lime);
+  width: 30px;
 }
 
 .public-kicker {
   color: var(--public-teal);
   display: block;
+  font-family: var(--mtm-font-ui);
   font-size: 13px;
-  font-weight: 900;
-  letter-spacing: .08em;
+  font-weight: 800;
+  letter-spacing: .09em;
   margin-bottom: 14px;
   text-transform: uppercase;
   overflow-wrap: anywhere;
   white-space: normal;
 }
 
-.public-hero .public-kicker {
-  color: var(--public-lime);
-}
-
-.public-hero h1 {
-  color: #fff;
-  font-size: clamp(42px, 7vw, 78px);
-  font-weight: 900;
-  letter-spacing: 0;
-  line-height: .98;
-  max-width: 760px;
-}
-
-.public-hero p {
-  color: rgba(255,255,255,.9);
-  font-size: clamp(17px, 2vw, 21px);
-  line-height: 1.55;
-  margin-top: 22px;
-  max-width: 650px;
-}
-
-.public-hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 32px;
-}
-
 .public-btn {
   align-items: center;
   border-radius: 8px;
   display: inline-flex;
+  font-family: var(--mtm-font-ui);
   font-weight: 900;
   gap: 9px;
   justify-content: center;
@@ -250,12 +341,15 @@
 
 .public-impact-strip strong {
   display: block;
+  font-family: var(--mtm-font-heading);
   font-size: 34px;
+  font-weight: 700;
   line-height: 1;
 }
 
 .public-impact-strip span {
   display: block;
+  font-family: var(--mtm-font-ui);
   font-size: 13px;
   font-weight: 700;
   margin-top: 8px;
@@ -283,10 +377,11 @@
 .public-section-head h2,
 .public-donation-copy h2,
 .public-newsletter h2 {
+  font-family: var(--mtm-font-heading);
   font-size: clamp(30px, 4vw, 48px);
-  font-weight: 900;
-  letter-spacing: 0;
-  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.018em;
+  line-height: 1.16;
   overflow-wrap: anywhere;
 }
 
@@ -383,8 +478,9 @@
 .public-help-card h3,
 .public-news-card h3,
 .public-event-layout h3 {
+  font-family: var(--mtm-font-ui);
   font-size: 20px;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.2;
 }
 
@@ -408,7 +504,8 @@
   align-items: center;
   color: var(--public-ink);
   display: inline-flex;
-  font-weight: 900;
+  font-family: var(--mtm-font-ui);
+  font-weight: 800;
   gap: 8px;
   margin-top: 24px;
   text-decoration: none;
@@ -469,7 +566,8 @@
   align-items: center;
   color: var(--public-teal-dark);
   display: inline-flex;
-  font-weight: 900;
+  font-family: var(--mtm-font-ui);
+  font-weight: 800;
   gap: 8px;
   margin-top: 20px;
   text-decoration: none;
@@ -498,8 +596,9 @@
 .public-news-card span {
   color: var(--public-rose);
   display: block;
+  font-family: var(--mtm-font-ui);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: .06em;
   margin-bottom: 8px;
   text-transform: uppercase;
@@ -542,7 +641,8 @@
   background: var(--public-ink);
   color: #fff;
   cursor: pointer;
-  font-weight: 900;
+  font-family: var(--mtm-font-ui);
+  font-weight: 800;
   padding: 0 18px;
 }
 
@@ -571,7 +671,9 @@
 
 .public-footer h4 {
   color: #fff;
+  font-family: var(--mtm-font-ui);
   font-size: 15px;
+  font-weight: 800;
   margin: 0 0 14px;
 }
 
@@ -598,6 +700,10 @@
 }
 
 @media (max-width: 780px) {
+  .public-site [id] {
+    scroll-margin-top: 180px;
+  }
+
   .public-site .public-menu-button {
     display: none !important;
   }
@@ -666,35 +772,16 @@
   }
 
   .public-hero {
-    min-height: 82vh;
-    padding-top: 108px;
+    min-height: 0;
   }
 
-  .public-hero-content {
-    max-width: min(100%, 330px);
-    width: 100%;
+  .public-hero-controls {
+    inset: 0;
   }
 
-  .public-hero h1 {
-    font-size: clamp(31px, 9vw, 38px);
-    line-height: 1.08;
-    max-width: 100%;
-  }
-
-  .public-hero p {
-    font-size: 16px;
-    max-width: 100%;
-  }
-
-  .public-hero-actions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .public-hero-actions .public-btn {
-    justify-content: center;
-    max-width: 100%;
-    width: 100%;
+  .public-hero-arrow {
+    height: 38px;
+    width: 38px;
   }
 
   .public-impact-strip,

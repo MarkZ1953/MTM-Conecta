@@ -1,22 +1,18 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { publicAssets } from "./cloudinary-assets";
+import { PublicNavbar } from "./public-navbar";
 import "./public-home-page.css";
 
-const navItems = [
-  { label: "Nosotros", target: "nosotros" },
-  { label: "Programas", target: "programas" },
-  { label: "Como ayudar", target: "ayudar" },
-  { label: "Eventos", target: "eventos" },
-  { label: "Noticias", target: "noticias" },
-  { label: "Contacto", target: "contacto" },
-];
-
-const stats = [
-  { value: "2017", label: "fundacion constituida en Villavicencio" },
-  { value: "56", label: "ninas con educacion formal" },
-  { value: "37", label: "familias con apoyo juridico" },
-  { value: "94", label: "familias beneficiadas en Suenos de Arena" },
+const heroSlides = [
+  {
+    src: publicAssets.heroPrincipal,
+    alt: "Imagen institucional de la fundacion MTM",
+  },
+  {
+    src: publicAssets.hero,
+    alt: "Nina beneficiaria de la fundacion MTM",
+  },
 ];
 
 const programs = [
@@ -113,95 +109,65 @@ const news = [
 
 export const PublicHomePage = () => {
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 32);
-    window.addEventListener("scroll", onScroll);
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
 
   const scrollTo = (target: string) => {
-    setMenuOpen(false);
     document.getElementById(target)?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const goToHeroSlide = (direction: "next" | "prev") => {
+    setCurrentHeroSlide((current) => {
+      if (direction === "next") return (current + 1) % heroSlides.length;
+      return (current - 1 + heroSlides.length) % heroSlides.length;
+    });
   };
 
   return (
     <main className="public-site">
-      <nav className={`public-nav ${scrolled ? "is-scrolled" : ""}`}>
-        <button className="public-brand" onClick={() => scrollTo("inicio")}>
-          <img
-            className="public-brand-logo public-brand-logo-hero"
-            src={publicAssets.logoFullHero}
-            alt="Fundacion Mujeres Trabajando por el Meta"
-          />
-          <img
-            className="public-brand-logo public-brand-logo-solid"
-            src={publicAssets.logo}
-            alt=""
-            aria-hidden="true"
-          />
-        </button>
+      <PublicNavbar onSectionNavigate={scrollTo} />
 
-        <button
-          className="public-menu-button"
-          aria-label="Abrir menu"
-          onClick={() => setMenuOpen((value) => !value)}
-        >
-          <i className={`pi ${menuOpen ? "pi-times" : "pi-bars"}`} />
-        </button>
-
-        <div className={`public-nav-links ${menuOpen ? "open" : ""}`}>
-          {navItems.map((item) => (
-            <button key={item.target} onClick={() => scrollTo(item.target)}>
-              {item.label}
-            </button>
+      <section id="inicio" className="public-hero" aria-label="Galeria principal MTM">
+        <div className="public-hero-track">
+          {heroSlides.map((slide, index) => (
+            <div
+              key={slide.src}
+              className={`public-hero-slide ${index === currentHeroSlide ? "is-active" : ""}`}
+            >
+              <img className="public-hero-image" src={slide.src} alt={slide.alt} />
+            </div>
           ))}
-          <Link className="public-nav-login" to="/login">
-            Iniciar sesion
-          </Link>
-          <Link className="public-nav-donate" to="/donar">
-            Donar
-          </Link>
         </div>
-      </nav>
 
-      <Link className="public-mobile-donate" to="/donar">
-        Donar
-      </Link>
-
-      <section
-        id="inicio"
-        className="public-hero"
-        style={{ backgroundImage: `linear-gradient(90deg, rgba(15,31,44,.88), rgba(15,31,44,.48), rgba(15,31,44,.18)), url(${publicAssets.hero})` }}
-      >
-        <div className="public-hero-content">
-          <span className="public-kicker">Fundacion Mujeres Trabajando por el Meta</span>
-          <h1>Que el cancer infantil no signifique vivir con miedo y sin esperanza.</h1>
-          <p>
-            Somos una fundacion sin animo de lucro enfocada en el bienestar del
-            paciente oncologico y su familia en la Orinoquia.
-          </p>
-          <div className="public-hero-actions">
-            <Link className="public-btn primary" to="/donar">
-              <i className="pi pi-heart-fill" /> Donar ahora
-            </Link>
-            <Link className="public-btn secondary" to="/padrino-permanente">
-              <i className="pi pi-calendar-plus" /> Ser padrino permanente
-            </Link>
+        <div className="public-hero-controls" aria-label="Controles de galeria principal">
+          <button
+            type="button"
+            className="public-hero-arrow"
+            onClick={() => goToHeroSlide("prev")}
+            aria-label="Ver imagen anterior"
+          >
+            <i className="pi pi-chevron-left" />
+          </button>
+          <div className="public-hero-dots" aria-label="Seleccionar imagen">
+            {heroSlides.map((slide, index) => (
+              <button
+                key={slide.src}
+                type="button"
+                className={index === currentHeroSlide ? "is-active" : ""}
+                onClick={() => setCurrentHeroSlide(index)}
+                aria-label={`Ver imagen ${index + 1}`}
+                aria-current={index === currentHeroSlide ? "true" : undefined}
+              />
+            ))}
           </div>
+          <button
+            type="button"
+            className="public-hero-arrow"
+            onClick={() => goToHeroSlide("next")}
+            aria-label="Ver imagen siguiente"
+          >
+            <i className="pi pi-chevron-right" />
+          </button>
         </div>
-      </section>
-
-      <section className="public-impact-strip" aria-label="Cifras institucionales">
-        {stats.map((item) => (
-          <div key={item.label}>
-            <strong>{item.value}</strong>
-            <span>{item.label}</span>
-          </div>
-        ))}
       </section>
 
       <section className="public-section public-about" id="nosotros">
