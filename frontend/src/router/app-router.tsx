@@ -1,7 +1,22 @@
 import { Route, Routes } from "react-router-dom";
 import { PrivateLayout } from "./private-layout";
 import { PrivateRoute } from "./private-route";
-import { DashboardPage, HomePage, PublicInfoPage } from "@/core";
+import {
+  AboutPage,
+  BlogPage,
+  ContactPage,
+  DashboardPage,
+  DonatePage,
+  FAQPage,
+  HelpPage,
+  HomePage,
+  NewsPage,
+  ProgramsPage,
+  PublicEventsPage,
+  SponsorPage,
+  TestimonialsPage,
+  VolunteerPage,
+} from "@/core";
 import { UsersPage } from "@/users";
 import { BeneficiariesPage } from "@/beneficiaries";
 import { GuardiansPage } from "@/guardians";
@@ -19,12 +34,18 @@ export const AppRouter = () => {
     <Routes>
       {/* Public routes */}
       <Route path="/home" element={<HomePage />} />
-      <Route path="/donar" element={<PublicInfoPage variant="donar" />} />
-      <Route path="/padrino-permanente" element={<PublicInfoPage variant="padrino" />} />
-      <Route path="/voluntariado" element={<PublicInfoPage variant="voluntariado" />} />
-      <Route path="/eventos-publicos" element={<PublicInfoPage variant="eventos" />} />
-      <Route path="/blog" element={<PublicInfoPage variant="blog" />} />
-      <Route path="/contacto" element={<PublicInfoPage variant="contacto" />} />
+      <Route path="/nosotros" element={<AboutPage />} />
+      <Route path="/programas" element={<ProgramsPage />} />
+      <Route path="/como-ayudar" element={<HelpPage />} />
+      <Route path="/donar" element={<DonatePage />} />
+      <Route path="/padrino-permanente" element={<SponsorPage />} />
+      <Route path="/voluntariado" element={<VolunteerPage />} />
+      <Route path="/eventos-publicos" element={<PublicEventsPage />} />
+      <Route path="/blog" element={<BlogPage />} />
+      <Route path="/noticias" element={<NewsPage />} />
+      <Route path="/testimonios" element={<TestimonialsPage />} />
+      <Route path="/preguntas-frecuentes" element={<FAQPage />} />
+      <Route path="/contacto" element={<ContactPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 

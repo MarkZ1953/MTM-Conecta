@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { publicAssets } from "./cloudinary-assets";
 import "./public-navbar.css";
 
@@ -15,22 +15,23 @@ type ActionLink = {
 };
 
 const institutionalLinks = [
-  { label: "Sobre nosotros", target: "nosotros" },
-  { label: "Programas", target: "programas" },
-  { label: "Noticias", target: "noticias" },
-  { label: "Contacto", target: "contacto" },
+  { label: "Sobre nosotros", path: "/nosotros" },
+  { label: "Programas", path: "/programas" },
+  { label: "Noticias", path: "/noticias" },
+  { label: "Contacto", path: "/contacto" },
 ];
 
 const actionLinks: ActionLink[] = [
-  { label: "Inicio", target: "inicio", path: "/home" },
-  { label: "Quiero donar", path: "/donar", icon: "pi-heart-fill" },
-  { label: "Como puedo ayudar", target: "ayudar", path: "/home#ayudar" },
-  { label: "Eventos", target: "eventos", path: "/eventos-publicos" },
+  { label: "Inicio", path: "/home" },
+  { label: "Vincúlate", path: "/donar", icon: "pi-heart-fill" },
+  { label: "Cómo puedo ayudar", path: "/como-ayudar" },
+  { label: "Eventos", path: "/eventos-publicos" },
   { label: "Padrino permanente", path: "/padrino-permanente" },
 ];
 
 export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
 
   const handleSection = (target?: string) => {
     if (!target || !onSectionNavigate) return;
@@ -39,8 +40,8 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
   };
 
   return (
-    <header className="public-navbar">
-      <div className="public-navbar-top">
+    <>
+      <header className="public-navbar public-navbar-top">
         <div className="public-navbar-social" aria-label="Redes sociales">
           <a href="https://www.facebook.com/" target="_blank" rel="noreferrer" aria-label="Facebook">
             <i className="pi pi-facebook" />
@@ -54,7 +55,7 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
         </div>
 
         <span className="public-navbar-mission">
-          Que el cancer infantil no signifique vivir con miedo y sin esperanza
+          Que el cáncer infantil no signifique vivir con miedo y sin esperanza
         </span>
 
         <div className="public-navbar-tools">
@@ -63,76 +64,80 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
           </Link>
           <Link to="/login">
             <i className="pi pi-user" />
-            <span>Iniciar sesion / Registrarse</span>
+            <span>Iniciar sesión / Registrarse</span>
           </Link>
         </div>
-      </div>
+      </header>
 
-      <div className="public-navbar-main">
-        <img
-          className="public-navbar-mark public-navbar-mark-left"
-          src={publicAssets.heartLogo}
-          alt=""
-          aria-hidden="true"
-        />
-        <img
-          className="public-navbar-mark public-navbar-mark-right"
-          src={publicAssets.heartLogo}
-          alt=""
-          aria-hidden="true"
-        />
+      <div className="public-navbar public-navbar-sticky">
+        <div className="public-navbar-main">
+          <img
+            className="public-navbar-mark public-navbar-mark-left"
+            src={publicAssets.heartLogo}
+            alt=""
+            aria-hidden="true"
+          />
+          <img
+            className="public-navbar-mark public-navbar-mark-right"
+            src={publicAssets.heartLogo}
+            alt=""
+            aria-hidden="true"
+          />
 
-        <Link className="public-navbar-brand" to="/home" onClick={() => handleSection("inicio")}>
-          <img src={publicAssets.logoCompact} alt="Fundacion Mujeres Trabajando por el Meta" />
-        </Link>
+          <Link className="public-navbar-brand" to="/home" onClick={() => handleSection("inicio")}>
+            <img src={publicAssets.logoCompact} alt="Fundación Mujeres Trabajando por el Meta" />
+          </Link>
 
-        <nav className="public-navbar-links" aria-label="Menu institucional">
-          {institutionalLinks.map((item) =>
-            onSectionNavigate ? (
-              <button key={item.target} type="button" onClick={() => handleSection(item.target)}>
+          <nav className="public-navbar-links" aria-label="Menú institucional">
+            {institutionalLinks.map((item) => (
+              <Link
+                key={item.path}
+                className={location.pathname === item.path ? "is-active" : ""}
+                to={item.path}
+              >
                 {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <button
+            className="public-navbar-toggle"
+            type="button"
+            aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
+            onClick={() => setMenuOpen((value) => !value)}
+          >
+            <i className={`pi ${menuOpen ? "pi-times" : "pi-bars"}`} />
+          </button>
+        </div>
+
+        <nav
+          className={`public-navbar-actions ${menuOpen ? "is-open" : ""}`}
+          aria-label="Acciones principales"
+        >
+          {actionLinks.map((item) =>
+            item.target && onSectionNavigate ? (
+              <button
+                key={item.label}
+                type="button"
+                className={location.pathname === item.path ? "is-active" : ""}
+                onClick={() => handleSection(item.target)}
+              >
+                {item.icon && <i className={`pi ${item.icon}`} />}
+                <span>{item.label}</span>
               </button>
             ) : (
-              <Link key={item.target} to={`/home#${item.target}`}>
-                {item.label}
+              <Link
+                key={item.label}
+                className={location.pathname === item.path ? "is-active" : ""}
+                to={item.path}
+              >
+                {item.icon && <i className={`pi ${item.icon}`} />}
+                <span>{item.label}</span>
               </Link>
             ),
           )}
         </nav>
-
-        <button
-          className="public-navbar-toggle"
-          type="button"
-          aria-label={menuOpen ? "Cerrar menu" : "Abrir menu"}
-          onClick={() => setMenuOpen((value) => !value)}
-        >
-          <i className={`pi ${menuOpen ? "pi-times" : "pi-bars"}`} />
-        </button>
       </div>
-
-      <nav
-        className={`public-navbar-actions ${menuOpen ? "is-open" : ""}`}
-        aria-label="Acciones principales"
-      >
-        {actionLinks.map((item, index) =>
-          item.target && onSectionNavigate ? (
-            <button
-              key={item.label}
-              type="button"
-              className={index === 0 ? "is-active" : ""}
-              onClick={() => handleSection(item.target)}
-            >
-              {item.icon && <i className={`pi ${item.icon}`} />}
-              <span>{item.label}</span>
-            </button>
-          ) : (
-            <Link key={item.label} className={index === 0 ? "is-active" : ""} to={item.path}>
-              {item.icon && <i className={`pi ${item.icon}`} />}
-              <span>{item.label}</span>
-            </Link>
-          ),
-        )}
-      </nav>
-    </header>
+    </>
   );
 }

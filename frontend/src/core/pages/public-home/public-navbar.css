@@ -7,13 +7,9 @@
   --nav-lime: #c5d72e;
   --nav-rose: #e63b7a;
   background: #fff;
-  box-shadow: 0 14px 40px rgba(15, 31, 44, 0.08);
   color: var(--nav-ink);
   font-family: var(--mtm-font-ui);
-  position: sticky;
-  top: 0;
   width: 100%;
-  z-index: 50;
 }
 
 .public-navbar *,
@@ -30,6 +26,13 @@
   grid-template-columns: minmax(120px, 0.5fr) minmax(0, 1fr) minmax(220px, 0.7fr);
   min-height: 40px;
   padding: 0 clamp(1rem, 5vw, 4.75rem);
+}
+
+.public-navbar-sticky {
+  box-shadow: 0 14px 40px rgba(15, 31, 44, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 .public-navbar-social,
@@ -159,6 +162,12 @@
 .public-navbar-links a:last-child,
 .public-navbar-links button:last-child {
   border-right: 0;
+}
+
+.public-navbar-links a.is-active,
+.public-navbar-links button.is-active {
+  color: var(--nav-teal-dark);
+  font-weight: 800;
 }
 
 .public-navbar-toggle {

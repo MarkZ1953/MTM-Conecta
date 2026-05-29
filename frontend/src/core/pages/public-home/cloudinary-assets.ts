@@ -1,11 +1,16 @@
 const optimize = (url: string, transform: string) =>
   url.replace("/image/upload/", `/image/upload/${transform}/`);
 
+const cloudinaryImage = (publicId: string, transform: string) =>
+  `https://res.cloudinary.com/djee0c2fs/image/upload/${transform}/${publicId}`;
+
 const raw = {
   logo: "https://res.cloudinary.com/djee0c2fs/image/upload/v1779827430/Logo_fundacio%CC%81n_mtm_vkzbwq.png",
   heartLogo: "https://res.cloudinary.com/djee0c2fs/image/upload/v1779827263/Logo_corazo%CC%81n_bugzof.png",
   login: "https://res.cloudinary.com/djee0c2fs/image/upload/login_f9ucra",
   heroPrincipal: "https://res.cloudinary.com/djee0c2fs/image/upload/heroprincipal_y6uo4u",
+  vinculate: "https://res.cloudinary.com/djee0c2fs/image/upload/VinculateFundacionMTM_i33q4n",
+  cancerTypes: "https://res.cloudinary.com/djee0c2fs/image/upload/tiposdecancer3_liwmor",
   hero: "https://res.cloudinary.com/djee0c2fs/image/upload/v1779826037/DSC01934_ghl4qy.jpg",
   heroAlt: "https://res.cloudinary.com/djee0c2fs/image/upload/v1779826030/DSC01916_tguppe.jpg",
   careOne: "https://res.cloudinary.com/djee0c2fs/image/upload/v1779826037/DSC01937_arqymg.jpg",
@@ -19,6 +24,29 @@ const raw = {
   banner: "https://res.cloudinary.com/djee0c2fs/image/upload/v1779826335/portada_fb_MTM_nkgfsz.jpg",
 };
 
+const aboutGallery = [
+  {
+    publicId: "SobreNosotrosPrincipal_pnncn1",
+    alt: "Presentación institucional de la Fundación MTM",
+  },
+  {
+    publicId: "SobreNosotrosSegunda_hmu2nn",
+    alt: "Sobre nosotros Fundación MTM",
+  },
+  {
+    publicId: "SobreNosotrosTercera_fhahin",
+    alt: "Acompañamiento integral de la Fundación MTM",
+  },
+  {
+    publicId: "SobreNosotros4_pcq1tz",
+    alt: "Programas y apoyo familiar de la Fundación MTM",
+  },
+  {
+    publicId: "SobreNosotros5_i4jzmq",
+    alt: "Impacto institucional de la Fundación MTM",
+  },
+];
+
 export const publicAssets = {
   logo: optimize(raw.logo, "f_auto,q_auto,w_240"),
   logoCompact:
@@ -29,6 +57,8 @@ export const publicAssets = {
   heartLogo: optimize(raw.heartLogo, "f_auto,q_auto,w_180"),
   login: optimize(raw.login, "f_auto,q_auto,w_1800"),
   heroPrincipal: optimize(raw.heroPrincipal, "f_auto,q_auto,w_1800"),
+  vinculate: optimize(raw.vinculate, "f_auto,q_auto,w_1600"),
+  cancerTypes: optimize(raw.cancerTypes, "f_auto,q_auto,w_1800"),
   hero: optimize(raw.hero, "f_auto,q_auto,w_1800"),
   heroAlt: optimize(raw.heroAlt, "f_auto,q_auto,w_1200"),
   careOne: optimize(raw.careOne, "f_auto,q_auto,w_800"),
@@ -41,3 +71,8 @@ export const publicAssets = {
   childrenInfo: optimize(raw.childrenInfo, "f_auto,q_auto,w_700"),
   banner: optimize(raw.banner, "f_auto,q_auto,w_1400"),
 };
+
+export const publicAboutGallerySlides = aboutGallery.map((slide) => ({
+  ...slide,
+  src: cloudinaryImage(slide.publicId, "f_auto,q_auto,w_1800"),
+}));

@@ -9,6 +9,7 @@ router.register(r"users", UserViewSet, basename="users")
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('access.urls')),
+    path("", include('app.urls')),
     path("", include(router.urls)),
     path("", include('beneficiaries.urls')),
     path("", include('donations.urls')),
