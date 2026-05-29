@@ -12,6 +12,7 @@ import { EvidencesPage } from "@/evidence";
 import { DonationsPage } from "@/donations";
 import { DonorsPage } from "@/donors";
 import { CampaignsPage, CampaignFormPage } from "@/campaigns";
+import { CompaniesPage, CollectionPointsPage, CollectionRequestsPage } from "@/cap-collection";
 import { LoginPage, RegisterPage } from "@/auth";
 
 export const AppRouter = () => {
@@ -42,6 +43,10 @@ export const AppRouter = () => {
           <Route path="/campaigns" element={<CampaignsPage />} />
           <Route path="/campaigns/nueva" element={<CampaignFormPage />} />
           <Route path="/campaigns/:id/editar" element={<CampaignFormPage />} />
+
+          <Route path="/cap-collection/companies" element={<CompaniesPage />} />
+          <Route path="/cap-collection/points" element={<CollectionPointsPage />} />
+          <Route path="/cap-collection/requests" element={<CollectionRequestsPage />} />
         </Route>
       </Route>
     </Routes>
