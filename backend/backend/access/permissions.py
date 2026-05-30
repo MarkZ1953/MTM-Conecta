@@ -12,8 +12,63 @@ from collections import defaultdict
 
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from rest_framework.permissions import BasePermission, DjangoModelPermissions
 
 from .i18n import get_model_label, translate_permission_name
+
+
+class DjangoModelPermissionsWithView(DjangoModelPermissions):
+    """
+    DRF's default DjangoModelPermissions does not always require ``view_*`` for
+    safe methods. This variant makes read access explicit.
+    """
+
+    perms_map = {
+        "GET": ["%(app_label)s.view_%(model_name)s"],
+        "OPTIONS": [],
+        "HEAD": [],
+        "POST": ["%(app_label)s.add_%(model_name)s"],
+        "PUT": ["%(app_label)s.change_%(model_name)s"],
+        "PATCH": ["%(app_label)s.change_%(model_name)s"],
+        "DELETE": ["%(app_label)s.delete_%(model_name)s"],
+    }
+
+
+class HasAnyDjangoPermission(BasePermission):
+    """
+    Allows access when the authenticated user is superuser or owns at least one
+    of the permissions declared in ``required_permissions``.
+    """
+
+    required_permissions: tuple[str, ...] = ()
+
+    def has_permission(self, request, view):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+
+        if user.is_superuser:
+            return True
+
+        return any(user.has_perm(permission) for permission in self.required_permissions)
+
+
+class CanViewPermissionCatalog(HasAnyDjangoPermission):
+    required_permissions = (
+        "auth.view_group",
+        "auth.add_group",
+        "auth.change_group",
+        "auth.view_user",
+        "auth.change_user",
+    )
+
+
+class CanManageRoles(HasAnyDjangoPermission):
+    required_permissions = (
+        "auth.add_group",
+        "auth.change_group",
+        "auth.delete_group",
+    )
 
 # ---------------------------------------------------------------------------
 # Models / apps that must never appear in permission lists

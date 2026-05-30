@@ -10,6 +10,9 @@ const raw = {
   login: "https://res.cloudinary.com/djee0c2fs/image/upload/login_f9ucra",
   heroPrincipal: "https://res.cloudinary.com/djee0c2fs/image/upload/heroprincipal_y6uo4u",
   vinculate: "https://res.cloudinary.com/djee0c2fs/image/upload/VinculateFundacionMTM_i33q4n",
+  aboutButton: "ConocerLaFundacionBoton_gaifk9",
+  sponsorBackground: "https://res.cloudinary.com/djee0c2fs/image/upload/FondoP-1_b02iz4",
+  sponsorCta: "https://res.cloudinary.com/djee0c2fs/image/upload/Ni%C3%B1aMTM_kiuwob",
   cancerTypes: "https://res.cloudinary.com/djee0c2fs/image/upload/tiposdecancer3_liwmor",
   hero: "https://res.cloudinary.com/djee0c2fs/image/upload/v1779826037/DSC01934_ghl4qy.jpg",
   heroAlt: "https://res.cloudinary.com/djee0c2fs/image/upload/v1779826030/DSC01916_tguppe.jpg",
@@ -22,6 +25,7 @@ const raw = {
   bingo: "https://res.cloudinary.com/djee0c2fs/image/upload/v1779826937/BINGO_HISTORIA_qdczwi.jpg",
   childrenInfo: "https://res.cloudinary.com/djee0c2fs/image/upload/v1779826961/QUE_NIN%CC%83OS_POST_uycvyg.jpg",
   banner: "https://res.cloudinary.com/djee0c2fs/image/upload/v1779826335/portada_fb_MTM_nkgfsz.jpg",
+  notFound: "404_ubfp3n",
 };
 
 const aboutGallery = [
@@ -58,6 +62,10 @@ export const publicAssets = {
   login: optimize(raw.login, "f_auto,q_auto,w_1800"),
   heroPrincipal: optimize(raw.heroPrincipal, "f_auto,q_auto,w_1800"),
   vinculate: optimize(raw.vinculate, "f_auto,q_auto,w_1600"),
+  aboutButtonNormal: cloudinaryImage(raw.aboutButton, "c_crop,x_285,y_175,w_1205,h_230/f_auto,q_auto,w_760"),
+  aboutButtonHover: cloudinaryImage(raw.aboutButton, "c_crop,x_205,y_485,w_1365,h_250/f_auto,q_auto,w_860"),
+  sponsorBackground: optimize(raw.sponsorBackground, "f_auto,q_auto,w_1800"),
+  sponsorCta: optimize(raw.sponsorCta, "f_auto,q_auto,w_420"),
   cancerTypes: optimize(raw.cancerTypes, "f_auto,q_auto,w_1800"),
   hero: optimize(raw.hero, "f_auto,q_auto,w_1800"),
   heroAlt: optimize(raw.heroAlt, "f_auto,q_auto,w_1200"),
@@ -70,6 +78,7 @@ export const publicAssets = {
   bingo: optimize(raw.bingo, "f_auto,q_auto,w_700"),
   childrenInfo: optimize(raw.childrenInfo, "f_auto,q_auto,w_700"),
   banner: optimize(raw.banner, "f_auto,q_auto,w_1400"),
+  notFound: cloudinaryImage(raw.notFound, "f_auto,q_auto,w_1800"),
 };
 
 export const publicAboutGallerySlides = aboutGallery.map((slide) => ({

@@ -4,7 +4,7 @@ import { AuthContext } from "./auth-context";
 import { authAPI } from "../auth.api";
 import { types } from "../auth.types";
 import { toast } from "@/components";
-import { useReducer } from "react";
+import { useEffect, useReducer } from "react";
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -22,21 +22,26 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const refresh = async () => {
     try {
       const { status, data } = await authAPI.refresh();
+      const user = data?.user ?? data;
 
       if (status === 401 || !data) {
         dispatch({ type: types.LOGOUT });
+        return null;
       } else if (status === 200) {
         dispatch({
           type: types.REFRESH,
           payload: {
             logged: true,
-            user: data,
+            user,
           },
         });
+        return user;
       }
     } catch (error) {
       dispatch({ type: types.LOGOUT });
     }
+
+    return null;
   };
 
   const logout = async () => {
@@ -52,6 +57,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       toast.error("Error al cerrar sesión");
     }
   };
+
+  useEffect(() => {
+    refresh();
+  }, []);
 
   return (
     <AuthContext.Provider

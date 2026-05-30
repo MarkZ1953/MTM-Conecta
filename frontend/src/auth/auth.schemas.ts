@@ -25,7 +25,8 @@ export const authRegisterSchema = yup.object({
     .max(20, "Máximo 20 caracteres."),
   password: yup
     .string()
-    .required("La contraseña es obligatoria."),
+    .required("La contraseña es obligatoria.")
+    .min(8, "La contraseña debe tener al menos 8 caracteres."),
   confirmPassword: yup
     .string()
     .required("La contraseña es obligatoria.")

@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { publicAssets } from "./cloudinary-assets";
 import { PublicImageCarousel } from "./public-image-carousel";
@@ -9,6 +10,18 @@ const heroSlides = [
   {
     src: publicAssets.heroPrincipal,
     alt: "Imagen institucional de la Fundación MTM",
+    hotspots: [
+      {
+        className: "public-hero-hotspot--donate",
+        label: "Donar ahora",
+        to: "/donar",
+      },
+      {
+        className: "public-hero-hotspot--help",
+        label: "Conoce cómo ayudarnos",
+        to: "/como-ayudar",
+      },
+    ],
   },
   {
     src: publicAssets.hero,
@@ -41,8 +54,18 @@ export const PublicHomePage = () => {
             recursos con apoyo psicosocial, hospedaje, medicamentos,
             alimentación, educación y recreación durante el tratamiento.
           </p>
-          <Link className="public-text-link" to="/nosotros">
-            Conocer la fundación <i className="pi pi-arrow-right" />
+          <Link
+            className="public-about-image-button"
+            to="/nosotros"
+            aria-label="Conocer la Fundación"
+            style={
+              {
+                "--public-about-button-normal": `url(${publicAssets.aboutButtonNormal})`,
+                "--public-about-button-hover": `url(${publicAssets.aboutButtonHover})`,
+              } as CSSProperties
+            }
+          >
+            <span>Conocer la Fundación</span>
           </Link>
         </div>
         <div className="public-photo-grid">
@@ -99,7 +122,15 @@ export const PublicHomePage = () => {
         </div>
       </section>
 
-      <section className="public-vinculate-feature" aria-label="Padrino permanente">
+      <section
+        className="public-vinculate-feature"
+        aria-label="Padrino permanente"
+        style={
+          {
+            "--public-vinculate-bg": `url(${publicAssets.sponsorBackground})`,
+          } as CSSProperties
+        }
+      >
         <div className="public-vinculate-card">
           <div className="public-vinculate-media">
             <img

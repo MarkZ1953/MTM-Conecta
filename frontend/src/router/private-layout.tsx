@@ -1,5 +1,7 @@
 import { UISidebar } from "@/components";
 import type { NavItem } from "@/components";
+import { AuthContext, getPrimaryRole } from "@/auth";
+import { useContext } from "react";
 import { Outlet } from "react-router-dom";
 
 const navItems: NavItem[] = [
@@ -72,8 +74,18 @@ const navItems: NavItem[] = [
 ];
 
 export const PrivateLayout = () => {
+  const { logout, user } = useContext(AuthContext);
+  const roleName = getPrimaryRole(user);
+  const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ") || user?.username || "Usuario";
+
   return (
-    <UISidebar navItems={navItems} logoText="MTM Conecta">
+    <UISidebar
+      navItems={navItems}
+      logoText="MTM Conecta"
+      userName={fullName}
+      userRole={roleName}
+      onLogout={logout}
+    >
       <Outlet />
     </UISidebar>
   );

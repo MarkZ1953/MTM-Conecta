@@ -11,6 +11,7 @@ import {
   HelpPage,
   HomePage,
   NewsPage,
+  NotFoundPage,
   ProgramsPage,
   PublicEventsPage,
   SponsorPage,
@@ -82,6 +83,8 @@ export const AppRouter = () => {
           <Route path="/cap-collection/requests" element={<CollectionRequestsPage />} />
         </Route>
       </Route>
+
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };

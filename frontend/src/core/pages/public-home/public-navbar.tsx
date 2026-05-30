@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { AuthContext, canAccessAdminPanel, getPanelLabel } from "@/auth";
 import { publicAssets } from "./cloudinary-assets";
 import "./public-navbar.css";
 
@@ -12,6 +13,8 @@ type ActionLink = {
   path: string;
   target?: string;
   icon?: string;
+  lightLabel?: string;
+  strongLabel?: string;
 };
 
 const institutionalLinks = [
@@ -22,16 +25,57 @@ const institutionalLinks = [
 ];
 
 const actionLinks: ActionLink[] = [
-  { label: "Inicio", path: "/home" },
-  { label: "Vincúlate", path: "/donar", icon: "pi-heart-fill" },
-  { label: "Cómo puedo ayudar", path: "/como-ayudar" },
-  { label: "Eventos", path: "/eventos-publicos" },
-  { label: "Padrino permanente", path: "/padrino-permanente" },
+  { label: "Inicio", path: "/home", strongLabel: "Inicio" },
+  {
+    label: "Cómo puedo ayudar",
+    path: "/como-ayudar",
+    lightLabel: "¿Cómo",
+    strongLabel: "puedo ayudar?",
+  },
+  { label: "Eventos", path: "/eventos-publicos", strongLabel: "Eventos" },
+  {
+    label: "Padrino permanente",
+    path: "/padrino-permanente",
+    lightLabel: "Padrino",
+    strongLabel: "permanente",
+  },
 ];
+
+function ActionLabel({ item }: { item: ActionLink }) {
+  return (
+    <>
+      {item.icon && <i className={`pi ${item.icon}`} />}
+      <span className="public-navbar-action-text">
+        {item.lightLabel && <span className="public-navbar-action-light">{item.lightLabel}</span>}
+        <span className="public-navbar-action-strong">{item.strongLabel ?? item.label}</span>
+      </span>
+    </>
+  );
+}
 
 export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isCompact, setIsCompact] = useState(false);
+  const topBarRef = useRef<HTMLElement | null>(null);
   const location = useLocation();
+  const { logged, logout, user } = useContext(AuthContext);
+  const showPanelAccess = logged && canAccessAdminPanel(user);
+
+  useEffect(() => {
+    const updateCompactState = () => {
+      const topBarHeight = topBarRef.current?.offsetHeight ?? 42;
+      setIsCompact(window.scrollY >= topBarHeight);
+    };
+
+    updateCompactState();
+    window.addEventListener("scroll", updateCompactState, { passive: true });
+    window.addEventListener("resize", updateCompactState);
+
+    return () => {
+      window.removeEventListener("scroll", updateCompactState);
+      window.removeEventListener("resize", updateCompactState);
+    };
+  }, []);
 
   const handleSection = (target?: string) => {
     if (!target || !onSectionNavigate) return;
@@ -41,7 +85,7 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
 
   return (
     <>
-      <header className="public-navbar public-navbar-top">
+      <header ref={topBarRef} className="public-navbar public-navbar-top">
         <div className="public-navbar-social" aria-label="Redes sociales">
           <a href="https://www.facebook.com/" target="_blank" rel="noreferrer" aria-label="Facebook">
             <i className="pi pi-facebook" />
@@ -62,14 +106,26 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
           <Link to="/blog" aria-label="Buscar noticias">
             <i className="pi pi-search" />
           </Link>
-          <Link to="/login">
-            <i className="pi pi-user" />
-            <span>Iniciar sesión / Registrarse</span>
-          </Link>
+          {showPanelAccess ? (
+            <Link className="public-navbar-panel-link" to="/">
+              <i className="pi pi-th-large" />
+              <span>{getPanelLabel(user)}</span>
+            </Link>
+          ) : logged ? (
+            <button className="public-navbar-logout-btn" type="button" onClick={logout}>
+              <i className="pi pi-sign-out" />
+              <span>Cerrar sesión</span>
+            </button>
+          ) : (
+            <Link to="/login">
+              <i className="pi pi-user" />
+              <span>Iniciar sesión / Registrarse</span>
+            </Link>
+          )}
         </div>
       </header>
 
-      <div className="public-navbar public-navbar-sticky">
+      <div className={`public-navbar public-navbar-sticky ${isCompact ? "is-compact" : ""}`}>
         <div className="public-navbar-main">
           <img
             className="public-navbar-mark public-navbar-mark-left"
@@ -98,7 +154,16 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
                 {item.label}
               </Link>
             ))}
+            <Link className="public-navbar-vinculate" to="/donar">
+              <i className="pi pi-heart-fill" />
+              <span>Vincúlate</span>
+            </Link>
           </nav>
+
+          <Link className="public-navbar-vinculate-compact" to="/donar">
+            <i className="pi pi-heart-fill" />
+            <span>Vincúlate</span>
+          </Link>
 
           <button
             className="public-navbar-toggle"
@@ -122,8 +187,7 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
                 className={location.pathname === item.path ? "is-active" : ""}
                 onClick={() => handleSection(item.target)}
               >
-                {item.icon && <i className={`pi ${item.icon}`} />}
-                <span>{item.label}</span>
+                <ActionLabel item={item} />
               </button>
             ) : (
               <Link
@@ -131,8 +195,7 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
                 className={location.pathname === item.path ? "is-active" : ""}
                 to={item.path}
               >
-                {item.icon && <i className={`pi ${item.icon}`} />}
-                <span>{item.label}</span>
+                <ActionLabel item={item} />
               </Link>
             ),
           )}

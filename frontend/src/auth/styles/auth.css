@@ -1205,6 +1205,7 @@
   background: #fbfcfd;
   color: var(--mtm-dark);
   font-size: 0.96rem;
+  padding: 0.9rem 1rem 0.72rem;
   box-shadow: none;
   transition:
     border-color 0.2s ease,
@@ -1215,6 +1216,11 @@
 .auth-public-page .login-input.p-inputtext,
 .auth-public-page .login-input .p-inputtext {
   padding-left: 2.75rem;
+}
+
+.auth-public-page .register-input.p-password .p-inputtext,
+.auth-public-page .register-input.p-password input {
+  padding-right: 3rem;
 }
 
 .auth-public-page .p-inputtext:enabled:focus,
@@ -1265,6 +1271,23 @@
 .auth-public-page .p-float-label label {
   color: #667783;
   font-weight: 700;
+  left: 1rem;
+}
+
+.auth-public-page .p-float-label:has(.register-input) label {
+  background: #fbfcfd;
+  border-radius: 999px;
+  padding: 0 0.28rem;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.auth-public-page .p-float-label:has(.register-input.p-inputtext:enabled:focus) label,
+.auth-public-page .p-float-label:has(.register-input .p-inputtext:enabled:focus) label {
+  background: #fff;
+  color: var(--mtm-primary-deep);
 }
 
 .auth-public-page .register-field-wrapper {
@@ -1534,11 +1557,16 @@
   padding: 0.75rem;
 }
 
-.auth-image-page .login-input.p-inputtext,
-.auth-image-page .login-input .p-inputtext,
 .auth-image-page .register-input.p-inputtext,
 .auth-image-page .register-input .p-inputtext {
   min-height: 2.85rem;
+  padding-left: 1rem;
+}
+
+.auth-image-page .login-control .login-input.p-inputtext,
+.auth-image-page .login-control .login-input .p-inputtext {
+  min-height: 2.85rem;
+  padding-left: 2.9rem;
 }
 
 .auth-image-page .login-submit-btn,

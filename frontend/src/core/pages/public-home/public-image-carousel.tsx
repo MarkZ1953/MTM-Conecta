@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 export type PublicImageCarouselSlide = {
   alt: string;
+  hotspots?: {
+    className: string;
+    label: string;
+    to: string;
+  }[];
   publicId?: string;
   src: string;
 };
@@ -50,6 +56,21 @@ export function PublicImageCarousel({
             key={slide.publicId ?? slide.src}
           >
             <img className="public-image-carousel-image" src={slide.src} alt={slide.alt} />
+            {slide.hotspots?.length ? (
+              <div className="public-image-carousel-hotspots" aria-label={`${label}: enlaces`}>
+                {slide.hotspots.map((hotspot) => (
+                  <Link
+                    aria-label={hotspot.label}
+                    className={`public-image-carousel-hotspot ${hotspot.className}`}
+                    key={hotspot.label}
+                    tabIndex={index === currentSlide ? 0 : -1}
+                    to={hotspot.to}
+                  >
+                    <span aria-hidden="true" />
+                  </Link>
+                ))}
+              </div>
+            ) : null}
           </div>
         ))}
       </div>

@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { publicAboutGallerySlides, publicAssets } from "./public-home/cloudinary-assets";
 import { PublicImageCarousel } from "./public-home/public-image-carousel";
@@ -15,14 +16,18 @@ function PageHero({
   title,
   text,
   image,
+  className = "",
+  style,
 }: {
   eyebrow: string;
   title: string;
   text: string;
   image: string;
+  className?: string;
+  style?: CSSProperties;
 }) {
   return (
-    <section className="public-page-hero">
+    <section className={`public-page-hero ${className}`.trim()} style={style}>
       <div>
         <span className="public-kicker">{eyebrow}</span>
         <h1>{title}</h1>
@@ -52,6 +57,18 @@ function PlaceholderBlock({
         <p>{text}</p>
       </div>
     </section>
+  );
+}
+
+function SponsorFloatingCta() {
+  return (
+    <Link
+      className="public-sponsor-floating-cta"
+      to="/register"
+      aria-label="Haz clic aquí para conocer MTM y registrarte como padrino permanente"
+    >
+      <img src={publicAssets.sponsorCta} alt="" aria-hidden="true" />
+    </Link>
   );
 }
 
@@ -176,17 +193,40 @@ export function DonatePage() {
 export function SponsorPage() {
   return (
     <PublicLayout>
-      <PageHero
-        eyebrow="Padrino permanente"
-        title="Acompaña de forma constante los programas de bienestar."
-        text="Los padrinos permanentes realizan aportes mensuales y reciben información de actividades, eventos e impacto de la fundación."
-        image={publicAssets.sponsor}
-      />
-      <PlaceholderBlock
-        icon="pi-calendar-plus"
-        title="Registro de padrinos en preparación"
-        text="El flujo permitirá registrar personas naturales, familias o empresas, definir aportes mensuales y comunicar beneficios según el monto de vinculación."
-      />
+      <section
+        className="public-sponsor-page"
+        aria-label="Padrino permanente"
+        style={
+          {
+            "--public-sponsor-page-bg": `url(${publicAssets.sponsorBackground})`,
+          } as CSSProperties
+        }
+      >
+        <div className="public-sponsor-page-hero">
+          <div>
+            <span className="public-kicker">Padrino permanente</span>
+            <h1>Acompaña de forma constante los programas de bienestar.</h1>
+            <p>
+              Los padrinos permanentes realizan aportes mensuales y reciben
+              información de actividades, eventos e impacto de la fundación.
+            </p>
+          </div>
+          <img src={publicAssets.sponsor} alt="Padrino permanente Fundación MTM" />
+        </div>
+
+        <div className="public-sponsor-page-register">
+          <span>
+            <i className="pi pi-calendar-plus" />
+          </span>
+          <h2>Registro de padrinos en preparación</h2>
+          <p>
+            El flujo permitirá registrar personas naturales, familias o
+            empresas, definir aportes mensuales y comunicar beneficios según el
+            monto de vinculación.
+          </p>
+        </div>
+      </section>
+      <SponsorFloatingCta />
     </PublicLayout>
   );
 }
@@ -339,6 +379,27 @@ export function ContactPage() {
             <p>Villavicencio, Meta</p>
           </article>
         </div>
+      </section>
+    </PublicLayout>
+  );
+}
+
+export function NotFoundPage() {
+  return (
+    <PublicLayout>
+      <section className="public-not-found" aria-label="Error 404, página no encontrada">
+        <img
+          className="public-not-found-image"
+          src={publicAssets.notFound}
+          alt="Error 404: esta ruta no existe. Volvamos juntos al camino de la esperanza."
+        />
+        <Link
+          className="public-not-found-home-link"
+          to="/home"
+          aria-label="Volver al inicio"
+        >
+          <span aria-hidden="true" />
+        </Link>
       </section>
     </PublicLayout>
   );

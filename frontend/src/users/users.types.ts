@@ -20,7 +20,7 @@ export interface UserPayload {
   last_name: string;
   username: string;
   email: string;
-  role_ids: number[] | null;
+  role_ids: number[];
 }
 
 export interface UserPasswordPayload {
