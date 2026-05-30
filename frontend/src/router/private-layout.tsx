@@ -53,6 +53,17 @@ const navItems: NavItem[] = [
     icon: "pi-megaphone",
   },
   {
+    section: "Recolección de Tapas",
+    title: "Recolección",
+    url: "/cap-collection",
+    icon: "pi-replay",
+    items: [
+      { title: "Empresas", url: "/cap-collection/companies", icon: "pi-building" },
+      { title: "Puntos de Recolección", url: "/cap-collection/points", icon: "pi-map-marker" },
+      { title: "Solicitudes", url: "/cap-collection/requests", icon: "pi-truck" },
+    ],
+  },
+  {
     section: "Administración",
     title: "Usuarios",
     url: "/users",
