@@ -148,6 +148,30 @@
 .mtm-crumb .here { color: var(--s-ink); font-weight: 600; }
 .mtm-crumb-link { color: var(--s-muted); text-decoration: none; transition: color .15s ease; }
 .mtm-crumb-link:hover { color: var(--s-teal-dark); }
+.mtm-public-site-btn {
+  align-items: center;
+  background: var(--s-teal-soft);
+  border: 1px solid rgba(45, 191, 168, 0.24);
+  border-radius: 8px;
+  color: var(--s-teal-dark);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 8px;
+  margin-left: auto;
+  min-height: 36px;
+  padding: 0 12px;
+  text-decoration: none;
+  transition:
+    background .15s ease,
+    border-color .15s ease,
+    transform .15s ease;
+}
+.mtm-public-site-btn:hover {
+  background: #fff;
+  border-color: rgba(45, 191, 168, 0.42);
+  transform: translateY(-1px);
+}
 
 .mtm-content {
   flex: 1;

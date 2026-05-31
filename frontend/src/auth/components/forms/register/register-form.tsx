@@ -29,6 +29,16 @@ export function RegisterForm() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [termsError, setTermsError] = useState(false);
 
+  const getErrorMessage = (responseData: any) => {
+    if (!responseData) return "Error al crear la cuenta";
+    if (responseData.message) return responseData.message;
+
+    const firstError = Object.values(responseData).flat().find(Boolean);
+    if (typeof firstError === "string") return firstError;
+
+    return JSON.stringify(responseData);
+  };
+
   const onSubmit = async (data: any) => {
     if (!acceptTerms) {
       setTermsError(true);
@@ -36,7 +46,7 @@ export function RegisterForm() {
     }
 
     try {
-      const { status } = await authAPI.register({
+      const { status, data: responseData } = await authAPI.register({
         data: {
           first_name: data.first_name,
           last_name: data.last_name,
@@ -48,9 +58,12 @@ export function RegisterForm() {
       if (status >= 200 && status < 300) {
         toast.success("Cuenta creada exitosamente");
         navigate("/login");
+        return;
       }
+
+      throw new Error(getErrorMessage(responseData));
     } catch (error) {
-      toast.error("Error al crear la cuenta");
+      toast.error(error instanceof Error ? error.message : "Error al crear la cuenta");
     }
   };
 
@@ -62,10 +75,11 @@ export function RegisterForm() {
         noValidate
       >
         <div className="register-form-header">
+          <span className="register-form-kicker">Registro</span>
           <h1 className="register-form-title">Crea tu cuenta</h1>
           <p className="register-form-subtitle">
-            Únete a la red de voluntarias de la Fundación MTM y ayuda a niños
-            con cáncer a tener una mejor vida
+            Registra un usuario para acceder a la plataforma administrativa de
+            la Fundación MTM.
           </p>
         </div>
 
@@ -113,7 +127,7 @@ export function RegisterForm() {
         <Divider />
 
         <p className="register-login-prompt">
-          ¿Ya eres parte de la fundación?&nbsp;
+          ¿Ya tienes un usuario?&nbsp;
           <button
             type="button"
             className="register-login-link"

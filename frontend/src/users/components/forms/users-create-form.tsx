@@ -21,7 +21,7 @@ const defaultValues: UserPayload = {
   first_name: "",
   last_name: "",
   email: "",
-  role_ids: null,
+  role_ids: [],
 };
 
 export const UsersCreateForm = ({
