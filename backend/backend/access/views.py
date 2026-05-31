@@ -4,7 +4,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import AuthenticationFailed
 from app.mixins.soft_delete_mixin import SoftDeleteMixin
-from .serializers import UserSerializer, GroupSerializer
+from .serializers import PublicRegisterSerializer, UserSerializer, GroupSerializer
 from .paginations import UserPagination, GroupPagination
 from django.contrib.auth.models import Group, User
 from app.mixins.export_mixin import ExportMixin
@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from .filters import UserFilter, GroupFilter
 from rest_framework import viewsets, status
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from django.db.models import Case, When
 from audits.service import log_event
@@ -20,6 +21,9 @@ from rest_framework import filters
 from utils.i18n import resolve_lang, t
 from . import messages  # noqa: F401 — registers access message catalog on import
 from .permissions import (
+    CanManageRoles,
+    CanViewPermissionCatalog,
+    DjangoModelPermissionsWithView,
     get_all_permissions,
     get_user_permissions,
     resolve_permissions,
@@ -121,6 +125,17 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         )
 
         response.data["access"] = access_token
+        response.data["user"] = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "is_active": user.is_active,
+            "is_superuser": user.is_superuser,
+            "permissions": get_user_permissions(user, lang),
+            "groups": list(user.groups.all().values("id", "name")),
+        }
         return response
 
 
@@ -218,6 +233,32 @@ class LogoutViewSet(viewsets.ViewSet):
             print(e)
 
 
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        serializer = PublicRegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        log_event(
+            request=request,
+            user=user,
+            action="create",
+            instance=user,
+            description=f"Usuario '{user.username}' registrado desde el formulario público",
+        )
+
+        return Response(
+            {
+                "message": "Cuenta creada exitosamente.",
+                "user": UserSerializer(user, context={"request": request}).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
 # ---------------------------------------------------------------------------
 # Permissions listing
 # ---------------------------------------------------------------------------
@@ -233,8 +274,7 @@ class PermissionListView(APIView):
     Supported languages: ``es`` (default), ``en``, ``pt``.
     """
 
-    permission_classes = []
-    authentication_classes = []
+    permission_classes = [CanViewPermissionCatalog]
 
     def get(self, request):
         lang = resolve_lang(request.META.get("HTTP_ACCEPT_LANGUAGE"))
@@ -246,10 +286,14 @@ class PermissionListView(APIView):
 # ---------------------------------------------------------------------------
 
 
-class RoleViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
+class RoleViewSet(ExportMixin, viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     pagination_class = GroupPagination
+    permission_classes = [DjangoModelPermissionsWithView]
+    export_columns = ROLES_EXPORT_COLUMNS
+    export_filename = "roles"
+    export_sheet_name = "Roles"
 
     filter_backends = [
         DjangoFilterBackend,
@@ -260,6 +304,14 @@ class RoleViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     filterset_class = GroupFilter
     ordering_fields = ["id", "name"]
     ordering = ["-id"]
+
+    def perform_create(self, serializer):
+        raw_permissions = self.request.data.get("permissions", None)
+        group = serializer.save()
+
+        if raw_permissions is not None:
+            perms = resolve_permissions(raw_permissions)
+            group.permissions.set(perms)
 
     def perform_update(self, serializer):
         """
@@ -295,8 +347,7 @@ class RolePermissionUpdateView(APIView):
     Body: ``{"permissions": [...]}``  — same flexible format as ``RoleViewSet``.
     """
 
-    permission_classes = []
-    authentication_classes = []
+    permission_classes = [CanManageRoles]
 
     def post(self, request, role_id):
         lang = resolve_lang(request.META.get("HTTP_ACCEPT_LANGUAGE"))
@@ -331,6 +382,10 @@ class UserViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
     pagination_class = UserPagination
+    permission_classes = [DjangoModelPermissionsWithView]
+    export_columns = USERS_EXPORT_COLUMNS
+    export_filename = "usuarios"
+    export_sheet_name = "Usuarios"
 
     filter_backends = [
         DjangoFilterBackend,
@@ -341,6 +396,59 @@ class UserViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     filterset_class = UserFilter
     ordering_fields = ["id", "username", "email", "first_name", "last_name"]
     ordering = ["-id"]
+
+    @action(detail=True, methods=["post"], url_path="soft-delete")
+    def soft_delete(self, request, pk=None):
+        user = self.get_object()
+
+        if not user.is_active:
+            return Response(
+                {"detail": "El usuario ya ha sido eliminado."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.is_active = False
+        user.save(update_fields=["is_active"])
+
+        return Response(
+            {
+                "message": "El usuario ha sido eliminado correctamente.",
+                "data": self.get_serializer(user).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=["post"], url_path="bulk-soft-delete")
+    def bulk_soft_delete(self, request):
+        ids = request.data.get("ids", [])
+
+        if not ids:
+            return Response(
+                {"detail": "No se proporcionaron IDs para eliminar."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        queryset = self.get_queryset().filter(id__in=ids, is_active=True)
+
+        if not queryset.exists():
+            return Response(
+                {"detail": "No se encontraron usuarios para eliminar."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        users = list(queryset)
+        queryset.update(is_active=False)
+
+        for user in users:
+            user.is_active = False
+
+        return Response(
+            {
+                "message": f"Se han eliminado correctamente {len(users)} usuarios.",
+                "data": self.get_serializer(users, many=True).data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=True, methods=["post"], url_path="change-password")
     def change_password(self, request, pk=None, *args, **kwargs):

@@ -62,11 +62,11 @@ export interface CollectionRequest {
 
 export interface CollectionRequestPayload {
     collection_point: number;
-    status: string;
+    status: CollectionRequestStatus;
     estimated_weight_kg: number | string;
     scheduled_date: string;
-    driver_name?: string;
-    notes?: string;
+    driver_name?: string | null;
+    notes?: string | null;
 }
 
 export interface PaginatedResponse<T> {

@@ -7,6 +7,8 @@ import { Divider } from "primereact/divider";
 import { Button } from "primereact/button";
 import { authAPI } from "@/auth/auth.api";
 import { toast } from "@/components";
+import { useContext } from "react";
+import { AuthContext, getPostLoginPath } from "@/auth";
 
 export function LoginForm() {
   const form = useForm({
@@ -18,17 +20,21 @@ export function LoginForm() {
   });
 
   const navigate = useNavigate();
+  const { refresh } = useContext(AuthContext);
  
   const { isSubmitting } = form.formState;
 
   const onSubmit = async (data: any) => {
     try {
-      const { status } = await authAPI.login({
+      const { status, data: loginData } = await authAPI.login({
         username: data.username,
         password: data.password,
       });
       if (status >= 200 && status < 300) {
-        navigate("/");
+        const refreshedUser = await refresh();
+        const user = refreshedUser ?? loginData?.user;
+
+        navigate(getPostLoginPath(user));
         toast.success("Inicio de sesión exitoso");
       }
     } catch (error) {
@@ -46,10 +52,10 @@ export function LoginForm() {
         >
           <div className="login-form-header">
             <span className="login-form-kicker">Inicio de sesión</span>
-            <h1 className="login-form-title">Bienvenida de nuevo</h1>
+            <h1 className="login-form-title">Bienvenido de nuevo</h1>
             <p className="login-form-subtitle">
-              Ingresa tus credenciales para continuar con la gestión de MTM
-              Conecta.
+              Ingresa tus credenciales para continuar con la gestión interna de
+              MTM Conecta.
             </p>
           </div>
 
@@ -74,7 +80,7 @@ export function LoginForm() {
           <Divider />
 
           <p className="login-register-prompt">
-            ¿Eres nueva en la fundación?&nbsp;
+            ¿Necesitas crear un usuario?&nbsp;
             <button
               type="button"
               className="login-register-link"

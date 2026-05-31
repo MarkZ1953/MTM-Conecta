@@ -26,7 +26,7 @@ const getDefaultValues = (user?: User | null): UserPayload => ({
   role_ids:
     user?.groups
       ?.filter((group): group is UserGroup => typeof group === "object" && "id" in group)
-      .map((group) => group.id) ?? null,
+      .map((group) => group.id) ?? [],
 });
 
 export const UsersEditForm = ({

@@ -35,7 +35,7 @@ export function CompaniesBulkDeleteDialog({
       if (failedCount === 0) {
         toast.success(`${ids.length} empresas eliminadas correctamente.`);
       } else {
-        toast.warning(
+        toast.warn(
           `Se eliminaron ${ids.length - failedCount} empresas, pero fallaron ${failedCount}.`,
         );
       }

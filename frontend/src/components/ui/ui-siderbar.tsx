@@ -228,6 +228,10 @@ export const UISidebar = ({
               </React.Fragment>
             ))}
           </nav>
+          <Link to="/home" className="mtm-public-site-btn">
+            <i className="pi pi-globe" />
+            <span>Sitio público</span>
+          </Link>
         </div>
 
         {/* Content */}

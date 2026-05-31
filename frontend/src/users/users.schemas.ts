@@ -9,7 +9,7 @@ export const userBaseSchema = yup.object({
     .trim()
     .email("El correo electronico no es valido")
     .required("El correo electronico es obligatorio"),
-  role_ids: yup.array().of(yup.number().required()).nullable().defined(),
+  role_ids: yup.array().of(yup.number().required()).default([]).defined(),
 });
 
 export const userPasswordEditSchema = yup.object({

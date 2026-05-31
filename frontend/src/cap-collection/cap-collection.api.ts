@@ -130,9 +130,9 @@ class CollectionRequestsAPI extends ResourceAPI<CollectionRequest> {
     async create({
         data,
     }: {
-        data: CollectionRequestPayload;
+        data: Partial<CollectionRequest> | CollectionRequestPayload;
     }): Promise<{ status: number; data: CollectionRequest }> {
-        return super.create({ data }) as any;
+        return super.create({ data: data as Partial<CollectionRequest> }) as any;
     }
 
     async update({
@@ -140,9 +140,9 @@ class CollectionRequestsAPI extends ResourceAPI<CollectionRequest> {
         data,
     }: {
         id: number;
-        data: Partial<CollectionRequestPayload>;
+        data: Partial<CollectionRequest> | Partial<CollectionRequestPayload>;
     }): Promise<{ status: number; data: CollectionRequest }> {
-        return super.update({ id, data }) as any;
+        return super.update({ id, data: data as Partial<CollectionRequest> }) as any;
     }
 
     async softDelete({ id }: { id: number }): Promise<{ status: number; data: any }> {
