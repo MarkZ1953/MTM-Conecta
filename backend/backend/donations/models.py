@@ -1,6 +1,16 @@
+from datetime import timedelta
 from django.contrib.auth.models import User
-from app.models import BaseModel
 from django.db import models
+from django.db.models import Sum
+from django.utils import timezone
+from app.models import BaseModel
+
+
+class SponsorCategory(models.TextChoices):
+    BRONZE = 'BRONZE', 'Bronce (Nivel 1)'
+    SILVER = 'SILVER', 'Plata (Nivel 2)'
+    GOLD = 'GOLD', 'Oro (Nivel 3)'
+    PLATINUM = 'PLATINUM', 'Platino (Nivel 4)'
 
 
 class StatusDonation(models.TextChoices):
@@ -61,8 +71,54 @@ class Donor(BaseModel):
         blank=False
     )
 
+    subscription_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0.00,
+        null=False,
+        blank=False
+    )
+
+    payment_day = models.IntegerField(
+        default=5,
+        null=False,
+        blank=False
+    )
+
+    category = models.CharField(
+        max_length=32,
+        choices=SponsorCategory.choices,
+        default=SponsorCategory.BRONZE,
+        null=False,
+        blank=False
+    )
+
+    marketing_opt_in = models.BooleanField(
+        default=True,
+        null=False,
+        blank=False
+    )
+
+    def update_category(self):
+        one_year_ago = timezone.now() - timedelta(days=365)
+        total_donated = self.donations.filter(
+            status='COMPLETED',
+            date__gte=one_year_ago
+        ).aggregate(total=Sum('amount'))['total'] or 0.00
+        
+        if total_donated < 500000.00:
+            self.category = SponsorCategory.BRONZE
+        elif total_donated < 1500000.00:
+            self.category = SponsorCategory.SILVER
+        elif total_donated < 5000000.00:
+            self.category = SponsorCategory.GOLD
+        else:
+            self.category = SponsorCategory.PLATINUM
+            
+        self.save(update_fields=['category'])
+
     def __str__(self):
-        return f"{self.user.username}"
+        return f"{self.first_name} {self.last_name} ({self.user.username})"
 
     class Meta:
         db_table = 'donors'

@@ -26,6 +26,8 @@ const getDefaultValues = (pointObj?: CollectionPoint | null): CollectionPointPay
   department: pointObj?.department ?? "",
   contact_name: pointObj?.contact_name ?? "",
   contact_phone: pointObj?.contact_phone ?? "",
+  latitude: pointObj?.latitude ?? "",
+  longitude: pointObj?.longitude ?? "",
 });
 
 export const CollectionPointsEditForm = ({

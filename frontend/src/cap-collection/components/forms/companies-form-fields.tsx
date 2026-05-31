@@ -1,5 +1,25 @@
 import { useFormContext, Controller } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
+import { Dropdown } from "primereact/dropdown";
+
+const ECONOMIC_SECTOR_OPTIONS = [
+  { label: "Industrial", value: "INDUSTRIAL" },
+  { label: "Comercial", value: "COMERCIAL" },
+  { label: "Servicios", value: "SERVICIOS" },
+  { label: "Tecnología", value: "TECNOLOGIA" },
+  { label: "Financiero", value: "FINANCIERO" },
+  { label: "Educación", value: "EDUCACION" },
+  { label: "Construcción", value: "CONSTRUCCION" },
+  { label: "Salud", value: "SALUD" },
+  { label: "Otro", value: "OTRO" },
+];
+
+const COMPANY_SIZE_OPTIONS = [
+  { label: "Micro", value: "MICRO" },
+  { label: "Pequeña", value: "PEQUENA" },
+  { label: "Mediana", value: "MEDIANA" },
+  { label: "Grande", value: "GRANDE" },
+];
 
 export const CompaniesFormFields = () => {
   const { control, formState: { errors } } = useFormContext();
@@ -109,6 +129,50 @@ export const CompaniesFormFields = () => {
           )}
         />
         {errors.contact_phone?.message && <small className="p-error">{errors.contact_phone.message.toString()}</small>}
+      </div>
+
+      <div className="field col-12 md:col-6 mb-2">
+        <label htmlFor="economic_sector" className="block mb-2 font-medium text-700">
+          <i className="pi pi-briefcase mr-2 text-primary" />
+          Sector Económico
+        </label>
+        <Controller
+          name="economic_sector"
+          control={control}
+          render={({ field }) => (
+            <Dropdown
+              id={field.name}
+              value={field.value}
+              options={ECONOMIC_SECTOR_OPTIONS}
+              onChange={(e) => field.onChange(e.value)}
+              className={errors.economic_sector?.message ? "p-invalid w-full" : "w-full"}
+              placeholder="Selecciona un sector..."
+            />
+          )}
+        />
+        {errors.economic_sector?.message && <small className="p-error">{errors.economic_sector.message.toString()}</small>}
+      </div>
+
+      <div className="field col-12 md:col-6 mb-2">
+        <label htmlFor="company_size" className="block mb-2 font-medium text-700">
+          <i className="pi pi-users mr-2 text-primary" />
+          Tamaño de la Empresa
+        </label>
+        <Controller
+          name="company_size"
+          control={control}
+          render={({ field }) => (
+            <Dropdown
+              id={field.name}
+              value={field.value}
+              options={COMPANY_SIZE_OPTIONS}
+              onChange={(e) => field.onChange(e.value)}
+              className={errors.company_size?.message ? "p-invalid w-full" : "w-full"}
+              placeholder="Selecciona el tamaño..."
+            />
+          )}
+        />
+        {errors.company_size?.message && <small className="p-error">{errors.company_size.message.toString()}</small>}
       </div>
     </div>
   );

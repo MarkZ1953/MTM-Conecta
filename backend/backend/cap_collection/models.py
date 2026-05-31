@@ -2,6 +2,25 @@ from app.models import BaseModel
 from django.db import models
 
 
+class EconomicSector(models.TextChoices):
+    INDUSTRIAL = 'INDUSTRIAL', 'Industrial'
+    COMERCIAL = 'COMERCIAL', 'Comercial'
+    SERVICIOS = 'SERVICIOS', 'Servicios'
+    TECNOLOGIA = 'TECNOLOGIA', 'Tecnología'
+    FINANCIERO = 'FINANCIERO', 'Financiero'
+    EDUCACION = 'EDUCACION', 'Educación'
+    CONSTRUCCION = 'CONSTRUCCION', 'Construcción'
+    SALUD = 'SALUD', 'Salud'
+    OTRO = 'OTRO', 'Otro'
+
+
+class CompanySize(models.TextChoices):
+    MICRO = 'MICRO', 'Micro'
+    PEQUENA = 'PEQUENA', 'Pequeña'
+    MEDIANA = 'MEDIANA', 'Mediana'
+    GRANDE = 'GRANDE', 'Grande'
+
+
 class Company(BaseModel):
     nit = models.CharField(
         max_length=20,
@@ -30,6 +49,22 @@ class Company(BaseModel):
 
     contact_phone = models.CharField(
         max_length=20,
+        null=False,
+        blank=False
+    )
+
+    economic_sector = models.CharField(
+        max_length=64,
+        choices=EconomicSector.choices,
+        default=EconomicSector.OTRO,
+        null=False,
+        blank=False
+    )
+
+    company_size = models.CharField(
+        max_length=32,
+        choices=CompanySize.choices,
+        default=CompanySize.MICRO,
         null=False,
         blank=False
     )
@@ -88,6 +123,20 @@ class CollectionPoint(BaseModel):
         blank=True
     )
 
+    latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True
+    )
+
+    longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True
+    )
+
     def __str__(self):
         return f"{self.name} - {self.company.business_name}"
 
@@ -102,6 +151,7 @@ class StatusCollectionRequest(models.TextChoices):
     ASSIGNED = 'ASSIGNED', 'Asignada'
     IN_ROUTE = 'IN_ROUTE', 'En Ruta'
     COLLECTED = 'COLLECTED', 'Recolectada'
+    PROCESSED = 'PROCESSED', 'Procesada'
     CANCELLED = 'CANCELLED', 'Cancelada'
 
 

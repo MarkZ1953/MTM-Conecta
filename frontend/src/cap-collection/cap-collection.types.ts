@@ -3,6 +3,7 @@ export type CollectionRequestStatus =
     | "ASSIGNED"
     | "IN_ROUTE"
     | "COLLECTED"
+    | "PROCESSED"
     | "CANCELLED";
 
 export interface Company {
@@ -12,6 +13,8 @@ export interface Company {
     contact_name: string;
     contact_email: string;
     contact_phone: string;
+    economic_sector: string;
+    company_size: string;
     is_active: boolean;
 }
 
@@ -21,6 +24,8 @@ export interface CompanyPayload {
     contact_name: string;
     contact_email: string;
     contact_phone: string;
+    economic_sector: string;
+    company_size: string;
 }
 
 export interface CollectionPoint {
@@ -33,6 +38,8 @@ export interface CollectionPoint {
     department: string;
     contact_name: string | null;
     contact_phone: string | null;
+    latitude: number | string | null;
+    longitude: number | string | null;
     is_active: boolean;
 }
 
@@ -44,6 +51,8 @@ export interface CollectionPointPayload {
     department: string;
     contact_name?: string;
     contact_phone?: string;
+    latitude?: number | string | null;
+    longitude?: number | string | null;
 }
 
 export interface CollectionRequest {

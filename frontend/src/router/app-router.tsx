@@ -28,6 +28,7 @@ import { EvidencesPage } from "@/evidence";
 import { DonationsPage } from "@/donations";
 import { DonorsPage } from "@/donors";
 import { CampaignsPage, CampaignFormPage } from "@/campaigns";
+import { VolunteersPage } from "@/volunteers";
 import {
   CapCollectionPage,
   CompaniesPage,
@@ -72,6 +73,7 @@ export const AppRouter = () => {
           
           <Route path="/donations" element={<DonationsPage />} />
           <Route path="/donations/donors" element={<DonorsPage />} />
+          <Route path="/volunteers" element={<VolunteersPage />} />
 
           <Route path="/campaigns" element={<CampaignsPage />} />
           <Route path="/campaigns/nueva" element={<CampaignFormPage />} />

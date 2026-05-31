@@ -24,6 +24,8 @@ const getDefaultValues = (companyObj?: Company | null): CompanyPayload => ({
   contact_name: companyObj?.contact_name ?? "",
   contact_email: companyObj?.contact_email ?? "",
   contact_phone: companyObj?.contact_phone ?? "",
+  economic_sector: companyObj?.economic_sector ?? "OTRO",
+  company_size: companyObj?.company_size ?? "MICRO",
 });
 
 export const CompaniesEditForm = ({

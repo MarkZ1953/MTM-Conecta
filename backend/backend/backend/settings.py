@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'anymail',
     'campaigns',
     'cap_collection',
+    'volunteers',
 ]
 
 MIDDLEWARE = [

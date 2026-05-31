@@ -10,7 +10,7 @@ import {
 import { buildQueryParams } from "@/utils";
 import { donorsAPI } from "./donors.api";
 import { useDonorsStore } from "./donors.store";
-import { donorTypeLabels, type Donor } from "./donors.types";
+import { donorTypeLabels, type Donor, sponsorCategoryLabels } from "./donors.types";
 import {
   DonorsBulkDeleteDialog,
   DonorsCreateForm,
@@ -21,6 +21,13 @@ import "@/components/ui/resource-page.css";
 
 const defaultFilters: DataTableFilterMeta = {
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+};
+
+const CATEGORY_STYLES: Record<string, { label: string; cls: string }> = {
+  BRONZE: { label: "Bronce (Nivel 1)", cls: "pending" },
+  SILVER: { label: "Plata (Nivel 2)", cls: "inactive" },
+  GOLD: { label: "Oro (Nivel 3)", cls: "active" },
+  PLATINUM: { label: "Platino (Nivel 4)", cls: "completed" },
 };
 
 const getDonorDisplayName = (d: Donor) =>
@@ -91,7 +98,7 @@ export const DonorsPage = () => {
   const columns: ColumnDef<Donor>[] = [
     {
       accessorKey: "first_name",
-      header: "Donante",
+      header: "Donante / Padrino",
       cell: ({ row: { original: d } }) => (
         <div className="rp-person">
           <div className={`rp-avatar rp-av-${Number(d.id) % 6}`}>{initials(d)}</div>
@@ -109,12 +116,30 @@ export const DonorsPage = () => {
         <span className="rp-badge active"><span className="dot" /> {donorTypeLabels[d.donor_type]}</span>
       ),
     },
-    { accessorKey: "email", header: "Correo" },
     {
-      id: "user",
-      header: "Usuario",
-      enableSorting: false,
-      cell: ({ row: { original: d } }) => <span className="rp-badge inactive"><span className="dot" /> Usuario #{d.user}</span>,
+      accessorKey: "subscription_amount",
+      header: "Compromiso Mensual",
+      cell: ({ row: { original: d } }) => (
+        <span style={{ fontWeight: 600, color: "var(--rp-ink)" }}>{fmt(parseFloat(String(d.subscription_amount || "0")))} COP</span>
+      ),
+    },
+    {
+      accessorKey: "payment_day",
+      header: "Día de Pago / Boletín",
+      cell: ({ row: { original: d } }) => (
+        <div>
+          <div style={{ fontWeight: 500 }}>Día {d.payment_day || 5} de cada mes</div>
+          <div className="rp-person-id">{d.marketing_opt_in ? "Boletín Autorizado" : "Sin Boletín"}</div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "category",
+      header: "Categoría",
+      cell: ({ row: { original: d } }) => {
+        const cat = CATEGORY_STYLES[d.category] ?? { label: "Bronce (Nivel 1)", cls: "pending" };
+        return <span className={`rp-badge ${cat.cls}`}><span className="dot" /> {cat.label}</span>;
+      },
     },
     {
       id: "actions",

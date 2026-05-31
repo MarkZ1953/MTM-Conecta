@@ -24,6 +24,8 @@ const defaultValues: CollectionPointPayload = {
   department: "",
   contact_name: "",
   contact_phone: "",
+  latitude: "",
+  longitude: "",
 };
 
 export const CollectionPointsCreateForm = ({

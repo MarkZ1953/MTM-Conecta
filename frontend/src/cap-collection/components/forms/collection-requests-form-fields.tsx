@@ -15,6 +15,7 @@ const statusOptions = [
   { label: "Asignada", value: "ASSIGNED" },
   { label: "En Ruta", value: "IN_ROUTE" },
   { label: "Recolectada", value: "COLLECTED" },
+  { label: "Procesada", value: "PROCESSED" },
   { label: "Cancelada", value: "CANCELLED" },
 ];
 
