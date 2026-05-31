@@ -42,6 +42,7 @@ const STATUS: Record<CollectionRequestStatus, { label: string; cls: string }> = 
   ASSIGNED: { label: "Asignada", cls: "inactive" },
   IN_ROUTE: { label: "En Ruta", cls: "active" },
   COLLECTED: { label: "Recolectada", cls: "completed" },
+  PROCESSED: { label: "Procesada", cls: "completed" },
   CANCELLED: { label: "Cancelada", cls: "failed" },
 };
 

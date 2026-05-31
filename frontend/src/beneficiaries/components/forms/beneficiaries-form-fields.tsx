@@ -3,9 +3,16 @@ import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
 import { beneficiaryTreatmentStageLabels } from "@/beneficiaries/beneficiaries.types";
+import {
+    ORINOQUIA_MUNICIPALITIES_GROUPED,
+    TREATMENT_STAGE_OPTIONS,
+} from "@/beneficiaries/beneficiaries.constants";
 
-const treatmentStageOptions = Object.entries(beneficiaryTreatmentStageLabels).map(
-  ([value, label]) => ({ value, label }),
+const groupedMunicipalityTemplate = (option: { department: string }) => (
+    <div className="flex align-items-center gap-2">
+        <i className="pi pi-map text-primary" style={{ fontSize: 12 }} />
+        <span className="font-bold text-sm">{option.department}</span>
+    </div>
 );
 
 const fields = [
@@ -33,12 +40,6 @@ const fields = [
     icon: "pi pi-calendar",
     placeholder: "YYYY-MM-DD",
     type: "date"
-  },
-  {
-    name: "municipality",
-    label: "Municipio",
-    icon: "pi pi-map-marker",
-    placeholder: "Ej: Medellín",
   },
   {
     name: "treatment_status",
@@ -75,7 +76,41 @@ export const BeneficiariesFormFields = () => {
         );
       })}
 
+      {/* ── Municipio (Dropdown filtrado — Orinoquía) ── */}
       <div className="field col-12 md:col-6 mb-2">
+        <label htmlFor="municipality" className="block mb-2 font-medium text-700">
+          <i className="pi pi-map-marker mr-2 text-primary" />
+          Municipio de procedencia
+        </label>
+        <Controller
+          name="municipality"
+          control={control}
+          render={({ field }) => (
+            <Dropdown
+              id={field.name}
+              value={field.value}
+              onChange={(event) => field.onChange(event.value)}
+              options={ORINOQUIA_MUNICIPALITIES_GROUPED}
+              optionLabel="label"
+              optionValue="value"
+              optionGroupLabel="department"
+              optionGroupChildren="municipalities"
+              optionGroupTemplate={groupedMunicipalityTemplate}
+              placeholder="Selecciona un municipio de la Orinoquía"
+              filter
+              filterPlaceholder="Buscar municipio…"
+              className={errors.municipality?.message ? "p-invalid w-full" : "w-full"}
+              showClear
+            />
+          )}
+        />
+        {errors.municipality?.message && (
+          <small className="p-error">{errors.municipality.message.toString()}</small>
+        )}
+      </div>
+
+      {/* ── Etapa del tratamiento ── */}
+      <div className="field col-12  mb-2">
         <label htmlFor="treatment_stage" className="block mb-2 font-medium text-700">
           <i className="pi pi-chart-line mr-2 text-primary" />
           Etapa del beneficiario
@@ -88,7 +123,7 @@ export const BeneficiariesFormFields = () => {
               id={field.name}
               value={field.value}
               onChange={(event) => field.onChange(event.value)}
-              options={treatmentStageOptions}
+              options={TREATMENT_STAGE_OPTIONS}
               optionLabel="label"
               optionValue="value"
               placeholder="Selecciona una etapa"

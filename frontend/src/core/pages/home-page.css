@@ -473,16 +473,16 @@
   font-size: 1.1rem;
 }
 
-/* ---------- Services ---------- */
+/* ---------- Services / Programas Misionales (8 programas, 4 columnas) ---------- */
 .landing-services {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
 }
 .landing-service-card {
   background: white;
   border-radius: 1.25rem;
-  padding: 2rem;
+  padding: 2rem 1.5rem;
   box-shadow: 0 4px 24px rgba(106, 63, 160, 0.06);
   border: 1px solid var(--mtm-border);
   transition: all 0.35s ease;
@@ -493,17 +493,18 @@
   box-shadow: 0 16px 48px rgba(106, 63, 160, 0.12);
 }
 .landing-service-card__icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  margin: 0 auto 1.25rem;
+  font-size: 1.3rem;
+  margin: 0 auto 1rem;
   color: white;
   background: linear-gradient(135deg, var(--mtm-primary), var(--mtm-primary-light));
 }
+/* Color variants for each of the 8 missionary programs */
 .landing-service-card:nth-child(2) .landing-service-card__icon {
   background: linear-gradient(135deg, var(--mtm-teal), var(--mtm-teal-deep));
 }
@@ -514,18 +515,24 @@
   background: linear-gradient(135deg, var(--mtm-accent-deep), var(--mtm-accent));
 }
 .landing-service-card:nth-child(5) .landing-service-card__icon {
-  background: linear-gradient(135deg, #5b7fd6, #8ba4e8);
+  background: linear-gradient(135deg, #f0964c, #e67e22);
 }
 .landing-service-card:nth-child(6) .landing-service-card__icon {
+  background: linear-gradient(135deg, #5b7fd6, #8ba4e8);
+}
+.landing-service-card:nth-child(7) .landing-service-card__icon {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+}
+.landing-service-card:nth-child(8) .landing-service-card__icon {
   background: linear-gradient(135deg, var(--mtm-primary-light), var(--mtm-rose));
 }
 .landing-service-card h3 {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 700;
   margin: 0 0 0.5rem;
 }
 .landing-service-card p {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #666;
   line-height: 1.6;
   margin: 0;
@@ -697,7 +704,7 @@
   .landing-mvv { grid-template-columns: 1fr; }
   .landing-about__inner { grid-template-columns: 1fr; }
   .landing-about__gallery { order: -1; }
-  .landing-services { grid-template-columns: 1fr 1fr; }
+  .landing-services { grid-template-columns: repeat(2, 1fr); }
   .landing-footer__inner { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 768px) {

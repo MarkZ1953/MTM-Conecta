@@ -46,3 +46,12 @@ class DonationViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     ]
     ordering_fields = ['id', 'amount', 'donation_type', 'date', 'status']
     ordering = ['-date']
+
+    def perform_create(self, serializer):
+        donation = serializer.save()
+        if donation.status == 'COMPLETED':
+            donation.donor.update_category()
+
+    def perform_update(self, serializer):
+        donation = serializer.save()
+        donation.donor.update_category()

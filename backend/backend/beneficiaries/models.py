@@ -1,5 +1,6 @@
 from cloudinary_storage.storage import RawMediaCloudinaryStorage
 from app.models import BaseModel
+from django.conf import settings
 from django.db import models
 
 
@@ -144,3 +145,63 @@ class Guardian(BaseModel):
         db_table = 'guardians'
         verbose_name = 'Guardian'
         verbose_name_plural = 'Guardians'
+
+
+class AidLogEntry(BaseModel):
+    """Bitácora de ayudas entregadas a un beneficiario."""
+
+    beneficiary = models.ForeignKey(
+        Beneficiary,
+        on_delete=models.CASCADE,
+        related_name='aid_log_entries'
+    )
+
+    delivery_date = models.DateTimeField(
+        null=False,
+        blank=False
+    )
+
+    aid_type = models.CharField(
+        max_length=128,
+        null=False,
+        blank=False
+    )
+
+    description = models.TextField(
+        null=False,
+        blank=False
+    )
+
+    quantity_value = models.CharField(
+        max_length=64,
+        blank=True,
+        default=''
+    )
+
+    missionary_program = models.CharField(
+        max_length=64,
+        blank=True,
+        default=''
+    )
+
+    registered_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='aid_log_entries'
+    )
+
+    notes = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return f"{self.aid_type} → {self.beneficiary} ({self.delivery_date})"
+
+    class Meta:
+        db_table = 'aid_log_entries'
+        ordering = ['-delivery_date']
+        verbose_name = 'Aid Log Entry'
+        verbose_name_plural = 'Aid Log Entries'
+

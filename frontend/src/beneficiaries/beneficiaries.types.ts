@@ -40,6 +40,36 @@ export interface BeneficiaryPayload {
     notes: string | null;
 }
 
+// ────────────────────────────────────────────────────────────────────────────
+// Bitácora de ayudas entregadas
+// ────────────────────────────────────────────────────────────────────────────
+
+export interface AidLogEntry {
+    id: number;
+    beneficiary: number;
+    delivery_date: string;
+    aid_type: string;
+    description: string;
+    quantity_value: string;
+    missionary_program: string;
+    registered_by: number | null;
+    registered_by_name: string | null;
+    notes: string | null;
+    created_at: string;
+}
+
+export interface AidLogEntryPayload {
+    beneficiary: number;
+    delivery_date: string;
+    aid_type: string;
+    description: string;
+    quantity_value?: string;
+    missionary_program?: string;
+    notes?: string | null;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+
 export interface PaginatedResponse<T> {
     count: number;
     next: string | null;

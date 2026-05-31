@@ -1,6 +1,8 @@
 import { useFormContext, Controller } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
+import { InputNumber } from "primereact/inputnumber";
+import { InputSwitch } from "primereact/inputswitch";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { usersAPI } from "@/users";
@@ -215,6 +217,76 @@ export const DonorsFormFields = () => {
           )}
         />
         {errors.email?.message && <small className="p-error">{errors.email.message.toString()}</small>}
+      </div>
+
+      <div className="field col-12 md:col-6 mb-2">
+        <label htmlFor="subscription_amount" className="block mb-2 font-medium text-700">
+          <i className="pi pi-money-bill mr-2 text-primary" />
+          Monto Comprometido Mensual
+        </label>
+        <Controller
+          name="subscription_amount"
+          control={control}
+          render={({ field }) => (
+            <InputNumber
+              id={field.name}
+              value={field.value}
+              onValueChange={(e) => field.onChange(e.value)}
+              mode="decimal"
+              minFractionDigits={0}
+              maxFractionDigits={2}
+              suffix=" COP"
+              className={errors.subscription_amount?.message ? "p-invalid w-full" : "w-full"}
+              placeholder="Ej: 100000"
+            />
+          )}
+        />
+        {errors.subscription_amount?.message && (
+          <small className="p-error">{errors.subscription_amount.message.toString()}</small>
+        )}
+      </div>
+
+      <div className="field col-12 md:col-6 mb-2">
+        <label htmlFor="payment_day" className="block mb-2 font-medium text-700">
+          <i className="pi pi-calendar mr-2 text-primary" />
+          Día de Pago Pactado (1-28)
+        </label>
+        <Controller
+          name="payment_day"
+          control={control}
+          render={({ field }) => (
+            <InputNumber
+              id={field.name}
+              value={field.value}
+              onValueChange={(e) => field.onChange(e.value)}
+              min={1}
+              max={28}
+              className={errors.payment_day?.message ? "p-invalid w-full" : "w-full"}
+              placeholder="Ej: 5"
+            />
+          )}
+        />
+        {errors.payment_day?.message && (
+          <small className="p-error">{errors.payment_day.message.toString()}</small>
+        )}
+      </div>
+
+      <div className="field col-12 mb-2 flex align-items-center gap-3 mt-3">
+        <Controller
+          name="marketing_opt_in"
+          control={control}
+          render={({ field }) => (
+            <InputSwitch
+              id={field.name}
+              checked={!!field.value}
+              onChange={(e) => field.onChange(e.value)}
+            />
+          )}
+        />
+        <label htmlFor="marketing_opt_in" className="font-medium text-700 cursor-pointer">
+          <i className="pi pi-envelope mr-2 text-primary" />
+          Autorizo el envío mensual de boletines de impacto y reportes de donación.
+        </label>
       </div>
     </div>
   );

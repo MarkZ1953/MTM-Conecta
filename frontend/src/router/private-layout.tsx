@@ -55,6 +55,11 @@ const navItems: NavItem[] = [
     icon: "pi-megaphone",
   },
   {
+    title: "Voluntarios",
+    url: "/volunteers",
+    icon: "pi-id-card",
+  },
+  {
     section: "Recolección de Tapas",
     title: "Recolección",
     url: "/cap-collection",

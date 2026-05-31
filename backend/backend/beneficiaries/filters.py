@@ -1,5 +1,5 @@
 import django_filters
-from .models import Beneficiary, Guardian
+from .models import Beneficiary, Guardian, AidLogEntry
 
 
 class BeneficiaryFilter(django_filters.FilterSet):
@@ -48,3 +48,15 @@ class GuardianFilter(django_filters.FilterSet):
         ) | queryset.filter(
             last_name__icontains=value
         )
+
+
+class AidLogEntryFilter(django_filters.FilterSet):
+    class Meta:
+        model = AidLogEntry
+        fields = {
+            'beneficiary': ['exact'],
+            'aid_type': ['exact', 'icontains'],
+            'missionary_program': ['exact', 'icontains'],
+            'delivery_date': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            'is_active': ['exact'],
+        }

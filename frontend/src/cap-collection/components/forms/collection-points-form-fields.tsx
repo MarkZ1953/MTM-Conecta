@@ -215,6 +215,48 @@ export const CollectionPointsFormFields = () => {
           )}
         />
       </div>
+
+      <div className="field col-12 md:col-6 mb-2">
+        <label htmlFor="latitude" className="block mb-2 font-medium text-700">
+          <i className="pi pi-map mr-2 text-primary" />
+          Latitud (Coordenada - opcional)
+        </label>
+        <Controller
+          name="latitude"
+          control={control}
+          render={({ field }) => (
+            <InputText
+              id={field.name}
+              value={field.value ?? ""}
+              onChange={field.onChange}
+              className={errors.latitude?.message ? "p-invalid w-full" : "w-full"}
+              placeholder="Ej: 4.142000"
+            />
+          )}
+        />
+        {errors.latitude?.message && <small className="p-error">{errors.latitude.message.toString()}</small>}
+      </div>
+
+      <div className="field col-12 md:col-6 mb-2">
+        <label htmlFor="longitude" className="block mb-2 font-medium text-700">
+          <i className="pi pi-map mr-2 text-primary" />
+          Longitud (Coordenada - opcional)
+        </label>
+        <Controller
+          name="longitude"
+          control={control}
+          render={({ field }) => (
+            <InputText
+              id={field.name}
+              value={field.value ?? ""}
+              onChange={field.onChange}
+              className={errors.longitude?.message ? "p-invalid w-full" : "w-full"}
+              placeholder="Ej: -73.626000"
+            />
+          )}
+        />
+        {errors.longitude?.message && <small className="p-error">{errors.longitude.message.toString()}</small>}
+      </div>
     </div>
   );
 };
