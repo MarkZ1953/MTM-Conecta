@@ -25,6 +25,9 @@ const getDefaultValues = (donorObj?: Donor | null): DonorPayload => ({
   first_name: donorObj?.first_name ?? "",
   last_name: donorObj?.last_name ?? "",
   email: donorObj?.email ?? "",
+  subscription_amount: donorObj?.subscription_amount ?? 0,
+  payment_day: donorObj?.payment_day ?? 5,
+  marketing_opt_in: donorObj?.marketing_opt_in ?? true,
 });
 
 export const DonorsEditForm = ({

@@ -11,6 +11,7 @@ class DonorFilter(django_filters.FilterSet):
             'first_name': ['exact', 'icontains', 'istartswith'],
             'last_name': ['exact', 'icontains', 'istartswith'],
             'email': ['exact', 'icontains'],
+            'category': ['exact'],
             'is_active': ['exact'],
         }
 

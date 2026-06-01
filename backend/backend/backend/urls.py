@@ -20,4 +20,5 @@ urlpatterns = [
     path("", include('events.urls')),
     path("", include('campaigns.urls')),
     path("", include('cap_collection.urls')),
+    path("", include('volunteers.urls')),
 ]

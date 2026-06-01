@@ -23,6 +23,9 @@ const defaultValues: DonorPayload = {
   first_name: "",
   last_name: "",
   email: "",
+  subscription_amount: 0,
+  payment_day: 5,
+  marketing_opt_in: true,
 };
 
 export const DonorsCreateForm = ({

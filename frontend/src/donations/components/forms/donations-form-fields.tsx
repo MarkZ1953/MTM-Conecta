@@ -157,7 +157,7 @@ export const DonationsFormFields = () => {
         {errors.amount?.message && <small className="p-error">{errors.amount.message.toString()}</small>}
       </div>
 
-      <div className="field col-12 mb-2">
+      <div className="field col-6 mb-2">
         <label htmlFor="status" className="block mb-2 font-medium text-700">
           <i className="pi pi-info-circle mr-2 text-primary" />
           Estado

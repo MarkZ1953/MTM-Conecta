@@ -22,6 +22,8 @@ const defaultValues: CompanyPayload = {
   contact_name: "",
   contact_email: "",
   contact_phone: "",
+  economic_sector: "OTRO",
+  company_size: "MICRO",
 };
 
 export const CompaniesCreateForm = ({
