@@ -188,3 +188,10 @@ ANYMAIL = {
 }
 
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
+
+
+# ---------------------------------------------------------------------------
+# Google Identity Services
+# ---------------------------------------------------------------------------
+
+GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="")

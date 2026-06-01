@@ -6,6 +6,9 @@ from rest_framework.exceptions import AuthenticationFailed
 from app.mixins.soft_delete_mixin import SoftDeleteMixin
 from .serializers import PublicRegisterSerializer, UserSerializer, GroupSerializer
 from .paginations import UserPagination, GroupPagination
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token as google_id_token
+from django.conf import settings
 from django.contrib.auth.models import Group, User
 from app.mixins.export_mixin import ExportMixin
 from rest_framework.response import Response
@@ -68,6 +71,52 @@ ROLES_EXPORT_COLUMNS = [
 # Auth views
 # ---------------------------------------------------------------------------
 
+def build_auth_user_payload(user, lang="es"):
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "is_active": user.is_active,
+        "is_superuser": user.is_superuser,
+        "permissions": get_user_permissions(user, lang),
+        "groups": list(user.groups.all().values("id", "name")),
+    }
+
+
+def set_auth_cookies(response, refresh_token, access_token):
+    response.set_cookie(
+        key="refresh_token",
+        value=str(refresh_token),
+        httponly=True,
+        secure=False,
+        samesite="Lax",
+    )
+
+    response.set_cookie(
+        key="access_token",
+        value=str(access_token),
+        httponly=True,
+        secure=False,
+        samesite="Lax",
+    )
+
+
+def unique_username_from_email(email):
+    base_username = email.split("@", 1)[0].strip().lower() or "usuario"
+    base_username = "".join(char for char in base_username if char.isalnum() or char in "._-")
+    base_username = base_username[:24] or "usuario"
+    username = base_username
+    counter = 1
+
+    while User.objects.filter(username=username).exists():
+        suffix = f"-{counter}"
+        username = f"{base_username[: 30 - len(suffix)]}{suffix}"
+        counter += 1
+
+    return username
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = TokenObtainPairSerializer
@@ -108,34 +157,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         refresh_token = response.data.get("refresh")
         access_token = response.data.get("access")
 
-        response.set_cookie(
-            key="refresh_token",
-            value=refresh_token,
-            httponly=True,
-            secure=False,
-            samesite="Lax",
-        )
-
-        response.set_cookie(
-            key="access_token",
-            value=access_token,
-            httponly=True,
-            secure=False,
-            samesite="Lax",
-        )
+        set_auth_cookies(response, refresh_token, access_token)
 
         response.data["access"] = access_token
-        response.data["user"] = {
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "is_active": user.is_active,
-            "is_superuser": user.is_superuser,
-            "permissions": get_user_permissions(user, lang),
-            "groups": list(user.groups.all().values("id", "name")),
-        }
+        response.data["user"] = build_auth_user_payload(user, lang)
         return response
 
 
@@ -158,18 +183,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 
             if user_id:
                 user = User.objects.get(id=user_id)
-
-                profile_data = {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "is_active": user.is_active,
-                    "is_superuser": user.is_superuser,
-                    "permissions": get_user_permissions(user, lang),
-                    "groups": list(user.groups.all().values("id", "name")),
-                }
+                profile_data = build_auth_user_payload(user, lang)
             else:
                 profile_data = None
 
@@ -198,6 +212,103 @@ class CustomTokenRefreshView(TokenRefreshView):
                 max_age=60 * 15,
             )
 
+        return response
+
+
+class GoogleAuthView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        lang = resolve_lang(request.META.get("HTTP_ACCEPT_LANGUAGE"))
+        credential = request.data.get("credential")
+
+        if not settings.GOOGLE_CLIENT_ID:
+            return Response(
+                {"message": "El inicio con Google no está configurado en el servidor."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        if not credential:
+            return Response(
+                {"message": "No se recibió la credencial de Google."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            id_info = google_id_token.verify_oauth2_token(
+                credential,
+                google_requests.Request(),
+                settings.GOOGLE_CLIENT_ID,
+            )
+        except ValueError:
+            return Response(
+                {"message": "La credencial de Google no es válida."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        email = (id_info.get("email") or "").strip().lower()
+        email_verified = id_info.get("email_verified")
+
+        if not email or not email_verified:
+            return Response(
+                {"message": "La cuenta de Google debe tener un correo verificado."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        first_name = (id_info.get("given_name") or "").strip()
+        last_name = (id_info.get("family_name") or "").strip()
+        user = User.objects.filter(email__iexact=email).first()
+        created = False
+
+        if user is None:
+            user = User(
+                username=unique_username_from_email(email),
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+            )
+            user.set_unusable_password()
+            user.save()
+            created = True
+        else:
+            update_fields = []
+            if not user.first_name and first_name:
+                user.first_name = first_name
+                update_fields.append("first_name")
+            if not user.last_name and last_name:
+                user.last_name = last_name
+                update_fields.append("last_name")
+            if not user.is_active:
+                user.is_active = True
+                update_fields.append("is_active")
+            if update_fields:
+                user.save(update_fields=update_fields)
+
+        log_event(
+            request=request,
+            user=user,
+            action="login" if not created else "create",
+            instance=user,
+            description=(
+                f"Usuario '{user.username}' ingresó con Google"
+                if not created
+                else f"Usuario '{user.username}' registrado con Google"
+            ),
+        )
+
+        refresh = RefreshToken.for_user(user)
+        access = refresh.access_token
+        response = Response(
+            {
+                "message": "Autenticación con Google exitosa.",
+                "created": created,
+                "access": str(access),
+                "user": build_auth_user_payload(user, lang),
+            },
+            status=status.HTTP_200_OK,
+        )
+        set_auth_cookies(response, refresh, access)
         return response
 
 
