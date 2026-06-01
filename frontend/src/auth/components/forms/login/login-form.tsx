@@ -9,6 +9,7 @@ import { authAPI } from "@/auth/auth.api";
 import { toast } from "@/components";
 import { useContext } from "react";
 import { AuthContext, getPostLoginPath } from "@/auth";
+import { GoogleAuthButton } from "../../google-auth-button";
 
 export function LoginForm() {
   const form = useForm({
@@ -58,6 +59,12 @@ export function LoginForm() {
               MTM Conecta.
             </p>
           </div>
+
+          <GoogleAuthButton mode="login" />
+
+          <Divider align="center">
+            <span className="auth-divider-label">o ingresa con usuario</span>
+          </Divider>
 
           <LoginFormFields />
 

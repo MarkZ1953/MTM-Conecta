@@ -11,12 +11,8 @@ type VolunteerQueryParams = {
 };
 
 class VolunteersAPI extends ResourceAPI<Volunteer> {
-  private baseApiUrl: string;
-
   constructor() {
     super({ resource: "volunteers" });
-    // baseUrl is protected, but we can read it or access via class logic.
-    // Let's use the standard base path by utilizing fetch, or import API_BASE_URL.
   }
 
   async getAll({

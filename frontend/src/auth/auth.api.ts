@@ -50,6 +50,23 @@ class AuthAPI extends ResourceAPI {
     }
   }
 
+  async googleAuth({ credential }: { credential: string }) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/google`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ credential }),
+      });
+
+      return { status: response.status, data: await response.json() };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async refresh() {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/refresh`, {

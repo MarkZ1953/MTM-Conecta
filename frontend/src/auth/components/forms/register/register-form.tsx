@@ -9,6 +9,7 @@ import { Checkbox } from "primereact/checkbox";
 import { authAPI } from "@/auth/auth.api";
 import { toast } from "@/components";
 import { useState } from "react";
+import { GoogleAuthButton } from "../../google-auth-button";
 
 export function RegisterForm() {
   const form = useForm({
@@ -82,6 +83,12 @@ export function RegisterForm() {
             la Fundación MTM.
           </p>
         </div>
+
+        <GoogleAuthButton mode="register" />
+
+        <Divider align="center">
+          <span className="auth-divider-label">o crea tu cuenta manualmente</span>
+        </Divider>
 
         <RegisterFormFields />
 

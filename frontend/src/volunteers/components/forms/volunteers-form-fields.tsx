@@ -249,62 +249,21 @@ export const VolunteersFormFields = ({ isAdmin = false }: VolunteersFormFieldsPr
 
       {/* ── DISPONIBILIDAD HORARIA (Interactive Sub-Form) ── */}
       <div className="field col-12 mb-2">
-        <label className="block mb-2 font-bold text-900 border-bottom-1 pb-2 border-300">
-          <i className="pi pi-calendar-plus mr-2 text-primary" />
-          Disponibilidad de Horarios
-        </label>
-        
-        {/* Render List of Added Availabilities */}
-        <div className="flex flex-column gap-2 mb-3">
-          {availabilityFields.length === 0 ? (
-            <div className="p-3 bg-gray-100 text-gray-500 border-round text-center text-sm border-dashed border-2 border-300">
-              No se han agregado bloques de disponibilidad aún. ¡Agrega al menos uno!
+        <section className="volunteer-availability">
+          <div className="volunteer-availability__header">
+            <div>
+              <span className="volunteer-availability__eyebrow">
+                <i className="pi pi-calendar-plus" />
+                Agenda del voluntario
+              </span>
+              <h3>Disponibilidad de horarios</h3>
+              <p>Agrega los días y rangos de tiempo en los que la persona puede apoyar a la fundación.</p>
             </div>
-          ) : (
-            <div className="grid font-semibold text-sm border-bottom-1 pb-1 text-700 border-200 hidden md:flex">
-              <div className="col-4">Día de la semana</div>
-              <div className="col-3">Hora Inicio</div>
-              <div className="col-3">Hora Fin</div>
-              <div className="col-2 text-right">Acciones</div>
-            </div>
-          )}
+          </div>
 
-          {availabilityFields.map((item: any, index) => (
-            <div key={item.id || index} className="grid align-items-center bg-gray-50 p-2 border-round border-1 border-200">
-              <div className="col-12 md:col-4 flex align-items-center gap-2">
-                <i className="pi pi-calendar text-primary md:hidden" />
-                <span className="font-medium">{getDayLabel(Number(item.day_of_week))}</span>
-              </div>
-              <div className="col-6 md:col-3 flex align-items-center gap-2">
-                <i className="pi pi-clock text-600 md:hidden" />
-                <span>{item.start_time.slice(0, 5)}</span>
-              </div>
-              <div className="col-6 md:col-3 flex align-items-center gap-2">
-                <i className="pi pi-clock text-600 md:hidden" />
-                <span>{item.end_time.slice(0, 5)}</span>
-              </div>
-              <div className="col-12 md:col-2 text-right">
-                <Button
-                  type="button"
-                  icon="pi pi-trash"
-                  className="p-button-rounded p-button-danger p-button-text p-button-sm"
-                  onClick={() => remove(index)}
-                  tooltip="Eliminar disponibilidad"
-                  tooltipOptions={{ position: 'left' }}
-                />
-              </div>
-            </div>
-          ))}
-          {errors.availabilities?.message && (
-            <small className="p-error block mt-1">{errors.availabilities.message.toString()}</small>
-          )}
-        </div>
-
-        {/* Add New Availability Input Controls */}
-        <div className="p-3 bg-gray-50 border-round border-1 border-300">
-          <div className="grid align-items-end row-gap-3">
-            <div className="col-12 md:col-4 field mb-0">
-              <label htmlFor="avail_day" className="block mb-2 text-sm font-semibold text-600">Día</label>
+          <div className="volunteer-availability__builder">
+            <div className="volunteer-availability__control">
+              <label htmlFor="avail_day">Día</label>
               <Dropdown
                 id="avail_day"
                 value={newDay}
@@ -313,42 +272,81 @@ export const VolunteersFormFields = ({ isAdmin = false }: VolunteersFormFieldsPr
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Selecciona día"
-                className="w-full text-sm"
+                className="w-full"
               />
             </div>
-            <div className="col-6 md:col-3 field mb-0">
-              <label htmlFor="avail_start" className="block mb-2 text-sm font-semibold text-600">Hora Inicio</label>
+
+            <div className="volunteer-availability__control">
+              <label htmlFor="avail_start">Hora inicio</label>
               <input
                 id="avail_start"
                 type="time"
                 value={newStart}
                 onChange={(e) => setNewStart(e.target.value)}
-                className="p-inputtext p-component w-full text-sm py-2 px-3 border-round border-300"
+                className="p-inputtext p-component w-full"
               />
             </div>
-            <div className="col-6 md:col-3 field mb-0">
-              <label htmlFor="avail_end" className="block mb-2 text-sm font-semibold text-600">Hora Fin</label>
+
+            <div className="volunteer-availability__control">
+              <label htmlFor="avail_end">Hora fin</label>
               <input
                 id="avail_end"
                 type="time"
                 value={newEnd}
                 onChange={(e) => setNewEnd(e.target.value)}
-                className="p-inputtext p-component w-full text-sm py-2 px-3 border-round border-300"
+                className="p-inputtext p-component w-full"
               />
             </div>
-            <div className="col-12 md:col-2 text-right">
-              <Button
-                type="button"
-                label="Agregar"
-                icon="pi pi-plus"
-                onClick={handleAddAvailability}
-                className="p-button-success w-full p-button-sm py-2"
-                outlined
-              />
-            </div>
+
+            <Button
+              type="button"
+              label="Agregar horario"
+              icon="pi pi-plus"
+              onClick={handleAddAvailability}
+              className="volunteer-availability__add"
+              outlined
+            />
           </div>
-          {availError && <small className="p-error block mt-2 font-medium">{availError}</small>}
-        </div>
+
+          {availError && <small className="p-error volunteer-availability__error">{availError}</small>}
+
+          <div className="volunteer-availability__list">
+            {availabilityFields.length === 0 ? (
+              <div className="volunteer-availability__empty">
+                <i className="pi pi-clock" />
+                <span>No se han agregado horarios todavía.</span>
+              </div>
+            ) : (
+              availabilityFields.map((item: any, index) => (
+                <article key={item.id || index} className="volunteer-availability__item">
+                  <div className="volunteer-availability__day">
+                    <i className="pi pi-calendar" />
+                    <span>{getDayLabel(Number(item.day_of_week))}</span>
+                  </div>
+                  <div className="volunteer-availability__time">
+                    <i className="pi pi-clock" />
+                    <span>
+                      {String(item.start_time).slice(0, 5)} - {String(item.end_time).slice(0, 5)}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    icon="pi pi-trash"
+                    className="volunteer-availability__remove"
+                    onClick={() => remove(index)}
+                    tooltip="Eliminar disponibilidad"
+                    tooltipOptions={{ position: "left" }}
+                    aria-label="Eliminar disponibilidad"
+                  />
+                </article>
+              ))
+            )}
+          </div>
+
+          {errors.availabilities?.message && (
+            <small className="p-error block mt-2">{errors.availabilities.message.toString()}</small>
+          )}
+        </section>
       </div>
 
       {/* ── Double Opt-in Habeas Data (Solo Public Registro) ── */}

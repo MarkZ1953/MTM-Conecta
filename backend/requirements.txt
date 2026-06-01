@@ -16,3 +16,4 @@ tzdata==2026.2
 cloudinary
 django-cloudinary-storage
 django-anymail[brevo]
+google-auth==2.43.0

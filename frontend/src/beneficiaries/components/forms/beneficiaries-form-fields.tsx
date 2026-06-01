@@ -2,7 +2,6 @@ import { Controller, useFormContext, useFormState } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
-import { beneficiaryTreatmentStageLabels } from "@/beneficiaries/beneficiaries.types";
 import {
     ORINOQUIA_MUNICIPALITIES_GROUPED,
     TREATMENT_STAGE_OPTIONS,

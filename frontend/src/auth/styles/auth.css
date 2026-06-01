@@ -1327,6 +1327,65 @@
   margin: 1.45rem 0 1rem;
 }
 
+.google-auth-shell,
+.google-auth-placeholder {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 46px;
+  width: 100%;
+}
+
+.google-auth-shell {
+  background: #fff;
+  border: 1px solid rgba(18, 83, 78, .1);
+  border-radius: 999px;
+  box-shadow: 0 12px 28px rgba(15, 31, 44, .06);
+  overflow: hidden;
+  position: relative;
+}
+
+.google-auth-button {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.google-auth-loading {
+  align-items: center;
+  color: #6b7480;
+  display: inline-flex;
+  font-size: .9rem;
+  font-weight: 700;
+  gap: .55rem;
+  position: absolute;
+}
+
+.google-auth-shell iframe {
+  margin: 0 auto !important;
+}
+
+.google-auth-placeholder {
+  background: #f7fbfa;
+  border: 1px dashed rgba(34, 155, 137, .45);
+  border-radius: 999px;
+  color: #229b89;
+  cursor: not-allowed;
+  font-family: inherit;
+  font-size: .94rem;
+  font-weight: 800;
+  gap: .6rem;
+}
+
+.auth-divider-label {
+  color: #7a8491;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
 .auth-public-page .login-register-prompt,
 .auth-public-page .register-login-prompt {
   color: #687783;

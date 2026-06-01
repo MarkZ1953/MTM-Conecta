@@ -10,7 +10,7 @@ import {
 import { buildQueryParams } from "@/utils";
 import { donorsAPI } from "./donors.api";
 import { useDonorsStore } from "./donors.store";
-import { donorTypeLabels, type Donor, sponsorCategoryLabels } from "./donors.types";
+import { donorTypeLabels, type Donor } from "./donors.types";
 import {
   DonorsBulkDeleteDialog,
   DonorsCreateForm,
