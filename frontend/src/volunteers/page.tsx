@@ -10,7 +10,7 @@ import {
 import { buildQueryParams } from "@/utils";
 import { volunteersAPI } from "./volunteers.api";
 import { useVolunteersStore } from "./volunteers.store";
-import { volunteerStatusLabels, supportAreaLabels, type Volunteer } from "./volunteers.types";
+import type { Volunteer } from "./volunteers.types";
 import {
   VolunteersBulkDeleteDialog,
   VolunteersCreateForm,

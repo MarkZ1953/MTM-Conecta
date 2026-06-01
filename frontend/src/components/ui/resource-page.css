@@ -663,6 +663,160 @@
   padding: .95rem 1rem;
 }
 
+.volunteer-availability {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .9)),
+    radial-gradient(circle at 92% 14%, rgba(197, 215, 46, .18), transparent 28%),
+    #fff;
+  border: 1px solid rgba(34, 155, 137, .18);
+  border-radius: 14px;
+  box-shadow: 0 14px 32px rgba(15, 31, 44, .06);
+  overflow: hidden;
+}
+
+.volunteer-availability__header {
+  align-items: flex-start;
+  border-bottom: 1px solid rgba(34, 155, 137, .16);
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  padding: 18px 20px 16px;
+}
+
+.volunteer-availability__eyebrow {
+  align-items: center;
+  color: var(--rp-teal-dark);
+  display: inline-flex;
+  font-size: .82rem;
+  font-weight: 800;
+  gap: 8px;
+  letter-spacing: .03em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.volunteer-availability h3 {
+  color: var(--rp-ink);
+  font-size: 1.16rem;
+  font-weight: 850;
+  letter-spacing: -.015em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.volunteer-availability p {
+  color: var(--rp-muted);
+  font-size: .9rem;
+  line-height: 1.45;
+  margin: 6px 0 0;
+}
+
+.volunteer-availability__builder {
+  align-items: end;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(170px, 1.25fr) minmax(130px, .8fr) minmax(130px, .8fr) auto;
+  padding: 18px 20px 16px;
+}
+
+.volunteer-availability__control {
+  min-width: 0;
+}
+
+.volunteer-availability__control label {
+  color: #2a3542 !important;
+  display: block !important;
+  font-size: .84rem !important;
+  font-weight: 760 !important;
+  margin-bottom: 7px !important;
+}
+
+.volunteer-availability__add.p-button {
+  background: #fff !important;
+  border: 1px solid var(--rp-teal-dark) !important;
+  color: var(--rp-teal-dark) !important;
+  min-height: 48px;
+  min-width: 158px;
+  white-space: nowrap;
+}
+
+.volunteer-availability__add.p-button:hover {
+  background: var(--rp-teal-soft) !important;
+}
+
+.volunteer-availability__error {
+  margin: -4px 20px 14px;
+}
+
+.volunteer-availability__list {
+  display: grid;
+  gap: 10px;
+  padding: 0 20px 20px;
+}
+
+.volunteer-availability__empty {
+  align-items: center;
+  background: rgba(232, 248, 245, .58);
+  border: 1px dashed rgba(34, 155, 137, .42);
+  border-radius: 12px;
+  color: var(--rp-muted);
+  display: flex;
+  font-size: .92rem;
+  gap: 10px;
+  justify-content: center;
+  min-height: 56px;
+  padding: 14px;
+  text-align: center;
+}
+
+.volunteer-availability__empty .pi {
+  color: var(--rp-teal-dark);
+}
+
+.volunteer-availability__item {
+  align-items: center;
+  background: rgba(255, 255, 255, .9);
+  border: 1px solid #e2ebef;
+  border-radius: 12px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(160px, 1fr) minmax(150px, 1fr) auto;
+  padding: 10px 12px;
+}
+
+.volunteer-availability__day,
+.volunteer-availability__time {
+  align-items: center;
+  color: var(--rp-ink-2);
+  display: inline-flex;
+  font-size: .93rem;
+  font-weight: 700;
+  gap: 9px;
+  min-width: 0;
+}
+
+.volunteer-availability__day .pi,
+.volunteer-availability__time .pi {
+  color: var(--rp-teal-dark);
+}
+
+.volunteer-availability__remove.p-button {
+  background: var(--rp-pink-soft) !important;
+  border: 1px solid transparent !important;
+  border-radius: 9px !important;
+  color: var(--rp-pink) !important;
+  height: 38px;
+  min-height: 38px !important;
+  min-width: 38px !important;
+  padding: 0 !important;
+  width: 38px;
+}
+
+.volunteer-availability__remove.p-button:hover {
+  background: var(--rp-pink) !important;
+  color: #fff !important;
+}
+
 /* Stats */
 .rp-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
 .rp-stat { background: var(--rp-card); border: 1px solid var(--rp-line); border-radius: var(--rp-radius); padding: 16px 18px; box-shadow: var(--rp-shadow); position: relative; }
