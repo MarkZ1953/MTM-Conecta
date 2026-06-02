@@ -84,7 +84,7 @@ export function RegisterForm() {
           </p>
         </div>
 
-        <GoogleAuthButton mode="register" />
+        <GoogleAuthButton mode="register" variant="brand" label="Registrarse con Google" />
 
         <Divider align="center">
           <span className="auth-divider-label">o crea tu cuenta manualmente</span>

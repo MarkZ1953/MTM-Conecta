@@ -3,6 +3,7 @@ import { PrivateLayout } from "./private-layout";
 import { PrivateRoute } from "./private-route";
 import {
   AboutPage,
+  AccountPage,
   BlogPage,
   ContactPage,
   DashboardPage,
@@ -36,6 +37,7 @@ import {
   CollectionRequestsPage,
 } from "@/cap-collection";
 import { LoginPage, RegisterPage } from "@/auth";
+import { AuthenticatedPublicRoute } from "./authenticated-public-route";
 
 export const AppRouter = () => {
   return (
@@ -56,6 +58,9 @@ export const AppRouter = () => {
       <Route path="/contacto" element={<ContactPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route element={<AuthenticatedPublicRoute />}>
+        <Route path="/mi-cuenta" element={<AccountPage />} />
+      </Route>
 
       {/* Private routes */}
       <Route element={<PrivateRoute />}>

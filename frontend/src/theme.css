@@ -324,6 +324,89 @@ html, body {
   color: var(--mtm-primary);
 }
 
+.p-toast {
+  width: min(360px, calc(100vw - 2rem));
+}
+
+.p-toast .p-toast-message {
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(12, 86, 105, .12);
+  border-radius: 12px;
+  box-shadow: 0 18px 45px rgba(15, 31, 44, .14);
+  margin: 0 0 .8rem;
+  overflow: hidden;
+}
+
+.p-toast .p-toast-message-content {
+  align-items: flex-start;
+  gap: .8rem;
+  padding: .9rem 1rem;
+}
+
+.p-toast .p-toast-summary {
+  color: var(--mtm-dark);
+  font-size: .9rem;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.p-toast .p-toast-detail {
+  color: var(--mtm-muted);
+  font-size: .92rem;
+  line-height: 1.35;
+  margin: .18rem 0 0;
+}
+
+.p-toast .p-toast-icon-close {
+  border-radius: 999px;
+  color: var(--mtm-muted);
+  height: 28px;
+  width: 28px;
+}
+
+.p-toast .p-toast-message-icon {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.p-toast .p-toast-message.p-toast-message-success {
+  background: rgba(255, 255, 255, .96);
+  border-color: rgba(20, 169, 150, .28);
+  color: var(--mtm-teal);
+}
+
+.p-toast .p-toast-message.p-toast-message-success .p-toast-message-icon {
+  background: rgba(20, 169, 150, .12);
+  color: var(--mtm-teal);
+}
+
+.p-toast .p-toast-message.p-toast-message-error {
+  background: rgba(255, 255, 255, .96);
+  border-color: rgba(226, 82, 97, .28);
+  color: var(--mtm-rose);
+}
+
+.p-toast .p-toast-message.p-toast-message-error .p-toast-message-icon {
+  background: rgba(226, 82, 97, .11);
+  color: var(--mtm-rose);
+}
+
+.p-toast .p-toast-message.p-toast-message-warn {
+  background: rgba(255, 255, 255, .96);
+  border-color: rgba(241, 173, 24, .32);
+  color: var(--mtm-accent-deep);
+}
+
+.p-toast .p-toast-message.p-toast-message-warn .p-toast-message-icon {
+  background: rgba(241, 173, 24, .14);
+  color: var(--mtm-accent-deep);
+}
+
 /* ----------------------------------------------------------
    16. Clases utilitarias de paleta (uso libre en JSX)
    ---------------------------------------------------------- */

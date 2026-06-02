@@ -13,7 +13,7 @@ export const toast = {
   success: (detail: string, options?: ToastOptions) => {
     toastRef.current?.show({
       severity: "success",
-      summary: "Éxito",
+      summary: "Listo",
       detail,
       life: 3000,
       ...options,

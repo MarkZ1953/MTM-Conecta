@@ -1,10 +1,10 @@
 /* ==========================================================
-   MTM-Conecta · Auth Pages CSS
-   Cubre: login-page, register-page y sus formularios
+  MTM-Conecta · Auth Pages CSS
+  Cubre: login-page, register-page y sus formularios
    ========================================================== */
 
 /* ----------------------------------------------------------
-   Badge de misión (aparece encima del formulario)
+  Badge de misión (aparece encima del formulario)
    ---------------------------------------------------------- */
 .auth-form-mission {
   margin-bottom: 1.5rem;
@@ -28,7 +28,7 @@
 }
 
 /* ----------------------------------------------------------
-   Layout principal (split-screen)
+  Layout principal (split-screen)
    ---------------------------------------------------------- */
 .auth-page {
   display: flex;
@@ -199,7 +199,7 @@
 }
 
 /* ----------------------------------------------------------
-   Formulario de LOGIN
+  Formulario de LOGIN
    ---------------------------------------------------------- */
 .login-form {
   display: flex;
@@ -300,7 +300,7 @@
 }
 
 /* ----------------------------------------------------------
-   Rediseño de LOGIN
+  Rediseño de LOGIN
    ---------------------------------------------------------- */
 .auth-page--login {
   min-height: 100vh;
@@ -556,7 +556,7 @@
 }
 
 /* ----------------------------------------------------------
-   Formulario de REGISTER
+  Formulario de REGISTER
    ---------------------------------------------------------- */
 .register-form {
   display: flex;
@@ -732,7 +732,7 @@
 }
 
 /* ----------------------------------------------------------
-   Cuenta pública integrada al sitio
+  Cuenta pública integrada al sitio
    ---------------------------------------------------------- */
 .auth-public-page {
   min-height: 100vh;
@@ -1378,6 +1378,59 @@
   gap: .6rem;
 }
 
+.google-auth-custom-btn {
+  align-items: center;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(135deg, rgba(45, 191, 168, .6), rgba(100, 47, 143, .28)) border-box;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  box-shadow: 0 14px 30px rgba(15, 31, 44, .08);
+  color: #0f1f2c;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: var(--mtm-font-ui);
+  font-size: .98rem;
+  font-weight: 850;
+  gap: .75rem;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0 1.1rem;
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+  width: 100%;
+}
+
+.google-auth-custom-btn:hover {
+  box-shadow: 0 18px 34px rgba(15, 31, 44, .14);
+  transform: translateY(-1px);
+}
+
+.google-auth-custom-btn:disabled {
+  cursor: wait;
+  opacity: .68;
+  transform: none;
+}
+
+.google-auth-account-icon {
+  align-items: center;
+  background: conic-gradient(from 45deg, #4285f4, #34a853, #fbbc05, #ea4335, #4285f4);
+  border-radius: 999px;
+  color: #fff;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-family: Arial, sans-serif;
+  font-size: .92rem;
+  font-weight: 900;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.google-auth-custom-btn .pi {
+  color: #229b89;
+  font-size: .9rem;
+}
+
 .auth-divider-label {
   color: #7a8491;
   font-size: .78rem;
@@ -1524,7 +1577,7 @@
 }
 
 /* ----------------------------------------------------------
-   Auth con arte institucional login_f9ucra
+  Auth con arte institucional login_f9ucra
    ---------------------------------------------------------- */
 .auth-image-page {
   min-height: 100vh;

@@ -5,7 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { authAPI } from "../auth.api";
 
 type GoogleAuthButtonProps = {
-  mode: "login" | "register";
+  mode: "login" | "register" | "link";
+  onCredential?: (credential: string) => Promise<void>;
+  label?: string;
+  variant?: "default" | "brand" | "account";
 };
 
 type GoogleCredentialResponse = {
@@ -22,6 +25,7 @@ declare global {
             callback: (response: GoogleCredentialResponse) => void;
             auto_select?: boolean;
           }) => void;
+          prompt: () => void;
           renderButton: (
             parent: HTMLElement,
             options: {
@@ -74,11 +78,41 @@ const getErrorMessage = (responseData: any) => {
   return "No se pudo continuar con Google.";
 };
 
-export function GoogleAuthButton({ mode }: GoogleAuthButtonProps) {
+export function GoogleAuthButton({ mode, onCredential, label, variant = "default" }: GoogleAuthButtonProps) {
   const buttonRef = useRef<HTMLDivElement | null>(null);
   const [isReady, setIsReady] = useState(false);
   const navigate = useNavigate();
   const { refresh } = useContext(AuthContext);
+
+  const handleCredential = async (response: GoogleCredentialResponse) => {
+    if (!response.credential) {
+      toast.error("Google no entregó una credencial válida.");
+      return;
+    }
+
+    try {
+      if (onCredential) {
+        await onCredential(response.credential);
+        return;
+      }
+
+      const { status, data } = await authAPI.googleAuth({
+        credential: response.credential,
+      });
+
+      if (status >= 200 && status < 300) {
+        const refreshedUser = await refresh();
+        const user = refreshedUser ?? data?.user;
+        toast.success(data?.created ? "Cuenta creada con Google." : "Inicio con Google exitoso.");
+        navigate(getPostLoginPath(user));
+        return;
+      }
+
+      throw new Error(getErrorMessage(data));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "No se pudo continuar con Google.");
+    }
+  };
 
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) return;
@@ -87,44 +121,27 @@ export function GoogleAuthButton({ mode }: GoogleAuthButtonProps) {
 
     loadGoogleScript()
       .then(() => {
-        if (!isMounted || !buttonRef.current || !window.google?.accounts?.id) return;
+        if (!isMounted || !window.google?.accounts?.id) return;
+        if (variant !== "account" && !buttonRef.current) return;
 
         window.google.accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID,
-          callback: async (response) => {
-            if (!response.credential) {
-              toast.error("Google no entregó una credencial válida.");
-              return;
-            }
-
-            try {
-              const { status, data } = await authAPI.googleAuth({
-                credential: response.credential,
-              });
-
-              if (status >= 200 && status < 300) {
-                const refreshedUser = await refresh();
-                const user = refreshedUser ?? data?.user;
-                toast.success(data?.created ? "Cuenta creada con Google." : "Inicio con Google exitoso.");
-                navigate(getPostLoginPath(user));
-                return;
-              }
-
-              throw new Error(getErrorMessage(data));
-            } catch (error) {
-              toast.error(error instanceof Error ? error.message : "No se pudo continuar con Google.");
-            }
-          },
+          callback: handleCredential,
         });
 
-        buttonRef.current.innerHTML = "";
-        window.google.accounts.id.renderButton(buttonRef.current, {
+        if (variant === "account" || variant === "brand") {
+          setIsReady(true);
+          return;
+        }
+
+        buttonRef.current!.innerHTML = "";
+        window.google.accounts.id.renderButton(buttonRef.current!, {
           theme: "outline",
           size: "large",
-          text: mode === "register" ? "signup_with" : "signin_with",
+          text: mode === "register" ? "signup_with" : mode === "link" ? "continue_with" : "signin_with",
           shape: "pill",
           logo_alignment: "left",
-          width: Math.min(buttonRef.current.clientWidth || 360, 420),
+          width: Math.min(buttonRef.current!.clientWidth || 360, 420),
         });
         setIsReady(true);
       })
@@ -138,13 +155,28 @@ export function GoogleAuthButton({ mode }: GoogleAuthButtonProps) {
       isMounted = false;
       window.google?.accounts?.id?.cancel();
     };
-  }, [mode, navigate, refresh]);
+  }, [mode, navigate, onCredential, refresh, variant]);
 
   if (!GOOGLE_CLIENT_ID) {
     return (
       <button className="google-auth-placeholder" type="button" disabled>
         <i className="pi pi-google" />
         Configura Google Client ID
+      </button>
+    );
+  }
+
+  if (variant === "account" || variant === "brand") {
+    return (
+      <button
+        className={`google-auth-custom-btn google-auth-${variant}-btn`}
+        type="button"
+        disabled={!isReady}
+        onClick={() => window.google?.accounts?.id?.prompt()}
+      >
+        <span className="google-auth-account-icon">G</span>
+        <span>{label ?? (mode === "register" ? "Registrarse con Google" : "Acceder con Google")}</span>
+        <i className="pi pi-arrow-right" />
       </button>
     );
   }

@@ -57,6 +57,8 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
   const topBarRef = useRef<HTMLElement | null>(null);
+  const compactStateRef = useRef(false);
+  const frameRef = useRef<number | null>(null);
   const location = useLocation();
   const { logged, logout, user } = useContext(AuthContext);
   const showPanelAccess = logged && canAccessAdminPanel(user);
@@ -64,16 +66,38 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
   useEffect(() => {
     const updateCompactState = () => {
       const topBarHeight = topBarRef.current?.offsetHeight ?? 42;
-      setIsCompact(window.scrollY >= topBarHeight);
+      const scrollY = window.scrollY;
+      const hysteresis = 14;
+      const nextCompactState = compactStateRef.current
+        ? scrollY > Math.max(0, topBarHeight - hysteresis)
+        : scrollY >= topBarHeight + hysteresis;
+
+      if (compactStateRef.current !== nextCompactState) {
+        compactStateRef.current = nextCompactState;
+        setIsCompact(nextCompactState);
+      }
+    };
+
+    const scheduleCompactUpdate = () => {
+      if (frameRef.current !== null) return;
+
+      frameRef.current = window.requestAnimationFrame(() => {
+        frameRef.current = null;
+        updateCompactState();
+      });
     };
 
     updateCompactState();
-    window.addEventListener("scroll", updateCompactState, { passive: true });
-    window.addEventListener("resize", updateCompactState);
+    window.addEventListener("scroll", scheduleCompactUpdate, { passive: true });
+    window.addEventListener("resize", scheduleCompactUpdate);
 
     return () => {
-      window.removeEventListener("scroll", updateCompactState);
-      window.removeEventListener("resize", updateCompactState);
+      window.removeEventListener("scroll", scheduleCompactUpdate);
+      window.removeEventListener("resize", scheduleCompactUpdate);
+
+      if (frameRef.current !== null) {
+        window.cancelAnimationFrame(frameRef.current);
+      }
     };
   }, []);
 
@@ -106,16 +130,23 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
           <Link to="/blog" aria-label="Buscar noticias">
             <i className="pi pi-search" />
           </Link>
-          {showPanelAccess ? (
-            <Link className="public-navbar-panel-link" to="/">
-              <i className="pi pi-th-large" />
-              <span>{getPanelLabel(user)}</span>
-            </Link>
-          ) : logged ? (
-            <button className="public-navbar-logout-btn" type="button" onClick={logout}>
-              <i className="pi pi-sign-out" />
-              <span>Cerrar sesión</span>
-            </button>
+          {logged ? (
+            <>
+              {showPanelAccess && (
+                <Link className="public-navbar-panel-link" to="/">
+                  <i className="pi pi-th-large" />
+                  <span>{getPanelLabel(user)}</span>
+                </Link>
+              )}
+              <Link className="public-navbar-account-link" to="/mi-cuenta">
+                <i className="pi pi-user" />
+                <span>Mi cuenta</span>
+              </Link>
+              <button className="public-navbar-logout-btn" type="button" onClick={logout}>
+                <i className="pi pi-sign-out" />
+                <span>Cerrar sesión</span>
+              </button>
+            </>
           ) : (
             <Link to="/login">
               <i className="pi pi-user" />

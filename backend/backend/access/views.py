@@ -4,16 +4,27 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import AuthenticationFailed
 from app.mixins.soft_delete_mixin import SoftDeleteMixin
-from .serializers import PublicRegisterSerializer, UserSerializer, GroupSerializer
+from .serializers import (
+    AccountProfileSerializer,
+    AccountSummarySerializer,
+    PublicRegisterSerializer,
+    UserSerializer,
+    GroupSerializer,
+)
 from .paginations import UserPagination, GroupPagination
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token as google_id_token
 from django.conf import settings
 from django.contrib.auth.models import Group, User
+from django.db.models import Sum
 from app.mixins.export_mixin import ExportMixin
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .filters import UserFilter, GroupFilter
+from audits.models import AuditLog
+from donations.models import Donation, Donor
+from volunteers.models import Volunteer
+from .models import UserAccountProfile
 from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
@@ -116,6 +127,80 @@ def unique_username_from_email(email):
         counter += 1
 
     return username
+
+
+def verify_google_credential(credential):
+    if not settings.GOOGLE_CLIENT_ID:
+        raise RuntimeError("google_not_configured")
+
+    if not credential:
+        raise ValueError("missing_credential")
+
+    return google_id_token.verify_oauth2_token(
+        credential,
+        google_requests.Request(),
+        settings.GOOGLE_CLIENT_ID,
+    )
+
+
+def get_verified_google_identity(credential):
+    try:
+        id_info = verify_google_credential(credential)
+    except RuntimeError:
+        return None, Response(
+            {"message": "El inicio con Google no está configurado en el servidor."},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+    except ValueError:
+        return None, Response(
+            {"message": "La credencial de Google no es válida."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    email = (id_info.get("email") or "").strip().lower()
+    email_verified = id_info.get("email_verified")
+    google_sub = id_info.get("sub")
+
+    if not email or not email_verified or not google_sub:
+        return None, Response(
+            {"message": "La cuenta de Google debe tener un correo verificado."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    return {
+        "sub": google_sub,
+        "email": email,
+        "first_name": (id_info.get("given_name") or "").strip(),
+        "last_name": (id_info.get("family_name") or "").strip(),
+    }, None
+
+
+def build_account_summary(user):
+    donor = Donor.objects.filter(user=user, is_active=True).first()
+    donations = Donation.objects.none()
+
+    if donor:
+        donations = donor.donations.filter(is_active=True).order_by("-date")
+
+    completed_donations = donations.filter(status="COMPLETED")
+    donations_summary = {
+        "count": donations.count(),
+        "completed_count": completed_donations.count(),
+        "total_completed": completed_donations.aggregate(total=Sum("amount"))["total"] or 0,
+        "last_donation_date": donations.first().date if donations.exists() else None,
+    }
+
+    volunteer = None
+    if user.email:
+        volunteer = Volunteer.objects.filter(email__iexact=user.email, is_active=True).first()
+
+    return {
+        "user": user,
+        "activity": AuditLog.objects.filter(user=user).order_by("-timestamp")[:8],
+        "donations": donations[:6],
+        "donations_summary": donations_summary,
+        "volunteer": volunteer,
+    }
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -221,44 +306,15 @@ class GoogleAuthView(APIView):
 
     def post(self, request):
         lang = resolve_lang(request.META.get("HTTP_ACCEPT_LANGUAGE"))
-        credential = request.data.get("credential")
+        google_identity, error_response = get_verified_google_identity(request.data.get("credential"))
+        if error_response:
+            return error_response
 
-        if not settings.GOOGLE_CLIENT_ID:
-            return Response(
-                {"message": "El inicio con Google no está configurado en el servidor."},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE,
-            )
-
-        if not credential:
-            return Response(
-                {"message": "No se recibió la credencial de Google."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        try:
-            id_info = google_id_token.verify_oauth2_token(
-                credential,
-                google_requests.Request(),
-                settings.GOOGLE_CLIENT_ID,
-            )
-        except ValueError:
-            return Response(
-                {"message": "La credencial de Google no es válida."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        email = (id_info.get("email") or "").strip().lower()
-        email_verified = id_info.get("email_verified")
-
-        if not email or not email_verified:
-            return Response(
-                {"message": "La cuenta de Google debe tener un correo verificado."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        first_name = (id_info.get("given_name") or "").strip()
-        last_name = (id_info.get("family_name") or "").strip()
-        user = User.objects.filter(email__iexact=email).first()
+        email = google_identity["email"]
+        first_name = google_identity["first_name"]
+        last_name = google_identity["last_name"]
+        linked_profile = UserAccountProfile.objects.filter(google_sub=google_identity["sub"]).select_related("user").first()
+        user = linked_profile.user if linked_profile else User.objects.filter(email__iexact=email).first()
         created = False
 
         if user is None:
@@ -285,6 +341,11 @@ class GoogleAuthView(APIView):
             if update_fields:
                 user.save(update_fields=update_fields)
 
+        profile, _ = UserAccountProfile.objects.get_or_create(user=user)
+        profile.google_sub = google_identity["sub"]
+        profile.google_email = email
+        profile.save(update_fields=["google_sub", "google_email", "updated_at"])
+
         log_event(
             request=request,
             user=user,
@@ -310,6 +371,172 @@ class GoogleAuthView(APIView):
         )
         set_auth_cookies(response, refresh, access)
         return response
+
+
+class AccountView(APIView):
+    def get(self, request):
+        serializer = AccountSummarySerializer(
+            build_account_summary(request.user),
+            context={"request": request},
+        )
+        return Response(serializer.data)
+
+    def patch(self, request):
+        user = request.user
+        user_fields = ["first_name", "last_name", "email"]
+        update_fields = []
+
+        for field in user_fields:
+            if field in request.data:
+                setattr(user, field, request.data.get(field) or "")
+                update_fields.append(field)
+
+        if update_fields:
+            user.save(update_fields=update_fields)
+
+        profile, _ = UserAccountProfile.objects.get_or_create(user=user)
+        if request.FILES.get("photo"):
+            profile.photo = request.FILES["photo"]
+            profile.save(update_fields=["photo", "updated_at"])
+
+        profile_data = request.data.get("profile", {})
+        if not isinstance(profile_data, dict):
+            profile_data = {}
+
+        profile_serializer = AccountProfileSerializer(
+            profile,
+            data=profile_data,
+            partial=True,
+        )
+        profile_serializer.is_valid(raise_exception=True)
+        profile_serializer.save()
+
+        log_event(
+            request=request,
+            user=user,
+            action="update",
+            instance=user,
+            description=f"Usuario '{user.username}' actualizó su cuenta",
+        )
+
+        return Response(
+            AccountSummarySerializer(
+                build_account_summary(user),
+                context={"request": request},
+            ).data
+        )
+
+
+class AccountPasswordView(APIView):
+    def post(self, request):
+        user = request.user
+        current_password = request.data.get("current_password")
+        new_password = request.data.get("new_password")
+        confirm_password = request.data.get("confirm_password")
+
+        if not new_password or not confirm_password:
+            return Response({"message": "La nueva contraseña y la confirmación son obligatorias."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if new_password != confirm_password:
+            return Response({"message": "Las contraseñas no coinciden."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if len(new_password) < 8:
+            return Response({"message": "La contraseña debe tener al menos 8 caracteres."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if user.has_usable_password() and not user.check_password(current_password or ""):
+            return Response({"message": "La contraseña actual no es correcta."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save(update_fields=["password"])
+
+        log_event(
+            request=request,
+            user=user,
+            action="update",
+            instance=user,
+            description=f"Usuario '{user.username}' cambió su contraseña",
+        )
+
+        return Response({"message": "Contraseña actualizada correctamente."})
+
+
+class AccountGoogleLinkView(APIView):
+    def post(self, request):
+        google_identity, error_response = get_verified_google_identity(request.data.get("credential"))
+        if error_response:
+            return error_response
+
+        user = request.user
+        email = google_identity["email"]
+
+        existing_user = User.objects.filter(email__iexact=email).exclude(id=user.id).first()
+        if existing_user:
+            return Response(
+                {"message": "Ese correo de Google ya está asociado a otra cuenta."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        existing_profile = UserAccountProfile.objects.filter(google_sub=google_identity["sub"]).exclude(user=user).first()
+        if existing_profile:
+            return Response(
+                {"message": "Esa cuenta de Google ya está vinculada a otro usuario."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        profile, _ = UserAccountProfile.objects.get_or_create(user=user)
+        profile.google_sub = google_identity["sub"]
+        profile.google_email = email
+        profile.save(update_fields=["google_sub", "google_email", "updated_at"])
+
+        if not user.email:
+            user.email = email
+            user.save(update_fields=["email"])
+
+        log_event(
+            request=request,
+            user=user,
+            action="update",
+            instance=user,
+            description=f"Usuario '{user.username}' vinculó o cambió su cuenta de Google",
+        )
+
+        return Response(
+            AccountSummarySerializer(
+                build_account_summary(user),
+                context={"request": request},
+            ).data
+        )
+
+
+class AccountGoogleUnlinkView(APIView):
+    def post(self, request):
+        user = request.user
+
+        if not user.has_usable_password():
+            return Response(
+                {"message": "Debes crear una contraseña antes de desvincular Google."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        profile, _ = UserAccountProfile.objects.get_or_create(user=user)
+        profile.google_sub = None
+        profile.google_email = ""
+        profile.save(update_fields=["google_sub", "google_email", "updated_at"])
+
+        log_event(
+            request=request,
+            user=user,
+            action="update",
+            instance=user,
+            description=f"Usuario '{user.username}' desvinculó su cuenta de Google",
+        )
+
+        return Response(
+            AccountSummarySerializer(
+                build_account_summary(user),
+                context={"request": request},
+            ).data
+        )
 
 
 # ---------------------------------------------------------------------------

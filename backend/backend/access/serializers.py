@@ -1,7 +1,12 @@
 from django.contrib.auth.models import Permission, User, Group
+from django.db.models import Sum
 from rest_framework import serializers
 
 from utils.i18n import resolve_lang
+from audits.models import AuditLog
+from donations.models import Donation, Donor
+from volunteers.models import Volunteer
+from .models import UserAccountProfile
 from .permissions import resolve_permissions
 
 
@@ -174,3 +179,127 @@ class PublicRegisterSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
+
+class AccountProfileSerializer(serializers.ModelSerializer):
+    has_google = serializers.SerializerMethodField()
+    photo_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserAccountProfile
+        fields = [
+            'has_google', 'google_email', 'photo', 'photo_url', 'phone', 'marketing_opt_in',
+            'news_opt_in', 'impact_opt_in', 'data_processing_opt_in',
+            'preferred_contact', 'updated_at',
+        ]
+        read_only_fields = ['has_google', 'google_email', 'photo_url', 'updated_at']
+
+    def get_has_google(self, obj):
+        return bool(obj.google_sub)
+
+    def get_photo_url(self, obj):
+        if not obj.photo:
+            return ""
+        try:
+            return obj.photo.url
+        except ValueError:
+            return ""
+
+    def validate(self, attrs):
+        preferred_contact = attrs.get('preferred_contact', getattr(self.instance, 'preferred_contact', ''))
+        phone = attrs.get('phone', getattr(self.instance, 'phone', ''))
+        methods = {method.strip() for method in (preferred_contact or '').split(',') if method.strip()}
+
+        if {'phone', 'whatsapp'} & methods and not phone:
+            raise serializers.ValidationError({
+                'phone': "El celular es obligatorio si eliges teléfono o WhatsApp."
+            })
+
+        return attrs
+
+
+class AccountUserSerializer(serializers.ModelSerializer):
+    groups = GroupSerializer(many=True, read_only=True)
+    has_usable_password = serializers.SerializerMethodField()
+    permissions = serializers.SerializerMethodField()
+    profile = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'username', 'email', 'first_name', 'last_name',
+            'is_active', 'is_superuser', 'last_login', 'date_joined',
+            'groups', 'permissions', 'has_usable_password', 'profile',
+        ]
+
+    def get_has_usable_password(self, obj):
+        return obj.has_usable_password()
+
+    def get_permissions(self, obj):
+        from .permissions import get_user_permissions
+        request = self.context.get('request')
+        lang = resolve_lang(request.META.get("HTTP_ACCEPT_LANGUAGE") if request else None)
+        return get_user_permissions(obj, lang)
+
+    def get_profile(self, obj):
+        profile, _ = UserAccountProfile.objects.get_or_create(user=obj)
+        return AccountProfileSerializer(profile, context=self.context).data
+
+
+class AccountActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AuditLog
+        fields = ['id', 'action', 'description', 'ip_address', 'timestamp']
+
+
+class AccountDonationSerializer(serializers.ModelSerializer):
+    donation_type_label = serializers.CharField(source='get_donation_type_display', read_only=True)
+    status_label = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = Donation
+        fields = [
+            'id', 'amount', 'donation_type', 'donation_type_label',
+            'date', 'status', 'status_label',
+        ]
+
+
+class AccountVolunteerSerializer(serializers.ModelSerializer):
+    availabilities = serializers.SerializerMethodField()
+    support_area_label = serializers.CharField(source='get_support_area_display', read_only=True)
+    status_label = serializers.CharField(source='get_status_display', read_only=True)
+    total_hours_spent = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Volunteer
+        fields = [
+            'id', 'first_name', 'last_name', 'identification_number',
+            'email', 'phone', 'profession', 'support_area',
+            'support_area_label', 'status', 'status_label',
+            'availabilities', 'total_hours_spent',
+        ]
+
+    def get_availabilities(self, obj):
+        return [
+            {
+                'id': availability.id,
+                'day_of_week': availability.day_of_week,
+                'start_time': availability.start_time.strftime('%H:%M'),
+                'end_time': availability.end_time.strftime('%H:%M'),
+            }
+            for availability in obj.availabilities.filter(is_active=True).order_by('day_of_week', 'start_time')
+        ]
+
+    def get_total_hours_spent(self, obj):
+        value = obj.tasks.filter(is_active=True).aggregate(
+            total=Sum('hours_spent')
+        )['total']
+        return value or 0
+
+
+class AccountSummarySerializer(serializers.Serializer):
+    user = AccountUserSerializer()
+    activity = AccountActivitySerializer(many=True)
+    donations = AccountDonationSerializer(many=True)
+    donations_summary = serializers.DictField()
+    volunteer = AccountVolunteerSerializer(allow_null=True)

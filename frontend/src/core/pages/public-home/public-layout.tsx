@@ -6,11 +6,12 @@ import "./public-home-page.css";
 
 type PublicLayoutProps = {
   children: ReactNode;
+  className?: string;
 };
 
-export function PublicLayout({ children }: PublicLayoutProps) {
+export function PublicLayout({ children, className = "" }: PublicLayoutProps) {
   return (
-    <main className="public-site">
+    <main className={`public-site ${className}`.trim()}>
       <PublicNavbar />
       {children}
       <footer className="public-footer">

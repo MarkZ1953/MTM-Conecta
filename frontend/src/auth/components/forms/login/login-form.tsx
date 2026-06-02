@@ -22,7 +22,7 @@ export function LoginForm() {
 
   const navigate = useNavigate();
   const { refresh } = useContext(AuthContext);
- 
+
   const { isSubmitting } = form.formState;
 
   const onSubmit = async (data: any) => {
@@ -60,7 +60,7 @@ export function LoginForm() {
             </p>
           </div>
 
-          <GoogleAuthButton mode="login" />
+          <GoogleAuthButton mode="login" variant="brand" label="Acceder con Google" />
 
           <Divider align="center">
             <span className="auth-divider-label">o ingresa con usuario</span>
