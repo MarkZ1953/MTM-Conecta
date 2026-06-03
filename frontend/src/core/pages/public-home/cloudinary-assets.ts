@@ -51,6 +51,29 @@ const aboutGallery = [
   },
 ];
 
+const helpGallery = [
+  {
+    publicId: "Fondo_rvft9n",
+    alt: "Fondo institucional de formas de ayudar MTM",
+  },
+  {
+    publicId: "LaborSocial_twgjtq",
+    alt: "Grupo de labor social apoyando a la Fundación MTM",
+  },
+  {
+    publicId: "VoluntariadoPresencial_rxlezr",
+    alt: "Voluntariado presencial en actividades de la Fundación MTM",
+  },
+  {
+    publicId: "VoluntariadoEmpresarial_ycbbv7",
+    alt: "Voluntariado empresarial aliado de la Fundación MTM",
+  },
+  {
+    publicId: "AporteDonacion_pag7kj",
+    alt: "Aportes en especie para familias de la Fundación MTM",
+  },
+];
+
 export const publicAssets = {
   logo: optimize(raw.logo, "f_auto,q_auto,w_240"),
   logoCompact:
@@ -84,4 +107,9 @@ export const publicAssets = {
 export const publicAboutGallerySlides = aboutGallery.map((slide) => ({
   ...slide,
   src: cloudinaryImage(slide.publicId, "f_auto,q_auto,w_1800"),
+}));
+
+export const publicHelpGallerySlides = helpGallery.map((slide) => ({
+  ...slide,
+  src: cloudinaryImage(slide.publicId, "f_auto,q_auto,w_1600"),
 }));

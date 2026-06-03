@@ -17,15 +17,15 @@ type ActionLink = {
   strongLabel?: string;
 };
 
-const institutionalLinks = [
-  { label: "Sobre nosotros", path: "/nosotros" },
-  { label: "Programas", path: "/programas" },
-  { label: "Noticias", path: "/noticias" },
-  { label: "Contacto", path: "/contacto" },
-];
-
 const actionLinks: ActionLink[] = [
   { label: "Inicio", path: "/home", strongLabel: "Inicio" },
+  { label: "Bono Donación", path: "/bono-donacion", strongLabel: "Bono Donación" },
+  {
+    label: "Padrino Permanente",
+    path: "/padrino-permanente",
+    lightLabel: "Padrino",
+    strongLabel: "Permanente",
+  },
   {
     label: "Cómo puedo ayudar",
     path: "/como-ayudar",
@@ -33,11 +33,38 @@ const actionLinks: ActionLink[] = [
     strongLabel: "puedo ayudar?",
   },
   { label: "Eventos", path: "/eventos-publicos", strongLabel: "Eventos" },
+];
+
+const donationMenuLinks = [
   {
-    label: "Padrino permanente",
+    label: "Tarjeta de Crédito/Débito",
+    description: "Aporte rápido con tarjeta nacional o internacional.",
+    path: "/donar/tarjeta-credito-debito",
+    icon: "pi-credit-card",
+  },
+  {
+    label: "PSE",
+    description: "Paga desde tu banco en Colombia.",
+    path: "/donar/pse",
+    icon: "pi-building",
+  },
+  {
+    label: "Paypal",
+    description: "Ideal para aportes internacionales.",
+    path: "/donar/paypal",
+    icon: "pi-wallet",
+  },
+  {
+    label: "Bono Donación",
+    description: "Haz un aporte único con propósito.",
+    path: "/bono-donacion",
+    icon: "pi-heart-fill",
+  },
+  {
+    label: "Padrino Permanente",
+    description: "Acompaña mes a mes los programas MTM.",
     path: "/padrino-permanente",
-    lightLabel: "Padrino",
-    strongLabel: "permanente",
+    icon: "pi-star-fill",
   },
 ];
 
@@ -55,6 +82,7 @@ function ActionLabel({ item }: { item: ActionLink }) {
 
 export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [donateOpen, setDonateOpen] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
   const topBarRef = useRef<HTMLElement | null>(null);
   const compactStateRef = useRef(false);
@@ -62,6 +90,10 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
   const location = useLocation();
   const { logged, logout, user } = useContext(AuthContext);
   const showPanelAccess = logged && canAccessAdminPanel(user);
+  const donationPaths = ["/donar", "/bono-donacion", "/padrino-permanente"];
+  const donationMenuActive = donationPaths.some((path) => location.pathname.startsWith(path));
+  const isActionActive = (path: string) =>
+    path === "/home" ? location.pathname === path : location.pathname === path || location.pathname.startsWith(`${path}/`);
 
   useEffect(() => {
     const updateCompactState = () => {
@@ -104,7 +136,13 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
   const handleSection = (target?: string) => {
     if (!target || !onSectionNavigate) return;
     setMenuOpen(false);
+    setDonateOpen(false);
     onSectionNavigate(target);
+  };
+
+  const closeMenus = () => {
+    setMenuOpen(false);
+    setDonateOpen(false);
   };
 
   return (
@@ -176,15 +214,12 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
           </Link>
 
           <nav className="public-navbar-links" aria-label="Menú institucional">
-            {institutionalLinks.map((item) => (
-              <Link
-                key={item.path}
-                className={location.pathname === item.path ? "is-active" : ""}
-                to={item.path}
-              >
-                {item.label}
-              </Link>
-            ))}
+            <Link className={location.pathname === "/nosotros" ? "is-active" : ""} to="/nosotros">
+              Sobre nosotros
+            </Link>
+            <Link className={location.pathname === "/programas" ? "is-active" : ""} to="/programas">
+              Programas
+            </Link>
             <Link className="public-navbar-vinculate" to="/donar">
               <i className="pi pi-heart-fill" />
               <span>Vincúlate</span>
@@ -210,12 +245,44 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
           className={`public-navbar-actions ${menuOpen ? "is-open" : ""}`}
           aria-label="Acciones principales"
         >
-          {actionLinks.map((item) =>
+          <Link className={isActionActive("/home") ? "is-active" : ""} to="/home" onClick={closeMenus}>
+            <ActionLabel item={actionLinks[0]} />
+          </Link>
+
+          <div className={`public-navbar-donate-menu ${donateOpen ? "is-open" : ""}`}>
+            <button
+              type="button"
+              className={donationMenuActive ? "is-active" : ""}
+              aria-expanded={donateOpen}
+              aria-haspopup="true"
+              onClick={() => setDonateOpen((value) => !value)}
+            >
+              <i className="pi pi-heart-fill" />
+              <span className="public-navbar-action-text">
+                <span className="public-navbar-action-light">Quiero</span>
+                <span className="public-navbar-action-strong">Donar</span>
+              </span>
+              <i className="pi pi-chevron-down public-navbar-chevron" />
+            </button>
+            <div className="public-navbar-dropdown" role="menu">
+              {donationMenuLinks.map((item) => (
+                <Link key={item.path} to={item.path} role="menuitem" onClick={closeMenus}>
+                  <i className={`pi ${item.icon}`} />
+                  <span>
+                    <strong>{item.label}</strong>
+                    <small>{item.description}</small>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {actionLinks.slice(1).map((item) =>
             item.target && onSectionNavigate ? (
               <button
                 key={item.label}
                 type="button"
-                className={location.pathname === item.path ? "is-active" : ""}
+                className={isActionActive(item.path) ? "is-active" : ""}
                 onClick={() => handleSection(item.target)}
               >
                 <ActionLabel item={item} />
@@ -223,8 +290,9 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
             ) : (
               <Link
                 key={item.label}
-                className={location.pathname === item.path ? "is-active" : ""}
+                className={isActionActive(item.path) ? "is-active" : ""}
                 to={item.path}
+                onClick={closeMenus}
               >
                 <ActionLabel item={item} />
               </Link>

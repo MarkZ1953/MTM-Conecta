@@ -1,10 +1,10 @@
 import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { publicAboutGallerySlides, publicAssets } from "./public-home/cloudinary-assets";
+import { PublicHelpWaysSection } from "./public-home/public-help-ways-section";
 import { PublicImageCarousel } from "./public-home/public-image-carousel";
 import {
   publicFaqs,
-  publicHelpOptions,
   publicNews,
   publicPrograms,
 } from "./public-home/public-content";
@@ -69,6 +69,88 @@ function SponsorFloatingCta() {
     >
       <img src={publicAssets.sponsorCta} alt="" aria-hidden="true" />
     </Link>
+  );
+}
+
+type DonationMethodKey = "card" | "pse" | "paypal";
+
+const donationMethods: Array<{
+  key: DonationMethodKey;
+  title: string;
+  shortTitle: string;
+  path: string;
+  icon: string;
+  text: string;
+}> = [
+  {
+    key: "card",
+    title: "Tarjeta de Crédito/Débito",
+    shortTitle: "Tarjeta",
+    path: "/donar/tarjeta-credito-debito",
+    icon: "pi-credit-card",
+    text: "Para aportes únicos o recurrentes con tarjetas nacionales e internacionales.",
+  },
+  {
+    key: "pse",
+    title: "PSE",
+    shortTitle: "PSE",
+    path: "/donar/pse",
+    icon: "pi-building",
+    text: "Para realizar tu aporte desde una cuenta bancaria en Colombia.",
+  },
+  {
+    key: "paypal",
+    title: "Paypal",
+    shortTitle: "Paypal",
+    path: "/donar/paypal",
+    icon: "pi-wallet",
+    text: "Para donantes que prefieren pagos internacionales o desde su cuenta Paypal.",
+  },
+];
+
+const donationImpacts = [
+  "Hospedaje y alimentación para familias en tratamiento.",
+  "Apoyo psicosocial, educativo y jurídico durante el proceso.",
+  "Medicamentos, transporte, recreación y actividades de bienestar.",
+];
+
+function DonationMethodGrid() {
+  return (
+    <div className="public-donation-method-grid">
+      {donationMethods.map((method) => (
+        <Link className="public-donation-method-card" to={method.path} key={method.key}>
+          <i className={`pi ${method.icon}`} />
+          <strong>{method.title}</strong>
+          <span>{method.text}</span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function DonationMethodLinks() {
+  return (
+    <div className="public-donation-method-list">
+      {donationMethods.map((method) => (
+        <Link to={method.path} key={method.key}>
+          <i className={`pi ${method.icon}`} />
+          <span>{method.shortTitle}</span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function DonationImpactList() {
+  return (
+    <div className="public-donation-impact-list">
+      {donationImpacts.map((impact) => (
+        <span key={impact}>
+          <i className="pi pi-check-circle" />
+          {impact}
+        </span>
+      ))}
+    </div>
   );
 }
 
@@ -151,23 +233,7 @@ export function ProgramsPage() {
 export function HelpPage() {
   return (
     <PublicLayout>
-      <PageHero
-        eyebrow="Cómo ayudar"
-        title="Hay muchas formas de transformar apoyo en esperanza."
-        text="Puedes realizar un Bono Donación, convertirte en padrino permanente, vincular tu empresa, participar como voluntario o apoyar campañas de ecoaporte y recolección de tapas."
-        image={publicAssets.donate}
-      />
-      <section className="public-section">
-        <div className="public-help-grid">
-          {publicHelpOptions.map((option) => (
-            <article className={`public-help-card ${option.tone}`} key={option.title}>
-              <h3>{option.title}</h3>
-              <p>{option.text}</p>
-              <Link to={option.path}>{option.label} <i className="pi pi-arrow-right" /></Link>
-            </article>
-          ))}
-        </div>
-      </section>
+      <PublicHelpWaysSection />
     </PublicLayout>
   );
 }
@@ -176,16 +242,79 @@ export function DonatePage() {
   return (
     <PublicLayout>
       <PageHero
-        eyebrow="Donaciones"
-        title="Apoya a pacientes y familias con un Bono Donación o una campaña activa."
-        text="Cualquier persona puede donar. El flujo en línea se habilitará con registro de usuario y confirmación segura de pagos."
+        eyebrow="Quiero donar"
+        title="Elige cómo quieres hacer tu aporte a la Fundación MTM."
+        text="Puedes apoyar con tarjeta, PSE, Paypal, un Bono Donación o convertirte en padrino permanente."
         image={publicAssets.donate}
       />
-      <PlaceholderBlock
-        icon="pi-heart-fill"
-        title="Bono Donación y campañas de recaudo próximamente"
-        text="Aquí se mostrarán las campañas activas para que cada persona elija a qué causa quiere aportar."
+      <section className="public-section public-donation-section">
+        <div className="public-section-head">
+          <span className="public-kicker">Métodos de pago</span>
+          <h2>Selecciona el canal que prefieras</h2>
+          <p>Estos accesos preparan el camino hacia la pasarela de pago y mantienen separadas las formas de aporte que pidió la fundación.</p>
+        </div>
+        <DonationMethodGrid />
+      </section>
+      <section className="public-section public-donation-feature">
+        <img src={publicAssets.toys} alt="Campaña solidaria de la Fundación MTM" />
+        <div>
+          <span className="public-kicker">Aportes con propósito</span>
+          <h2>Tu donación sostiene acompañamiento real.</h2>
+          <p>
+            Cada aporte ayuda a mantener programas de hospedaje, alimentación,
+            apoyo psicosocial, educación, recreación y orientación a familias
+            que enfrentan el cáncer infantil.
+          </p>
+          <DonationImpactList />
+          <div className="public-donation-actions">
+            <Link className="public-btn primary dark-text" to="/bono-donacion">
+              Ver Bono Donación
+            </Link>
+            <Link className="public-text-link" to="/padrino-permanente">
+              Ser padrino permanente <i className="pi pi-arrow-right" />
+            </Link>
+          </div>
+        </div>
+      </section>
+    </PublicLayout>
+  );
+}
+
+export function DonationBondPage() {
+  return (
+    <PublicLayout>
+      <PageHero
+        eyebrow="Bono Donación"
+        title="Un aporte único que honra fechas especiales y se convierte en bienestar."
+        text="El Bono Donación representa amor, gratitud y solidaridad. Puedes dedicarlo a una persona, una fecha importante o una causa que quieras acompañar."
+        image={publicAssets.donate}
       />
+      <section className="public-section public-donation-detail">
+        <div className="public-donation-copy">
+          <span className="public-kicker">¿Qué es?</span>
+          <h2>Una forma sencilla de ayudar hoy.</h2>
+          <p>
+            Es un aporte voluntario para apoyar a niñas, niños, adolescentes y
+            familias vinculadas a los programas de la Fundación Mujeres
+            Trabajando por el Meta.
+          </p>
+          <DonationImpactList />
+          <div className="public-donation-actions">
+            <Link className="public-btn primary dark-text" to="/donar/tarjeta-credito-debito">
+              Ir a pagar
+            </Link>
+            <Link className="public-text-link" to="/donar">
+              Ver otros métodos <i className="pi pi-arrow-right" />
+            </Link>
+          </div>
+        </div>
+        <div className="public-donation-side-card">
+          <i className="pi pi-heart-fill" />
+          <h3>También puedes donar por PSE o Paypal</h3>
+          <p>Elige el canal que mejor se acomode a tu aporte y continúa con el proceso de pago.</p>
+          <DonationMethodLinks />
+        </div>
+      </section>
     </PublicLayout>
   );
 }
@@ -210,6 +339,14 @@ export function SponsorPage() {
               Los padrinos permanentes realizan aportes mensuales y reciben
               información de actividades, eventos e impacto de la fundación.
             </p>
+            <div className="public-donation-actions">
+              <Link className="public-btn primary dark-text" to="/donar/tarjeta-credito-debito">
+                Ir a pagar
+              </Link>
+              <Link className="public-text-link" to="/donar">
+                Ver métodos de pago <i className="pi pi-arrow-right" />
+              </Link>
+            </div>
           </div>
           <img src={publicAssets.sponsor} alt="Padrino permanente Fundación MTM" />
         </div>
@@ -220,13 +357,56 @@ export function SponsorPage() {
           </span>
           <h2>Registro de padrinos en preparación</h2>
           <p>
-            El flujo permitirá registrar personas naturales, familias o
-            empresas, definir aportes mensuales y comunicar beneficios según el
-            monto de vinculación.
+            Puedes participar como persona natural, familia o empresa. Tu
+            aporte mensual ayuda a sostener procesos de acompañamiento y te
+            conecta con reportes de actividades, eventos e impacto.
           </p>
+          <DonationImpactList />
+          <DonationMethodLinks />
         </div>
       </section>
       <SponsorFloatingCta />
+    </PublicLayout>
+  );
+}
+
+export function DonationMethodPage({ method }: { method: DonationMethodKey }) {
+  const selectedMethod = donationMethods.find((item) => item.key === method) ?? donationMethods[0];
+
+  return (
+    <PublicLayout>
+      <PageHero
+        eyebrow="Pago de donación"
+        title={`Continúa tu aporte por ${selectedMethod.title}.`}
+        text="Esta sección deja listo el flujo público para que el donante llegue directamente al método de pago elegido."
+        image={method === "paypal" ? publicAssets.banner : publicAssets.donate}
+      />
+      <section className="public-section public-payment-section">
+        <div className="public-payment-panel">
+          <div>
+            <span className="public-kicker">Método seleccionado</span>
+            <h2>{selectedMethod.title}</h2>
+            <p>{selectedMethod.text}</p>
+            <DonationImpactList />
+          </div>
+          <div className="public-payment-box">
+            <i className={`pi ${selectedMethod.icon}`} />
+            <h3>Resumen del aporte</h3>
+            <div className="public-payment-amounts" aria-label="Montos sugeridos">
+              <span>$50.000</span>
+              <span>$100.000</span>
+              <span>$200.000</span>
+              <span>Otro valor</span>
+            </div>
+            <Link className="public-btn primary dark-text" to="/register">
+              Continuar con el pago
+            </Link>
+            <Link className="public-text-link" to="/donar">
+              Cambiar método <i className="pi pi-arrow-right" />
+            </Link>
+          </div>
+        </div>
+      </section>
     </PublicLayout>
   );
 }

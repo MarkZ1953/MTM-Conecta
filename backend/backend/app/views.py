@@ -12,10 +12,18 @@ from rest_framework.views import APIView
 
 PUBLIC_CLOUDINARY_FOLDERS = {
     "sobre-nosotros": "SobreNosotros",
+    "como-puedo-ayudar": "Como puedo ayudar",
 }
 
 FOLDER_SORT_PRIORITY = {
     "sobre-nosotros": ("principal", "segunda", "tercera", "4", "5"),
+    "como-puedo-ayudar": (
+        "fondo",
+        "laborsocial",
+        "voluntariadopresencial",
+        "voluntariadoempresarial",
+        "aportedonacion",
+    ),
 }
 
 
@@ -81,8 +89,18 @@ class PublicCloudinaryFolderView(APIView):
             resource_type="image",
             type="upload",
         )
+        resources = result.get("resources", [])
 
-        resources = sorted(result.get("resources", []), key=lambda asset: _sort_key(folder_key, asset))
+        if not resources:
+            result = (
+                cloudinary.Search()
+                .expression(f'resource_type:image AND asset_folder="{folder_prefix}"')
+                .max_results(100)
+                .execute()
+            )
+            resources = result.get("resources", [])
+
+        resources = sorted(resources, key=lambda asset: _sort_key(folder_key, asset))
         assets = [
             {
                 "publicId": asset["public_id"],

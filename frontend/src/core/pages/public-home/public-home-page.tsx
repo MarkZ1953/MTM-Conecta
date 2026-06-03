@@ -1,8 +1,9 @@
 import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { publicAssets } from "./cloudinary-assets";
+import { PublicHelpWaysSection } from "./public-help-ways-section";
 import { PublicImageCarousel } from "./public-image-carousel";
-import { publicHelpOptions, publicNews, publicPrograms } from "./public-content";
+import { publicNews, publicPrograms } from "./public-content";
 import { PublicLayout } from "./public-layout";
 import "./public-home-page.css";
 
@@ -106,21 +107,7 @@ export const PublicHomePage = () => {
         </div>
       </section>
 
-      <section className="public-section public-help" id="ayudar">
-        <div className="public-section-head align-left">
-          <span className="public-kicker">Cómo ayudar</span>
-          <h2>Elige una forma de convertir solidaridad en acción.</h2>
-        </div>
-        <div className="public-help-grid">
-          {publicHelpOptions.map((option) => (
-            <article className={`public-help-card ${option.tone}`} key={option.title}>
-              <h3>{option.title}</h3>
-              <p>{option.text}</p>
-              <Link to={option.path}>{option.label} <i className="pi pi-arrow-right" /></Link>
-            </article>
-          ))}
-        </div>
-      </section>
+      <PublicHelpWaysSection />
 
       <section
         className="public-vinculate-feature"

@@ -50,12 +50,112 @@ const parseContactMethods = (value?: string) =>
     .map((method) => method.trim())
     .filter(Boolean);
 
-const getApiMessage = (data: any, fallback: string) => {
+const getApiMessage = (data: unknown, fallback: string) => {
   if (!data) return fallback;
-  if (typeof data.message === "string") return data.message;
-  if (Array.isArray(data.phone)) return data.phone[0];
-  if (typeof data.phone === "string") return data.phone;
+
+  const payload = data as { message?: unknown; phone?: unknown };
+  if (typeof payload.message === "string") return payload.message;
+  if (Array.isArray(payload.phone)) return String(payload.phone[0]);
+  if (typeof payload.phone === "string") return payload.phone;
   return fallback;
+};
+
+type AccountPreferenceKey =
+  | "marketing_opt_in"
+  | "news_opt_in"
+  | "impact_opt_in"
+  | "data_processing_opt_in";
+
+type AccountPreferences = Record<AccountPreferenceKey, boolean> & {
+  preferred_contact: string;
+};
+
+const preferenceOptions: Array<[AccountPreferenceKey, string]> = [
+  ["marketing_opt_in", "Recibir campañas"],
+  ["news_opt_in", "Recibir noticias"],
+  ["impact_opt_in", "Recibir información de impacto"],
+  ["data_processing_opt_in", "Acepto tratamiento de datos"],
+];
+
+type AccountActivity = {
+  id?: number | string;
+  action?: string | null;
+  description?: string | null;
+  timestamp?: string | null;
+};
+
+type AccountDonation = {
+  donation_type?: string | null;
+};
+
+type AccountPermission = {
+  id?: number | string;
+  codename?: string | null;
+  name?: string | null;
+};
+
+type AccountProfile = {
+  phone?: string | null;
+  preferred_contact?: string | null;
+  marketing_opt_in?: boolean | null;
+  news_opt_in?: boolean | null;
+  impact_opt_in?: boolean | null;
+  data_processing_opt_in?: boolean | null;
+  photo_url?: string | null;
+  has_google?: boolean | null;
+  google_email?: string | null;
+};
+
+type AccountUser = {
+  username?: string | null;
+  email?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  is_active?: boolean | null;
+  is_superuser?: boolean | null;
+  date_joined?: string | null;
+  has_usable_password?: boolean | null;
+  permissions?: unknown;
+  profile?: AccountProfile | null;
+};
+
+type AccountVolunteerAvailability = {
+  id?: number | string;
+  day_of_week: number;
+  start_time?: string | null;
+  end_time?: string | null;
+};
+
+type AccountVolunteer = {
+  identification_number?: string | null;
+  phone?: string | null;
+  status_label?: string | null;
+  support_area_label?: string | null;
+  availabilities: AccountVolunteerAvailability[];
+};
+
+type AccountDonationSummary = {
+  count?: number | null;
+  completed_count?: number | null;
+  total_completed?: number | string | null;
+};
+
+type AccountData = {
+  user?: AccountUser | null;
+  volunteer?: AccountVolunteer | null;
+  donations?: unknown;
+  donations_summary?: AccountDonationSummary | null;
+  activity?: unknown;
+};
+
+const normalizeCollection = <T,>(value: unknown): T[] => {
+  if (Array.isArray(value)) return value;
+  if (!value || typeof value !== "object") return [];
+
+  const collection = value as Record<string, unknown>;
+  if (Array.isArray(collection.results)) return collection.results as T[];
+
+  return Object.values(collection).flatMap((entry) => (Array.isArray(entry) ? (entry as T[]) : []));
 };
 
 function AccountInfoCard({
@@ -114,7 +214,7 @@ function ParticipationCard({
 export function AccountPage() {
   const { refresh, logout } = useContext(AuthContext);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [account, setAccount] = useState<any>(null);
+  const [account, setAccount] = useState<AccountData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -125,7 +225,7 @@ export function AccountPage() {
     new_password: "",
     confirm_password: "",
   });
-  const [preferences, setPreferences] = useState({
+  const [preferences, setPreferences] = useState<AccountPreferences>({
     marketing_opt_in: true,
     news_opt_in: true,
     impact_opt_in: true,
@@ -136,8 +236,11 @@ export function AccountPage() {
   const user = account?.user;
   const profile = user?.profile;
   const volunteer = account?.volunteer;
-  const donations = account?.donations ?? [];
+  const donations = useMemo(() => normalizeCollection<AccountDonation>(account?.donations), [account?.donations]);
+  const activity = useMemo(() => normalizeCollection<AccountActivity>(account?.activity), [account?.activity]);
+  const permissions = useMemo(() => normalizeCollection<AccountPermission>(user?.permissions), [user?.permissions]);
   const donationSummary = account?.donations_summary ?? {};
+  const donationCount = donationSummary.count ?? 0;
   const roles = useMemo(() => getUserRoleNames(user), [user]);
   const showRoles = Boolean(user?.is_superuser || roles.length > 0 || canAccessAdminPanel(user));
 
@@ -148,10 +251,10 @@ export function AccountPage() {
 
   const participation = useMemo(() => ({
     volunteerCount: volunteer ? volunteer.availabilities?.length || 1 : 0,
-    eventsCount: account?.activity?.filter((item: any) => String(item.action).includes("event")).length ?? 0,
-    campaignsCount: donationSummary.count ?? 0,
-    sponsorCount: donations.filter((donation: any) => donation.donation_type === "PERMANENT_SPONSOR").length,
-  }), [account, donationSummary.count, donations, volunteer]);
+    eventsCount: activity.filter((item) => String(item.action).includes("event")).length,
+    campaignsCount: donationCount,
+    sponsorCount: donations.filter((donation) => donation.donation_type === "PERMANENT_SPONSOR").length,
+  }), [activity, donationCount, donations, volunteer]);
 
   const loadAccount = async () => {
     setLoading(true);
@@ -342,9 +445,9 @@ export function AccountPage() {
 
             <div className="account-member-tags">
               {volunteer && <span><i className="pi pi-heart" /> Voluntaria</span>}
-              {donationSummary.count > 0 && <span><i className="pi pi-gift" /> Donante</span>}
+              {donationCount > 0 && <span><i className="pi pi-gift" /> Donante</span>}
               {participation.sponsorCount > 0 && <span><i className="pi pi-star" /> Padrino permanente</span>}
-              {!volunteer && donationSummary.count === 0 && <span><i className="pi pi-users" /> Comunidad MTM</span>}
+              {!volunteer && donationCount === 0 && <span><i className="pi pi-users" /> Comunidad MTM</span>}
             </div>
 
             <div className="account-side-note">
@@ -467,16 +570,11 @@ export function AccountPage() {
                 </div>
               )}
               <div className="account-preferences">
-                {[
-                  ["marketing_opt_in", "Recibir campañas"],
-                  ["news_opt_in", "Recibir noticias"],
-                  ["impact_opt_in", "Recibir información de impacto"],
-                  ["data_processing_opt_in", "Acepto tratamiento de datos"],
-                ].map(([key, label]) => (
+                {preferenceOptions.map(([key, label]) => (
                   <label key={key} className="account-switch">
                     <input
                       type="checkbox"
-                      checked={Boolean((preferences as any)[key])}
+                      checked={preferences[key]}
                       onChange={(event) => setPreferences((current) => ({ ...current, [key]: event.target.checked }))}
                     />
                     <span />
@@ -511,17 +609,17 @@ export function AccountPage() {
                 <h2>Mi actividad</h2>
               </header>
               <div className="account-timeline">
-                {(account?.activity ?? []).length === 0 ? (
+                {activity.length === 0 ? (
                   <p className="account-empty">Aún no hay actividad registrada.</p>
                 ) : (
-                  account.activity.slice(0, 3).map((activity: any) => (
-                    <article key={activity.id}>
+                  activity.slice(0, 3).map((activityItem) => (
+                    <article key={activityItem.id}>
                       <i className="pi pi-calendar" />
                       <div>
-                        <strong>{activity.description || "Movimiento registrado"}</strong>
-                        <span>{activity.action}</span>
+                        <strong>{activityItem.description || "Movimiento registrado"}</strong>
+                        <span>{activityItem.action}</span>
                       </div>
-                      <small>{formatDateTime(activity.timestamp)}</small>
+                      <small>{formatDateTime(activityItem.timestamp)}</small>
                     </article>
                   ))
                 )}
@@ -610,8 +708,10 @@ export function AccountPage() {
                 ))}
               </div>
               <div className="account-permission-list">
-                {(user?.permissions ?? []).slice(0, 8).map((permission: any) => (
-                  <small key={`${permission.app_label}-${permission.codename}`}>{permission.name}</small>
+                {permissions.slice(0, 8).map((permission, index) => (
+                  <small key={permission.id ?? `${permission.codename}-${index}`}>
+                    {permission.name || permission.codename}
+                  </small>
                 ))}
               </div>
             </section>
@@ -627,7 +727,7 @@ export function AccountPage() {
                 </div>
               </header>
               <div className="account-volunteer-list">
-                {volunteer.availabilities.map((availability: any) => (
+                {volunteer.availabilities.map((availability) => (
                   <span key={availability.id}>{dayLabels[availability.day_of_week]}: {availability.start_time} - {availability.end_time}</span>
                 ))}
               </div>

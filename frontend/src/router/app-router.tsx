@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { PrivateLayout } from "./private-layout";
 import { PrivateRoute } from "./private-route";
 import {
@@ -7,8 +7,11 @@ import {
   BlogPage,
   ContactPage,
   DashboardPage,
+  DonationBondPage,
+  DonationMethodPage,
   DonatePage,
   FAQPage,
+  HelpDetailPage,
   HelpPage,
   HomePage,
   NewsPage,
@@ -17,7 +20,6 @@ import {
   PublicEventsPage,
   SponsorPage,
   TestimonialsPage,
-  VolunteerPage,
 } from "@/core";
 import { UsersPage } from "@/users";
 import { BeneficiariesPage } from "@/beneficiaries";
@@ -48,8 +50,16 @@ export const AppRouter = () => {
       <Route path="/programas" element={<ProgramsPage />} />
       <Route path="/como-ayudar" element={<HelpPage />} />
       <Route path="/donar" element={<DonatePage />} />
+      <Route path="/donar/tarjeta-credito-debito" element={<DonationMethodPage method="card" />} />
+      <Route path="/donar/pse" element={<DonationMethodPage method="pse" />} />
+      <Route path="/donar/paypal" element={<DonationMethodPage method="paypal" />} />
+      <Route path="/bono-donacion" element={<DonationBondPage />} />
       <Route path="/padrino-permanente" element={<SponsorPage />} />
-      <Route path="/voluntariado" element={<VolunteerPage />} />
+      <Route path="/como-ayudar/labor-social" element={<HelpDetailPage type="labor-social" />} />
+      <Route path="/como-ayudar/voluntariado-presencial" element={<HelpDetailPage type="voluntariado-presencial" />} />
+      <Route path="/como-ayudar/voluntariado-empresarial" element={<HelpDetailPage type="voluntariado-empresarial" />} />
+      <Route path="/como-ayudar/aportes-en-especie" element={<HelpDetailPage type="aportes-en-especie" />} />
+      <Route path="/voluntariado" element={<Navigate to="/como-ayudar/voluntariado-presencial" replace />} />
       <Route path="/eventos-publicos" element={<PublicEventsPage />} />
       <Route path="/blog" element={<BlogPage />} />
       <Route path="/noticias" element={<NewsPage />} />

@@ -33,7 +33,8 @@ export function PublicLayout({ children, className = "" }: PublicLayoutProps) {
         <div>
           <h4>Ayuda</h4>
           <Link to="/como-ayudar">Cómo ayudar</Link>
-          <Link to="/donar">Bono Donación</Link>
+          <Link to="/donar">Quiero donar</Link>
+          <Link to="/bono-donacion">Bono Donación</Link>
           <Link to="/padrino-permanente">Padrino permanente</Link>
         </div>
         <div>
