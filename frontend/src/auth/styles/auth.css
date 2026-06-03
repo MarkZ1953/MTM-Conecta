@@ -1378,6 +1378,12 @@
   gap: .6rem;
 }
 
+.google-auth-custom-shell {
+  min-height: 50px;
+  position: relative;
+  width: 100%;
+}
+
 .google-auth-custom-btn {
   align-items: center;
   background:
@@ -1400,15 +1406,36 @@
   width: 100%;
 }
 
-.google-auth-custom-btn:hover {
+.google-auth-custom-shell:hover .google-auth-custom-btn {
   box-shadow: 0 18px 34px rgba(15, 31, 44, .14);
   transform: translateY(-1px);
 }
 
-.google-auth-custom-btn:disabled {
+.google-auth-custom-shell:not(.is-ready) .google-auth-custom-btn {
   cursor: wait;
   opacity: .68;
   transform: none;
+}
+
+.google-auth-native-hitbox {
+  inset: 0;
+  opacity: .001;
+  overflow: hidden;
+  position: absolute;
+  z-index: 2;
+}
+
+.google-auth-native-hitbox iframe,
+.google-auth-native-hitbox > div {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+.google-auth-custom-loading {
+  inset: 0;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 3;
 }
 
 .google-auth-account-icon {
@@ -1606,6 +1633,11 @@
   position: relative;
 }
 
+.auth-image-page--register .auth-image-stage {
+  background-position: left top;
+  background-size: auto 100%;
+}
+
 .auth-image-stage::before {
   background:
     linear-gradient(90deg, rgba(255,255,255,0) 0 55%, rgba(255,255,255,.36) 70%, rgba(255,255,255,.86) 100%);
@@ -1695,6 +1727,11 @@
 
   .auth-image-stage::before {
     background: rgba(255, 255, 255, 0.46);
+  }
+
+  .auth-image-page--register .auth-image-stage {
+    background-position: left top;
+    background-size: auto 100%;
   }
 }
 

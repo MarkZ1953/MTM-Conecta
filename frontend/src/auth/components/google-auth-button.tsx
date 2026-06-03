@@ -25,7 +25,6 @@ declare global {
             callback: (response: GoogleCredentialResponse) => void;
             auto_select?: boolean;
           }) => void;
-          prompt: () => void;
           renderButton: (
             parent: HTMLElement,
             options: {
@@ -122,17 +121,12 @@ export function GoogleAuthButton({ mode, onCredential, label, variant = "default
     loadGoogleScript()
       .then(() => {
         if (!isMounted || !window.google?.accounts?.id) return;
-        if (variant !== "account" && !buttonRef.current) return;
+        if (!buttonRef.current) return;
 
         window.google.accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID,
           callback: handleCredential,
         });
-
-        if (variant === "account" || variant === "brand") {
-          setIsReady(true);
-          return;
-        }
 
         buttonRef.current!.innerHTML = "";
         window.google.accounts.id.renderButton(buttonRef.current!, {
@@ -168,16 +162,23 @@ export function GoogleAuthButton({ mode, onCredential, label, variant = "default
 
   if (variant === "account" || variant === "brand") {
     return (
-      <button
-        className={`google-auth-custom-btn google-auth-${variant}-btn`}
-        type="button"
-        disabled={!isReady}
-        onClick={() => window.google?.accounts?.id?.prompt()}
+      <div
+        className={`google-auth-custom-shell google-auth-${variant}-shell ${isReady ? "is-ready" : ""}`}
+        aria-busy={!isReady}
       >
-        <span className="google-auth-account-icon">G</span>
-        <span>{label ?? (mode === "register" ? "Registrarse con Google" : "Acceder con Google")}</span>
-        <i className="pi pi-arrow-right" />
-      </button>
+        <div className="google-auth-custom-btn" aria-hidden="true">
+          <span className="google-auth-account-icon">G</span>
+          <span>{label ?? (mode === "register" ? "Registrarse con Google" : "Acceder con Google")}</span>
+          <i className="pi pi-arrow-right" />
+        </div>
+        {!isReady && (
+          <span className="google-auth-loading google-auth-custom-loading">
+            <i className="pi pi-spin pi-spinner" />
+            Cargando Google...
+          </span>
+        )}
+        <div ref={buttonRef} className="google-auth-native-hitbox" />
+      </div>
     );
   }
 

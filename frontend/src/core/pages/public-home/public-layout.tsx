@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
 import { publicAssets } from "./cloudinary-assets";
+import { PublicFloatingActions } from "./public-floating-actions";
 import { PublicNavbar } from "./public-navbar";
 import "./public-home-page.css";
 
@@ -14,6 +15,7 @@ export function PublicLayout({ children, className = "" }: PublicLayoutProps) {
     <main className={`public-site ${className}`.trim()}>
       <PublicNavbar />
       {children}
+      <PublicFloatingActions />
       <footer className="public-footer">
         <div>
           <img src={publicAssets.logo} alt="Fundación MTM" />

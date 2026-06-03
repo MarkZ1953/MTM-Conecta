@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { publicAssets } from "./public-home/cloudinary-assets";
+import { PublicFloatingActions } from "./public-home/public-floating-actions";
 import "./public-home/public-home-page.css";
 
 type PublicInfoPageProps = {
@@ -82,6 +83,7 @@ export const PublicInfoPage = ({ variant }: PublicInfoPageProps) => {
           <img src={publicAssets.heartLogo} alt="Logo de corazon MTM" />
         </div>
       </section>
+      <PublicFloatingActions />
     </main>
   );
 };

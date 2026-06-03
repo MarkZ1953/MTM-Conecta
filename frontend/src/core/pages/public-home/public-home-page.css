@@ -30,6 +30,106 @@
   scroll-margin-top: 170px;
 }
 
+.public-floating-actions {
+  bottom: auto;
+  display: grid;
+  gap: .75rem;
+  justify-items: center;
+  position: fixed;
+  right: clamp(.8rem, 2.2vw, 1.35rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 70;
+}
+
+.public-floating-socials {
+  display: grid;
+  gap: .55rem;
+}
+
+.public-floating-social,
+.public-scroll-top {
+  align-items: center;
+  border: 0;
+  border-radius: 999px;
+  box-shadow: 0 14px 28px rgba(15, 31, 44, .22);
+  color: #fff;
+  display: inline-flex;
+  height: 48px;
+  justify-content: center;
+  position: relative;
+  text-decoration: none;
+  transition: box-shadow .2s ease, opacity .2s ease, transform .2s ease;
+  width: 48px;
+}
+
+.public-floating-social:hover,
+.public-scroll-top:hover {
+  box-shadow: 0 18px 34px rgba(15, 31, 44, .28);
+  transform: translateY(-2px) scale(1.03);
+}
+
+.public-floating-social:focus-visible,
+.public-scroll-top:focus-visible {
+  outline: 3px solid rgba(45, 191, 168, .35);
+  outline-offset: 3px;
+}
+
+.public-floating-social i,
+.public-floating-tiktok-icon,
+.public-scroll-top i {
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.public-floating-tiktok-icon {
+  fill: currentColor;
+  height: 26px;
+  width: 26px;
+}
+
+.public-floating-social.is-facebook {
+  background: #1877f2;
+}
+
+.public-floating-social.is-tiktok {
+  background:
+    radial-gradient(circle at 70% 22%, rgba(37, 244, 238, .55), transparent 18%),
+    radial-gradient(circle at 30% 72%, rgba(254, 44, 85, .55), transparent 20%),
+    #050505;
+}
+
+.public-floating-social.is-instagram {
+  background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 48%, #fcb045 100%);
+}
+
+.public-floating-social.is-youtube {
+  background: #ff0000;
+}
+
+.public-scroll-top {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, .92);
+  border: 1px solid rgba(8, 122, 127, .16);
+  bottom: clamp(1rem, 4vh, 2rem);
+  box-shadow: 0 10px 24px rgba(15, 31, 44, .14);
+  color: #087a7f;
+  cursor: pointer;
+  height: 42px;
+  left: clamp(.8rem, 2.2vw, 1.35rem);
+  opacity: 0;
+  pointer-events: none;
+  position: fixed;
+  transform: translateY(10px) scale(.92);
+  width: 42px;
+}
+
+.public-scroll-top.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
 .public-nav {
   align-items: center;
   background: transparent;
@@ -192,7 +292,6 @@
   height: auto;
   object-fit: contain;
   width: 100%;
-  vertical-align: top;
 }
 
 .public-image-carousel-hotspots {
@@ -1406,6 +1505,41 @@
 }
 
 @media (max-width: 780px) {
+  .public-floating-actions {
+    bottom: auto;
+    right: clamp(.8rem, 2.2vw, 1.35rem);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .public-floating-socials {
+    gap: .42rem;
+  }
+
+  .public-floating-social,
+  .public-scroll-top {
+    height: 42px;
+    width: 42px;
+  }
+
+  .public-floating-social i,
+  .public-floating-tiktok-icon,
+  .public-scroll-top i {
+    font-size: 1.22rem;
+  }
+
+  .public-scroll-top {
+    bottom: .85rem;
+    height: 38px;
+    left: .75rem;
+    width: 38px;
+  }
+
+  .public-floating-tiktok-icon {
+    height: 23px;
+    width: 23px;
+  }
+
   .public-site [id] {
     scroll-margin-top: 96px;
   }
@@ -1557,6 +1691,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .public-floating-social,
+  .public-scroll-top {
+    transition: none;
+  }
+
   .public-sponsor-floating-cta {
     animation: none;
   }
