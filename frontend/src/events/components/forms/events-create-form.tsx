@@ -22,6 +22,7 @@ const defaultValues: EventPayload = {
   start_date: "",
   end_date: "",
   location: "",
+  image_uploads: [],
 };
 
 export const EventsCreateForm = ({

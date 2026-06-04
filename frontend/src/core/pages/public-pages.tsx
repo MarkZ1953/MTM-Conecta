@@ -1,6 +1,10 @@
-import type { CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
-import { publicAboutGallerySlides, publicAssets } from "./public-home/cloudinary-assets";
+import {
+  publicAboutGallerySlides,
+  publicAssets,
+  publicEventsGallerySlides,
+} from "./public-home/cloudinary-assets";
 import { PublicHelpWaysSection } from "./public-home/public-help-ways-section";
 import { PublicImageCarousel } from "./public-home/public-image-carousel";
 import {
@@ -8,6 +12,7 @@ import {
   publicNews,
   publicPrograms,
 } from "./public-home/public-content";
+import { fetchPublicEvents, type PublicEventRecord } from "./public-home/public-events.api";
 import { PublicLayout } from "./public-home/public-layout";
 import { usePublicCloudinaryGallery } from "./public-home/use-public-cloudinary-gallery";
 
@@ -429,20 +434,397 @@ export function VolunteerPage() {
   );
 }
 
+type PublicEventItem = {
+  dateLabel: string;
+  day: string;
+  description: string;
+  id: number;
+  imageAlt: string;
+  imageSrc: string;
+  imageSrcs: string[];
+  location: string;
+  month: string;
+  startDate: Date;
+  time: string;
+  title: string;
+};
+
+const EVENTS_PER_PAGE = 10;
+
+function getEventImageIndex(index: number, totalImages: number) {
+  return totalImages > 0 ? index % totalImages : 0;
+}
+
+const eventDateFormatter = new Intl.DateTimeFormat("es-CO", {
+  day: "numeric",
+  month: "long",
+  weekday: "long",
+  year: "numeric",
+});
+
+const eventMonthFormatter = new Intl.DateTimeFormat("es-CO", {
+  month: "short",
+});
+
+const eventMonthTitleFormatter = new Intl.DateTimeFormat("es-CO", {
+  month: "long",
+  year: "numeric",
+});
+
+const eventTimeFormatter = new Intl.DateTimeFormat("es-CO", {
+  hour: "numeric",
+  minute: "2-digit",
+});
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function formatPublicEvent(
+  event: PublicEventRecord,
+  index: number,
+  fallbackSlides: Array<{ alt: string; src: string }>,
+): PublicEventItem {
+  const startDate = new Date(event.start_date);
+  const endDate = new Date(event.end_date);
+  const fallbackImage = fallbackSlides[getEventImageIndex(index, fallbackSlides.length)];
+  const uploadedImages = event.images?.map((image) => image.image_url).filter(Boolean) ?? [];
+  const imageSrc = event.image_url || uploadedImages[0] || fallbackImage?.src || publicAssets.careOne;
+
+  return {
+    dateLabel: capitalize(eventDateFormatter.format(startDate)),
+    day: String(startDate.getDate()).padStart(2, "0"),
+    description: event.description,
+    id: event.id,
+    imageAlt: event.title,
+    imageSrc,
+    imageSrcs: uploadedImages.length > 0 ? uploadedImages : [imageSrc],
+    location: event.location,
+    month: eventMonthFormatter.format(startDate).replace(".", "").toUpperCase(),
+    startDate,
+    time: `${eventTimeFormatter.format(startDate)} - ${eventTimeFormatter.format(endDate)}`,
+    title: event.title,
+  };
+}
+
 export function PublicEventsPage() {
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [events, setEvents] = useState<PublicEventRecord[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [eventsError, setEventsError] = useState("");
+  const eventSlides = usePublicCloudinaryGallery("eventos", publicEventsGallerySlides);
+  const publicEventItems = useMemo(
+    () => events.map((event, index) => formatPublicEvent(event, index, eventSlides)),
+    [eventSlides, events],
+  );
+  const pageCount = Math.max(1, Math.ceil(publicEventItems.length / EVENTS_PER_PAGE));
+  const featuredEvent = publicEventItems[0];
+  const featuredImages = useMemo(() => {
+    const eventImages = publicEventItems.flatMap((event) => event.imageSrcs).filter(Boolean);
+    return eventImages.length > 0 ? eventImages : eventSlides.map((slide) => slide.src);
+  }, [eventSlides, publicEventItems]);
+  const featuredImage = featuredImages[getEventImageIndex(activeSlide, featuredImages.length)];
+  const calendarBaseDate = featuredEvent?.startDate ?? new Date();
+  const calendarMonth = calendarBaseDate.getMonth();
+  const calendarYear = calendarBaseDate.getFullYear();
+  const calendarDays = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+  const calendarEventDays = new Set(
+    publicEventItems
+      .filter((event) => event.startDate.getMonth() === calendarMonth && event.startDate.getFullYear() === calendarYear)
+      .map((event) => event.startDate.getDate()),
+  );
+  const monthTitle = capitalize(eventMonthTitleFormatter.format(calendarBaseDate));
+  const featuredDisplayEvent = featuredEvent ?? {
+    dateLabel: "Fecha por anunciar",
+    day: "--",
+    description: eventsLoading
+      ? "Estamos cargando las actividades publicadas por la fundación."
+      : "Cuando el equipo registre un evento desde el panel administrativo, aparecerá aquí como destacado.",
+    id: 0,
+    imageAlt: "Eventos Fundación MTM",
+    imageSrc: publicAssets.careOne,
+    imageSrcs: [publicAssets.careOne],
+    location: "Fundación MTM",
+    month: "MTM",
+    startDate: calendarBaseDate,
+    time: "Hora por anunciar",
+    title: eventsLoading ? "Cargando eventos..." : "Eventos por anunciar",
+  };
+  const safeCurrentPage = Math.min(currentPage, pageCount);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchPublicEvents()
+      .then((data) => {
+        if (!isMounted) return;
+        setEvents(data);
+        setEventsError("");
+      })
+      .catch((error) => {
+        if (!isMounted) return;
+        setEventsError(error instanceof Error ? error.message : "No se pudieron cargar los eventos.");
+      })
+      .finally(() => {
+        if (isMounted) {
+          setEventsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (featuredImages.length <= 1) return undefined;
+
+    const intervalId = window.setInterval(() => {
+      setActiveSlide((value) => (value + 1) % featuredImages.length);
+    }, 5000);
+
+    return () => window.clearInterval(intervalId);
+  }, [featuredImages.length]);
+
+  const visibleEvents = useMemo(() => {
+    const start = (safeCurrentPage - 1) * EVENTS_PER_PAGE;
+    return publicEventItems.slice(start, start + EVENTS_PER_PAGE);
+  }, [publicEventItems, safeCurrentPage]);
+
+  const setPage = (nextPage: number) => {
+    setCurrentPage(Math.min(Math.max(nextPage, 1), pageCount));
+  };
+
   return (
     <PublicLayout>
-      <PageHero
-        eyebrow="Eventos"
-        title="Señales de alarma, actividades y encuentros solidarios."
-        text="Este espacio reunirá calendario público, materiales educativos, galerías e historias de actividades institucionales."
-        image={publicAssets.childrenInfo}
-      />
-      <PlaceholderBlock
-        icon="pi-calendar"
-        title="Calendario público en preparación"
-        text="Los eventos internos ya existen; el siguiente paso será publicar los visibles para la comunidad."
-      />
+      <section className="public-events-showcase" aria-label="Eventos Fundación MTM">
+        <div className="public-events-showcase-hero">
+          <div className="public-events-showcase-copy">
+            <span className="public-kicker">Eventos</span>
+            <h1>Próximos eventos y encuentros solidarios</h1>
+            <p>
+              Descubre nuestras actividades, campañas, jornadas solidarias y
+              espacios comunitarios que transforman vidas y brindan esperanza a
+              niños con cáncer y sus familias en la Orinoquía.
+            </p>
+            <div className="public-events-showcase-actions">
+              <a href="#eventos-listado">
+                <i className="pi pi-calendar" />
+                Ver calendario completo
+              </a>
+              <Link to="/contacto">
+                Suscríbete a nuestro boletín
+                <i className="pi pi-arrow-right" />
+              </Link>
+            </div>
+          </div>
+
+          <article className="public-events-featured-card">
+            <div>
+              <span>
+                <i className="pi pi-star-fill" />
+                Evento destacado
+              </span>
+              <h2>{featuredDisplayEvent.title}</h2>
+              <p>{featuredDisplayEvent.description}</p>
+              <ul>
+                <li>
+                  <i className="pi pi-calendar" />
+                  {featuredDisplayEvent.dateLabel}
+                </li>
+                <li>
+                  <i className="pi pi-clock" />
+                  {featuredDisplayEvent.time}
+                </li>
+                <li>
+                  <i className="pi pi-map-marker" />
+                  {featuredDisplayEvent.location}
+                </li>
+              </ul>
+              <a href="#eventos-listado">
+                Ver detalles
+                <i className="pi pi-arrow-right" />
+              </a>
+            </div>
+            <img src={featuredImage || featuredDisplayEvent.imageSrc} alt={featuredDisplayEvent.imageAlt} />
+          </article>
+        </div>
+
+        <div className="public-events-showcase-toolbar" aria-label="Filtros de eventos">
+          <button type="button" className="is-active">
+            <i className="pi pi-calendar" />
+            Próximos
+          </button>
+          <button type="button">
+            <i className="pi pi-star" />
+            Destacados
+          </button>
+          <button type="button">
+            <i className="pi pi-calendar-plus" />
+            Mes actual
+          </button>
+          <button type="button">
+            <i className="pi pi-sliders-h" />
+            Todos
+          </button>
+        </div>
+
+        <div className="public-events-showcase-main" id="eventos-listado">
+          <div>
+            <div className="public-events-card-grid">
+              {eventsLoading &&
+                Array.from({ length: 3 }, (_, index) => (
+                  <article className="public-events-card is-loading" key={`event-loading-${index}`}>
+                    <div className="public-events-card-media" />
+                    <div className="public-events-card-copy">
+                      <span />
+                      <p />
+                      <p />
+                    </div>
+                  </article>
+                ))}
+
+              {!eventsLoading &&
+                visibleEvents.map((event) => (
+                  <article className="public-events-card" key={event.id}>
+                    <div className="public-events-card-media">
+                      <img src={event.imageSrc} alt={event.imageAlt} />
+                      <span>
+                        <strong>{event.day}</strong>
+                        {event.month}
+                      </span>
+                    </div>
+                    <div className="public-events-card-copy">
+                      <div>
+                        <h2>{event.title}</h2>
+                        <i className="pi pi-star" aria-hidden="true" />
+                      </div>
+                      <p>{event.description}</p>
+                      <ul>
+                        <li>
+                          <i className="pi pi-clock" />
+                          {event.time}
+                        </li>
+                        <li>
+                          <i className="pi pi-map-marker" />
+                          {event.location}
+                        </li>
+                      </ul>
+                      <Link to="/contacto">
+                        Ver detalles
+                        <i className="pi pi-arrow-right" />
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+            </div>
+
+            {!eventsLoading && publicEventItems.length === 0 && (
+              <div className="public-events-empty">
+                <i className="pi pi-calendar-times" />
+                <h2>{eventsError ? "No pudimos cargar los eventos" : "Eventos por anunciar"}</h2>
+                <p>
+                  {eventsError ||
+                    "Cuando el equipo publique eventos desde el panel administrativo, aparecerán en esta sección."}
+                </p>
+              </div>
+            )}
+
+            {pageCount > 1 && (
+              <nav className="public-events-pagination" aria-label="Paginación de eventos">
+                  <button type="button" onClick={() => setPage(safeCurrentPage - 1)} disabled={safeCurrentPage === 1}>
+                  <i className="pi pi-angle-left" />
+                  Anterior
+                </button>
+                {Array.from({ length: pageCount }, (_, index) => index + 1).map((page) => (
+                  <button
+                    type="button"
+                    className={page === safeCurrentPage ? "is-active" : ""}
+                    key={page}
+                    onClick={() => setPage(page)}
+                    aria-current={page === safeCurrentPage ? "page" : undefined}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button type="button" onClick={() => setPage(safeCurrentPage + 1)} disabled={safeCurrentPage === pageCount}>
+                  Siguiente
+                  <i className="pi pi-angle-right" />
+                </button>
+              </nav>
+            )}
+
+            <div className="public-events-participate">
+              <div>
+                <h2>¿Quieres participar?</h2>
+                <p>Tu tiempo, talento y apoyo hacen la diferencia.</p>
+              </div>
+              <Link to="/como-ayudar/voluntariado-presencial">
+                <i className="pi pi-users" />
+                <span>
+                  <strong>Ser voluntario</strong>
+                  Únete a nuestro equipo de voluntarios.
+                </span>
+                <i className="pi pi-angle-right" />
+              </Link>
+              <Link to="/contacto">
+                <i className="pi pi-heart" />
+                <span>
+                  <strong>Aliarte con la fundación</strong>
+                  Empresas y aliados que suman para transformar vidas.
+                </span>
+                <i className="pi pi-angle-right" />
+              </Link>
+            </div>
+          </div>
+
+          <aside className="public-events-month-card" aria-label="Eventos del mes">
+            <div className="public-events-month-card-head">
+              <span>
+                <i className="pi pi-calendar" />
+                Este mes
+              </span>
+              <div>
+                <button type="button" aria-label="Mes anterior">
+                  <i className="pi pi-angle-left" />
+                </button>
+                <button type="button" aria-label="Mes siguiente">
+                  <i className="pi pi-angle-right" />
+                </button>
+              </div>
+            </div>
+            <h2>{monthTitle}</h2>
+            <div className="public-events-calendar-grid" aria-label={`Calendario de ${monthTitle}`}>
+              {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((dayName) => (
+                <strong key={dayName}>{dayName}</strong>
+              ))}
+              {Array.from({ length: calendarDays }, (_, index) => index + 1).map((day) => (
+                <span className={calendarEventDays.has(day) ? "is-event-day" : ""} key={day}>
+                  {day}
+                </span>
+              ))}
+            </div>
+            <div className="public-events-month-list">
+              {publicEventItems.slice(0, 4).map((event) => (
+                <Link to="/contacto" key={`month-${event.id}`}>
+                  <span>
+                    <strong>{event.day}</strong>
+                    {event.month}
+                  </span>
+                  <b>{event.title}</b>
+                  <small>{event.time.split(" - ")[0]}</small>
+                  <i className="pi pi-angle-right" />
+                </Link>
+              ))}
+            </div>
+            <a href="#eventos-listado" className="public-events-month-all">
+              Ver todos los eventos del mes
+              <i className="pi pi-arrow-right" />
+            </a>
+          </aside>
+        </div>
+      </section>
     </PublicLayout>
   );
 }
@@ -532,32 +914,170 @@ export function FAQPage() {
   );
 }
 
+const contactCards = [
+  {
+    action: "https://wa.me/573103423223",
+    actionLabel: "+57 310 342 3223",
+    actionIcon: "pi-whatsapp",
+    icon: "pi-whatsapp",
+    text: "Escríbenos y atenderemos tu solicitud.",
+    title: "WhatsApp",
+    tone: "teal",
+  },
+  {
+    action: "mailto:contacto@fundacionmtm.org",
+    actionLabel: "contacto@fundacionmtm.org",
+    actionIcon: "pi-copy",
+    icon: "pi-envelope",
+    text: "Envíanos tus mensajes y propuestas.",
+    title: "Correo",
+    tone: "purple",
+  },
+  {
+    action: "https://www.google.com/maps/search/?api=1&query=Villavicencio%2C%20Meta%2C%20Colombia",
+    actionLabel: "Villavicencio, Meta, Colombia",
+    actionIcon: "pi-external-link",
+    icon: "pi-map-marker",
+    text: "Estamos en el corazón del Meta, trabajando por nuestra región.",
+    title: "Ubicación",
+    tone: "teal",
+  },
+  {
+    action: "/contacto",
+    actionLabel: "Lun - Vie   8:00 a.m. - 5:00 p.m.",
+    actionIcon: "pi-clock",
+    icon: "pi-clock",
+    text: "Atendemos de lunes a viernes en jornada continua.",
+    title: "Horario de atención",
+    tone: "purple",
+  },
+];
+
+const contactSocialLinks = [
+  {
+    icon: "pi-facebook",
+    label: "Facebook",
+    path: "https://www.facebook.com/",
+    tone: "facebook",
+  },
+  {
+    icon: "pi-instagram",
+    label: "Instagram",
+    path: "https://www.instagram.com/",
+    tone: "instagram",
+  },
+  {
+    label: "TikTok",
+    path: "https://www.tiktok.com/",
+    textIcon: "T",
+    tone: "tiktok",
+  },
+  {
+    icon: "pi-youtube",
+    label: "YouTube",
+    path: "https://www.youtube.com/",
+    tone: "youtube",
+  },
+];
+
 export function ContactPage() {
   return (
     <PublicLayout>
-      <PageHero
-        eyebrow="Contacto"
-        title="Conecta tu empresa, familia o comunidad con la fundación."
-        text="La fundación recibe apoyo para donaciones, voluntariado, reciclaje, alianzas empresariales y campañas solidarias."
-        image={publicAssets.banner}
-      />
-      <section className="public-section">
-        <div className="public-contact-grid">
-          <article>
-            <i className="pi pi-whatsapp" />
-            <h3>WhatsApp</h3>
-            <p>310 342 3223</p>
+      <section className="public-contact-showcase" aria-label="Contacto Fundación MTM">
+        <div className="public-contact-showcase-hero">
+          <div className="public-contact-showcase-copy">
+            <span className="public-contact-showcase-mark">
+              <i className="pi pi-heart-fill" />
+            </span>
+            <h1>
+              <span>Conecta tu empresa, </span>
+              <strong>familia o comunidad </strong>
+              <span>con la fundación.</span>
+            </h1>
+            <p>
+              En Fundación MTM recibimos apoyo a través de donaciones,
+              voluntariado, reciclaje, alianzas empresariales y campañas
+              solidarias que transforman vidas de los niños con cáncer en la
+              Orinoquía.
+            </p>
+            <div className="public-contact-showcase-actions">
+              <a className="public-contact-showcase-primary" href="https://wa.me/573103423223" target="_blank" rel="noreferrer">
+                <i className="pi pi-send" />
+                Escríbenos
+              </a>
+              <Link className="public-contact-showcase-secondary" to="/como-ayudar">
+                <i className="pi pi-heart" />
+                Conocer formas de ayudar
+              </Link>
+            </div>
+          </div>
+
+          <div className="public-contact-showcase-media">
+            <img
+              className="public-contact-showcase-poster"
+              src="/contacto-poster-mtm.png"
+              alt="Juntos transformamos vidas en la Orinoquía - Fundación MTM"
+            />
+          </div>
+        </div>
+
+        <div className="public-contact-showcase-card-grid">
+          {contactCards.map((card) => (
+            <article className={`public-contact-showcase-card is-${card.tone}`} key={card.title}>
+              <span>
+                <i className={`pi ${card.icon}`} />
+              </span>
+              <div>
+                <h2>{card.title}</h2>
+                <p>{card.text}</p>
+              </div>
+              <a href={card.action} target={card.action.startsWith("http") ? "_blank" : undefined} rel={card.action.startsWith("http") ? "noreferrer" : undefined}>
+                {card.actionLabel}
+                <i className={`pi ${card.actionIcon}`} />
+              </a>
+            </article>
+          ))}
+
+          <article className="public-contact-showcase-card is-rose">
+            <span>
+              <i className="pi pi-users" />
+            </span>
+            <div>
+              <h2>Redes sociales</h2>
+              <p>Síguenos y sé parte de nuestra comunidad.</p>
+            </div>
+            <div className="public-contact-showcase-socials">
+              {contactSocialLinks.map((item) => (
+                <a
+                  className={`is-${item.tone}`}
+                  href={item.path}
+                  key={item.label}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={item.label}
+                >
+                  {"icon" in item ? <i className={`pi ${item.icon}`} /> : <span>{item.textIcon}</span>}
+                </a>
+              ))}
+            </div>
           </article>
-          <article>
-            <i className="pi pi-envelope" />
-            <h3>Correo</h3>
-            <p>fundacion.mtm.contraelcancer@gmail.com</p>
-          </article>
-          <article>
-            <i className="pi pi-map-marker" />
-            <h3>Ubicación</h3>
-            <p>Villavicencio, Meta</p>
-          </article>
+        </div>
+
+        <div className="public-contact-showcase-footer">
+          <span>
+            <i className="pi pi-heart-fill" />
+          </span>
+          <div>
+            <h2>Cada acción cuenta.</h2>
+            <p>
+              Tu apoyo nos permite seguir transformando vidas de mujeres, niños
+              y familias en el Meta.
+            </p>
+          </div>
+          <Link to="/donar">
+            <i className="pi pi-heart" />
+            Quiero apoyar
+          </Link>
         </div>
       </section>
     </PublicLayout>

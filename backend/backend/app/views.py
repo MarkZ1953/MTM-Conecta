@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 PUBLIC_CLOUDINARY_FOLDERS = {
     "sobre-nosotros": "SobreNosotros",
     "como-puedo-ayudar": "Como puedo ayudar",
+    "eventos": "Eventos",
 }
 
 FOLDER_SORT_PRIORITY = {
@@ -24,6 +25,7 @@ FOLDER_SORT_PRIORITY = {
         "voluntariadoempresarial",
         "aportedonacion",
     ),
+    "eventos": ("evento1", "evento2", "evento3"),
 }
 
 

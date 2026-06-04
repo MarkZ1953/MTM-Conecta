@@ -12,12 +12,16 @@ from .paginations import (
 from .models import Event, Attendance, EventAct, Evidence
 from .filters import EventFilter, AttendanceFilter, EventActFilter, EvidenceFilter
 from rest_framework import viewsets, filters
+from rest_framework.generics import ListAPIView
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.permissions import AllowAny
 
 
 class EventViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = Event.objects.filter(is_active=True)
     serializer_class = EventSerializer
     pagination_class = EventPagination
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     filter_backends = [
         DjangoFilterBackend,
@@ -34,6 +38,13 @@ class EventViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
         if self.action in ['retrieve']:
             return EventDetailSerializer
         return super().get_serializer_class()
+
+
+class PublicEventListView(ListAPIView):
+    queryset = Event.objects.filter(is_active=True).order_by('start_date')
+    serializer_class = EventSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None
 
 
 class AttendanceViewSet(viewsets.ModelViewSet):

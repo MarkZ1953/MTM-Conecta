@@ -13,6 +13,8 @@ class Event(BaseModel):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     location = models.CharField(max_length=255)
+    image_url = models.URLField(max_length=500, blank=True, default='')
+    image_public_id = models.CharField(max_length=255, blank=True, default='')
     attendees = models.ManyToManyField(
         Beneficiary,
         through='Attendance',
@@ -51,6 +53,29 @@ class Attendance(models.Model):
         verbose_name = 'Attendance'
         verbose_name_plural = 'Attendances'
       #  unique_together = ['beneficiary', 'event']
+
+
+class EventImage(BaseModel):
+    """
+    Imagenes publicas asociadas a un evento.
+    """
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name='images'
+    )
+    image_url = models.URLField(max_length=500)
+    image_public_id = models.CharField(max_length=255)
+    order = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"Image for {self.event.title}"
+
+    class Meta:
+        db_table = 'event_images'
+        verbose_name = 'Event Image'
+        verbose_name_plural = 'Event Images'
+        ordering = ['order', 'id']
 
 
 class EventAct(BaseModel):

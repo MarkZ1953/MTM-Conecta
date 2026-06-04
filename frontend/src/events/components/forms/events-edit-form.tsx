@@ -30,6 +30,7 @@ const getDefaultValues = (eventObj?: Event | null): EventPayload => ({
   start_date: formatDateTimeLocal(eventObj?.start_date),
   end_date: formatDateTimeLocal(eventObj?.end_date),
   location: eventObj?.location ?? "",
+  image_uploads: [],
 });
 
 export const EventsEditForm = ({
@@ -110,7 +111,15 @@ export const EventsEditForm = ({
     >
       <FormProvider {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <EventsFormFields />
+          <EventsFormFields
+            existingImageUrls={
+              eventObj?.images?.length
+                ? eventObj.images.map((image) => image.image_url)
+                : eventObj?.image_url
+                  ? [eventObj.image_url]
+                  : []
+            }
+          />
         </form>
       </FormProvider>
     </Dialog>

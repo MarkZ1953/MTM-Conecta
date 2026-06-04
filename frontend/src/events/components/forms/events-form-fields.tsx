@@ -1,6 +1,8 @@
+import { useEffect, useMemo } from "react";
 import { useFormContext, useFormState } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
+import type { EventPayload } from "@/events/events.types";
 
 const fields = [
   {
@@ -29,11 +31,35 @@ const fields = [
     placeholder: "YYYY-MM-DDTHH:mm",
     type: "datetime-local",
   },
-];
+] as const satisfies ReadonlyArray<{
+  name: keyof Pick<EventPayload, "end_date" | "location" | "start_date" | "title">;
+  label: string;
+  icon: string;
+  placeholder: string;
+  type?: string;
+}>;
 
-export const EventsFormFields = () => {
-  const { register } = useFormContext();
+type EventsFormFieldsProps = {
+  existingImageUrls?: string[];
+};
+
+export const EventsFormFields = ({ existingImageUrls = [] }: EventsFormFieldsProps) => {
+  const { register, setValue, watch } = useFormContext<EventPayload>();
   const { errors } = useFormState();
+  const selectedImages = watch("image_uploads");
+  const previewObjectUrls = useMemo(
+    () => (selectedImages ?? []).map((image) => URL.createObjectURL(image)),
+    [selectedImages],
+  );
+  const previewUrls = previewObjectUrls.length > 0 ? previewObjectUrls : existingImageUrls;
+
+  useEffect(() => {
+    return () => {
+      previewObjectUrls.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
+    };
+  }, [previewObjectUrls]);
+
+  const imageError = errors.image_uploads?.message?.toString();
 
   return (
     <div className="grid formgrid p-fluid pt-3 row-gap-3">
@@ -48,7 +74,7 @@ export const EventsFormFields = () => {
             </label>
             <InputText
               id={field.name}
-              type={field.type || "text"}
+              type={"type" in field ? field.type : "text"}
               className={error ? "p-invalid w-full" : "w-full"}
               placeholder={field.placeholder}
               {...register(field.name)}
@@ -71,6 +97,59 @@ export const EventsFormFields = () => {
           {...register("description")}
         />
         {errors.description?.message && <small className="p-error">{errors.description.message.toString()}</small>}
+      </div>
+
+      <div className="field col-12 mb-2">
+        <label htmlFor="image_uploads" className="block mb-2 font-medium text-700">
+          <i className="pi pi-image mr-2 text-primary" />
+          Imágenes del evento
+        </label>
+        <div className={imageError ? "event-image-uploader is-invalid" : "event-image-uploader"}>
+          <input
+            id="image_uploads"
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={(event) => {
+              setValue("image_uploads", Array.from(event.target.files ?? []), {
+                shouldDirty: true,
+                shouldTouch: true,
+                shouldValidate: true,
+              });
+            }}
+          />
+          <label htmlFor="image_uploads" className="event-image-dropzone">
+            <span>
+              <i className="pi pi-cloud-upload" />
+            </span>
+            <strong>{previewUrls.length > 0 ? "Cambiar imágenes" : "Seleccionar imágenes"}</strong>
+            <small>JPG, PNG o WebP. Se subirán a Cloudinary en la carpeta Eventos.</small>
+          </label>
+
+          {previewUrls.length > 0 && (
+            <div className="event-image-preview">
+              <div className="event-image-preview-grid">
+                {previewUrls.map((previewUrl, index) => (
+                  <img src={previewUrl} alt={`Previsualización del evento ${index + 1}`} key={previewUrl} />
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setValue("image_uploads", [], {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                    shouldValidate: true,
+                  });
+                }}
+              >
+                <i className="pi pi-times" />
+                Quitar selección
+              </button>
+            </div>
+          )}
+        </div>
+        {imageError && <small className="p-error">{imageError}</small>}
       </div>
     </div>
   );

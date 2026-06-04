@@ -74,6 +74,21 @@ const helpGallery = [
   },
 ];
 
+const eventsGallery = [
+  {
+    publicId: "Evento1_yiykfd",
+    alt: "Jornada solidaria de la Fundación MTM",
+  },
+  {
+    publicId: "Evento2_w1vqcy",
+    alt: "Bazar con causa de la Fundación MTM",
+  },
+  {
+    publicId: "Evento3_te0vru",
+    alt: "Encuentro de familias de la Fundación MTM",
+  },
+];
+
 export const publicAssets = {
   logo: optimize(raw.logo, "f_auto,q_auto,w_240"),
   logoCompact:
@@ -110,6 +125,11 @@ export const publicAboutGallerySlides = aboutGallery.map((slide) => ({
 }));
 
 export const publicHelpGallerySlides = helpGallery.map((slide) => ({
+  ...slide,
+  src: cloudinaryImage(slide.publicId, "f_auto,q_auto,w_1600"),
+}));
+
+export const publicEventsGallerySlides = eventsGallery.map((slide) => ({
   ...slide,
   src: cloudinaryImage(slide.publicId, "f_auto,q_auto,w_1600"),
 }));

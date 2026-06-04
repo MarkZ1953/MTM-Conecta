@@ -1,4 +1,5 @@
 import { ResourceAPI } from "@/api";
+import API_BASE_URL from "@/config/api.config";
 import type { Event, EventPayload, PaginatedResponse } from "./events.types";
 
 type EventsQueryParams = {
@@ -10,7 +11,29 @@ type EventsQueryParams = {
   [key: string]: string | number | boolean | null | undefined;
 };
 
+const toFormData = (data: Partial<EventPayload>): FormData => {
+  const formData = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") return;
+    if (Array.isArray(value)) {
+      value.forEach((item) => {
+        if (item instanceof File) {
+          formData.append(key, item);
+        }
+      });
+    } else {
+      formData.append(key, String(value));
+    }
+  });
+
+  return formData;
+};
+
 class EventsAPI extends ResourceAPI<Event> {
+    private eventsBaseUrl = API_BASE_URL;
+    private eventsResource = "events";
+
     constructor() {
         super({ resource: "events" });
     }
@@ -20,7 +43,7 @@ class EventsAPI extends ResourceAPI<Event> {
     }: {
       params: EventsQueryParams;
     }): Promise<{ status: number; data: PaginatedResponse<Event> }> {
-      return super.getAll({ params }) as any;
+      return super.getAll({ params }) as Promise<{ status: number; data: PaginatedResponse<Event> }>;
     }
   
     async create({
@@ -28,7 +51,15 @@ class EventsAPI extends ResourceAPI<Event> {
     }: {
       data: EventPayload;
     }): Promise<{ status: number; data: Event }> {
-      return super.create({ data }) as any;
+      const response = await fetch(`${this.eventsBaseUrl}/${this.eventsResource}/`, {
+        method: "POST",
+        credentials: "include",
+        body: toFormData(data),
+      });
+      const result = { status: response.status, data: await response.json() };
+      this.hooks.afterCreate?.(result);
+      this.hooks.onSuccess?.("create", result);
+      return result;
     }
   
     async update({
@@ -38,11 +69,19 @@ class EventsAPI extends ResourceAPI<Event> {
       id: number;
       data: Partial<EventPayload>;
     }): Promise<{ status: number; data: Event }> {
-      return super.update({ id, data }) as any;
+      const response = await fetch(`${this.eventsBaseUrl}/${this.eventsResource}/${id}/`, {
+        method: "PATCH",
+        credentials: "include",
+        body: toFormData(data),
+      });
+      const result = { status: response.status, data: await response.json() };
+      this.hooks.afterUpdate?.(result);
+      this.hooks.onSuccess?.("update", result);
+      return result;
     }
 
-    async softDelete({ id }: { id: number }): Promise<{ status: number; data: any }> {
-        return super.softDelete({ id }) as any;
+    async softDelete({ id }: { id: number }): Promise<{ status: number; data: Event }> {
+        return super.softDelete({ id }) as Promise<{ status: number; data: Event }>;
     }
 }
 
