@@ -5,6 +5,7 @@ from .serializers import AuditLogSerializer
 from .paginations import AuditLogPagination
 from .filters import AuditLogFilter
 from .models import AuditLog
+from access.permissions import DjangoModelPermissionsWithView
 
 
 class AuditLogViewSet(
@@ -21,6 +22,7 @@ class AuditLogViewSet(
     queryset = AuditLog.objects.all().select_related('user')
     serializer_class = AuditLogSerializer
     pagination_class = AuditLogPagination
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,

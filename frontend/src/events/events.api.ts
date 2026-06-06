@@ -1,4 +1,5 @@
 import { ResourceAPI } from "@/api";
+import { apiFetch } from "@/api";
 import API_BASE_URL from "@/config/api.config";
 import type { Event, EventPayload, PaginatedResponse } from "./events.types";
 
@@ -51,9 +52,8 @@ class EventsAPI extends ResourceAPI<Event> {
     }: {
       data: EventPayload;
     }): Promise<{ status: number; data: Event }> {
-      const response = await fetch(`${this.eventsBaseUrl}/${this.eventsResource}/`, {
+      const response = await apiFetch(`${this.eventsBaseUrl}/${this.eventsResource}/`, {
         method: "POST",
-        credentials: "include",
         body: toFormData(data),
       });
       const result = { status: response.status, data: await response.json() };
@@ -69,9 +69,8 @@ class EventsAPI extends ResourceAPI<Event> {
       id: number;
       data: Partial<EventPayload>;
     }): Promise<{ status: number; data: Event }> {
-      const response = await fetch(`${this.eventsBaseUrl}/${this.eventsResource}/${id}/`, {
+      const response = await apiFetch(`${this.eventsBaseUrl}/${this.eventsResource}/${id}/`, {
         method: "PATCH",
-        credentials: "include",
         body: toFormData(data),
       });
       const result = { status: response.status, data: await response.json() };

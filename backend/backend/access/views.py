@@ -3,7 +3,10 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import PermissionDenied
+from django.middleware.csrf import get_token
 from app.mixins.soft_delete_mixin import SoftDeleteMixin
+from app.upload_validators import validate_image_upload
 from .serializers import (
     AccountProfileSerializer,
     AccountSummarySerializer,
@@ -96,22 +99,56 @@ def build_auth_user_payload(user, lang="es"):
     }
 
 
-def set_auth_cookies(response, refresh_token, access_token):
+def _cookie_kwargs(max_age=None, httponly=True):
+    kwargs = {
+        "httponly": httponly,
+        "secure": settings.COOKIE_SECURE,
+        "samesite": settings.COOKIE_SAMESITE,
+    }
+
+    if max_age is not None:
+        kwargs["max_age"] = int(max_age)
+    if settings.COOKIE_DOMAIN:
+        kwargs["domain"] = settings.COOKIE_DOMAIN
+
+    return kwargs
+
+
+def set_csrf_cookie(response, request):
+    response.set_cookie(
+        key="csrftoken",
+        value=get_token(request),
+        **_cookie_kwargs(max_age=60 * 60 * 24 * 7, httponly=False),
+    )
+
+
+def set_auth_cookies(response, request, refresh_token, access_token):
+    refresh_max_age = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
+    access_max_age = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
+
     response.set_cookie(
         key="refresh_token",
         value=str(refresh_token),
-        httponly=True,
-        secure=False,
-        samesite="Lax",
+        **_cookie_kwargs(max_age=refresh_max_age),
     )
 
     response.set_cookie(
         key="access_token",
         value=str(access_token),
-        httponly=True,
-        secure=False,
-        samesite="Lax",
+        **_cookie_kwargs(max_age=access_max_age),
     )
+
+    set_csrf_cookie(response, request)
+
+
+def delete_auth_cookies(response):
+    delete_kwargs = {}
+    if settings.COOKIE_DOMAIN:
+        delete_kwargs["domain"] = settings.COOKIE_DOMAIN
+
+    response.delete_cookie("refresh_token", **delete_kwargs)
+    response.delete_cookie("access_token", **delete_kwargs)
+    response.delete_cookie("csrftoken", **delete_kwargs)
 
 
 def unique_username_from_email(email):
@@ -242,7 +279,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         refresh_token = response.data.get("refresh")
         access_token = response.data.get("access")
 
-        set_auth_cookies(response, refresh_token, access_token)
+        set_auth_cookies(response, request, refresh_token, access_token)
 
         response.data["access"] = access_token
         response.data["user"] = build_auth_user_payload(user, lang)
@@ -291,11 +328,9 @@ class CustomTokenRefreshView(TokenRefreshView):
             response.set_cookie(
                 key="access_token",
                 value=access_token,
-                httponly=True,
-                secure=False,
-                samesite="Lax",
-                max_age=60 * 15,
+                **_cookie_kwargs(max_age=settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()),
             )
+            set_csrf_cookie(response, request)
 
         return response
 
@@ -369,7 +404,17 @@ class GoogleAuthView(APIView):
             },
             status=status.HTTP_200_OK,
         )
-        set_auth_cookies(response, refresh, access)
+        set_auth_cookies(response, request, refresh, access)
+        return response
+
+
+class CsrfTokenView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        response = Response({"csrfToken": get_token(request)})
+        set_csrf_cookie(response, request)
         return response
 
 
@@ -396,7 +441,7 @@ class AccountView(APIView):
 
         profile, _ = UserAccountProfile.objects.get_or_create(user=user)
         if request.FILES.get("photo"):
-            profile.photo = request.FILES["photo"]
+            profile.photo = validate_image_upload(request.FILES["photo"], field_name="photo")
             profile.save(update_fields=["photo", "updated_at"])
 
         profile_data = request.data.get("profile", {})
@@ -563,8 +608,7 @@ class LogoutViewSet(viewsets.ViewSet):
                 {"message": t("access.logout.success", lang)},
                 status=status.HTTP_200_OK,
             )
-            response.delete_cookie("refresh_token")
-            response.delete_cookie("access_token")
+            delete_auth_cookies(response)
             return response
 
         except Exception as e:
@@ -588,13 +632,15 @@ class RegisterView(APIView):
             description=f"Usuario '{user.username}' registrado desde el formulario público",
         )
 
-        return Response(
+        response = Response(
             {
                 "message": "Cuenta creada exitosamente.",
                 "user": UserSerializer(user, context={"request": request}).data,
             },
             status=status.HTTP_201_CREATED,
         )
+        set_csrf_cookie(response, request)
+        return response
 
 
 # ---------------------------------------------------------------------------
@@ -737,6 +783,9 @@ class UserViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="soft-delete")
     def soft_delete(self, request, pk=None):
+        if not request.user.has_perm("auth.delete_user"):
+            raise PermissionDenied("No tienes permiso para eliminar usuarios.")
+
         user = self.get_object()
 
         if not user.is_active:
@@ -758,6 +807,9 @@ class UserViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="bulk-soft-delete")
     def bulk_soft_delete(self, request):
+        if not request.user.has_perm("auth.delete_user"):
+            raise PermissionDenied("No tienes permiso para eliminar usuarios.")
+
         ids = request.data.get("ids", [])
 
         if not ids:
@@ -790,6 +842,9 @@ class UserViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="change-password")
     def change_password(self, request, pk=None, *args, **kwargs):
+        if not request.user.has_perm("auth.change_user"):
+            raise PermissionDenied("No tienes permiso para cambiar contraseñas de usuarios.")
+
         lang = resolve_lang(request.META.get("HTTP_ACCEPT_LANGUAGE"))
         user = self.get_object()
         current_password = request.data.get("current_password")

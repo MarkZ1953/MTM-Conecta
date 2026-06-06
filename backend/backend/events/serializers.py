@@ -6,6 +6,8 @@ import cloudinary.uploader
 from django.conf import settings
 from django.db import transaction
 from rest_framework import serializers
+
+from app.upload_validators import validate_evidence_upload, validate_image_upload
 from .models import Event, Attendance, EventAct, Evidence, EventImage
 
 
@@ -35,6 +37,7 @@ def _upload_event_image(event, image, index=1):
         public_id=public_id,
         overwrite=True,
         resource_type="image",
+        allowed_formats=["jpg", "jpeg", "png", "webp"],
         unique_filename=False,
         use_filename=False,
     )
@@ -96,6 +99,9 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
 
 class EventActSerializer(serializers.ModelSerializer):
+    def validate_digital_signature_path(self, value):
+        return validate_image_upload(value, field_name='digital_signature_path')
+
     class Meta:
         model = EventAct
         fields = [
@@ -106,6 +112,9 @@ class EventActSerializer(serializers.ModelSerializer):
 
 
 class EvidenceSerializer(serializers.ModelSerializer):
+    def validate_file(self, value):
+        return validate_evidence_upload(value, field_name='file')
+
     class Meta:
         model = Evidence
         fields = [
@@ -129,9 +138,14 @@ class EventSerializer(serializers.ModelSerializer):
     attendees_count = serializers.SerializerMethodField()
     evidences_count = serializers.SerializerMethodField()
     images = EventImageSerializer(many=True, read_only=True)
-    image_upload = serializers.ImageField(write_only=True, required=False, allow_null=True)
+    image_upload = serializers.ImageField(
+        write_only=True,
+        required=False,
+        allow_null=True,
+        validators=[lambda image: validate_image_upload(image, field_name='image_upload')],
+    )
     image_uploads = serializers.ListField(
-        child=serializers.ImageField(),
+        child=serializers.ImageField(validators=[lambda image: validate_image_upload(image, field_name='image_uploads')]),
         write_only=True,
         required=False,
         allow_empty=True,
@@ -181,9 +195,14 @@ class EventDetailSerializer(serializers.ModelSerializer):
     attendees_count = serializers.SerializerMethodField()
     evidences_count = serializers.SerializerMethodField()
     images = EventImageSerializer(many=True, read_only=True)
-    image_upload = serializers.ImageField(write_only=True, required=False, allow_null=True)
+    image_upload = serializers.ImageField(
+        write_only=True,
+        required=False,
+        allow_null=True,
+        validators=[lambda image: validate_image_upload(image, field_name='image_upload')],
+    )
     image_uploads = serializers.ListField(
-        child=serializers.ImageField(),
+        child=serializers.ImageField(validators=[lambda image: validate_image_upload(image, field_name='image_uploads')]),
         write_only=True,
         required=False,
         allow_empty=True,

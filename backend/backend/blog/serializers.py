@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework import serializers
 
+from app.upload_validators import validate_image_upload
 from .models import BlogPost
 
 
@@ -37,6 +38,7 @@ def _upload_blog_image(post, image):
         public_id=_safe_image_public_id(post),
         overwrite=True,
         resource_type="image",
+        allowed_formats=["jpg", "jpeg", "png", "webp"],
         unique_filename=False,
         use_filename=False,
     )
@@ -68,7 +70,12 @@ def _unique_slug(instance, value):
 
 
 class BlogPostSerializer(serializers.ModelSerializer):
-    image_upload = serializers.ImageField(write_only=True, required=False, allow_null=True)
+    image_upload = serializers.ImageField(
+        write_only=True,
+        required=False,
+        allow_null=True,
+        validators=[lambda image: validate_image_upload(image, field_name='image_upload')],
+    )
 
     class Meta:
         model = BlogPost
@@ -87,6 +94,16 @@ class BlogPostSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         status = attrs.get('status', getattr(self.instance, 'status', BlogPost.STATUS_DRAFT))
         published_at = attrs.get('published_at', getattr(self.instance, 'published_at', None))
+        request = self.context.get('request')
+
+        if (
+            status == BlogPost.STATUS_PUBLISHED
+            and request
+            and not request.user.has_perm('blog.publish_blogpost')
+        ):
+            raise serializers.ValidationError({
+                'status': 'No tienes permiso para publicar entradas del Blog.'
+            })
 
         if status == BlogPost.STATUS_PUBLISHED and published_at is None:
             attrs['published_at'] = timezone.now()

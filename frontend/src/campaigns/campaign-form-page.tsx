@@ -14,7 +14,9 @@ import type {
   CampaignRecipientGroup,
   CampaignTemplate,
 } from "./campaigns.types";
+import { getImageValidationMessage, getPdfValidationMessage, uploadLimits } from "@/utils/upload-validation";
 import "@/components/ui/resource-page.css";
+import "./campaign-form-page.css";
 
 // Project ID de Unlayer (opcional): si se configura, habilita la galería de
 // plantillas profesionales de Unlayer dentro del editor.
@@ -33,6 +35,7 @@ const recipientOptions = [
   { label: "Donantes", value: "DONORS" },
   { label: "Acudientes", value: "GUARDIANS" },
   { label: "Usuarios", value: "USERS" },
+  { label: "Suscriptores del boletín", value: "NEWSLETTER" },
   { label: "Todos (donantes + acudientes)", value: "ALL" },
 ];
 
@@ -204,10 +207,20 @@ export const CampaignFormPage = () => {
         toast.error("Debes subir una imagen.");
         return;
       }
+      const imageMessage = getImageValidationMessage(image);
+      if (imageMessage) {
+        toast.error(imageMessage);
+        return;
+      }
       submit({ image: image ?? undefined });
     } else {
       if (!document && !existingDocument) {
         toast.error("Debes subir un PDF.");
+        return;
+      }
+      const documentMessage = getPdfValidationMessage(document);
+      if (documentMessage) {
+        toast.error(documentMessage);
         return;
       }
       submit({ document: document ?? undefined });
@@ -287,7 +300,8 @@ export const CampaignFormPage = () => {
       {contentType === "IMAGE" && (
         <div className="rp-card" style={{ padding: 22 }}>
           <label className="block mb-2 font-medium text-700">Imagen del correo</label>
-          <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0] ?? null)} className="w-full" />
+          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setImage(e.target.files?.[0] ?? null)} className="w-full" />
+          <p className="text-500 mt-2 mb-0">JPG, PNG o WebP. Máximo {uploadLimits.imageMaxMb} MB.</p>
           {existingImage && !image && (
             <div style={{ marginTop: 12 }}>
               <p className="text-500 mb-2">Imagen actual:</p>
@@ -301,6 +315,7 @@ export const CampaignFormPage = () => {
         <div className="rp-card" style={{ padding: 22 }}>
           <label className="block mb-2 font-medium text-700">Documento PDF</label>
           <input type="file" accept="application/pdf" onChange={(e) => setDocument(e.target.files?.[0] ?? null)} className="w-full" />
+          <p className="text-500 mt-2 mb-0">Solo PDF. Máximo {uploadLimits.documentMaxMb} MB.</p>
           {existingDocument && !document && (
             <p className="text-500" style={{ marginTop: 12 }}>
               Ya hay un PDF cargado. Sube uno nuevo solo si quieres reemplazarlo.
@@ -311,27 +326,48 @@ export const CampaignFormPage = () => {
 
       {/* Diálogo: elegir plantilla guardada */}
       <Dialog
-        header="Usar una plantilla guardada"
         visible={pickOpen}
         onHide={() => setPickOpen(false)}
         modal
         draggable={false}
-        className="w-11 sm:w-30rem"
+        showHeader={false}
+        className="campaign-template-dialog w-11 md:w-6 lg:w-5"
+        contentStyle={{ padding: 0 }}
       >
+        <div className="campaign-template-modal-head">
+          <span className="campaign-template-modal-icon">
+            <i className="pi pi-clone" />
+          </span>
+          <div>
+            <h2>Usar una plantilla guardada</h2>
+            <p>Selecciona una base editable para comenzar el correo con una estructura profesional.</p>
+          </div>
+          <button type="button" className="campaign-template-close" onClick={() => setPickOpen(false)} aria-label="Cerrar">
+            <i className="pi pi-times" />
+          </button>
+        </div>
         {templates.length === 0 ? (
-          <p className="text-700 m-0">
-            Aún no hay plantillas guardadas. Diseña un correo y usa "Guardar como plantilla".
-          </p>
+          <div className="campaign-template-empty">
+            <i className="pi pi-inbox" />
+            <strong>Aún no hay plantillas guardadas</strong>
+            <span>Diseña un correo y usa “Guardar como plantilla” para reutilizarlo después.</span>
+          </div>
         ) : (
-          <div className="flex flex-column gap-2">
+          <div className="campaign-template-list">
             {templates.map((t) => (
               <button
                 key={t.id}
-                className="rp-btn rp-btn-ghost"
-                style={{ justifyContent: "flex-start", width: "100%" }}
+                className="campaign-template-option"
                 onClick={() => applyTemplate(t)}
               >
-                <i className="pi pi-file" style={{ fontSize: 13 }} /> {t.name}
+                <span className="campaign-template-option-icon">
+                  <i className="pi pi-file-edit" />
+                </span>
+                <span>
+                  <strong>{t.name}</strong>
+                  <small>Plantilla editable para campañas y boletines</small>
+                </span>
+                <i className="pi pi-arrow-right" />
               </button>
             ))}
           </div>
@@ -340,26 +376,41 @@ export const CampaignFormPage = () => {
 
       {/* Diálogo: guardar diseño actual como plantilla */}
       <Dialog
-        header="Guardar como plantilla"
         visible={saveOpen}
         onHide={() => setSaveOpen(false)}
         modal
         draggable={false}
-        className="w-11 sm:w-30rem"
+        showHeader={false}
+        className="campaign-template-dialog w-11 md:w-6 lg:w-5"
+        contentStyle={{ padding: 0 }}
         footer={
-          <div className="flex justify-content-end gap-2">
+          <div className="campaign-template-footer">
             <Button label="Cancelar" icon="pi pi-times" severity="secondary" outlined onClick={() => setSaveOpen(false)} />
-            <Button label="Guardar" icon="pi pi-save" onClick={saveAsTemplate} />
+            <Button label="Guardar plantilla" icon="pi pi-save" onClick={saveAsTemplate} />
           </div>
         }
       >
-        <label className="block mb-2 font-medium text-700">Nombre de la plantilla</label>
-        <InputText
-          value={templateName}
-          onChange={(e) => setTemplateName(e.target.value)}
-          placeholder="Ej: Boletín mensual"
-          className="w-full"
-        />
+        <div className="campaign-template-modal-head">
+          <span className="campaign-template-modal-icon">
+            <i className="pi pi-bookmark" />
+          </span>
+          <div>
+            <h2>Guardar como plantilla</h2>
+            <p>Conserva el diseño actual para reutilizarlo en próximas campañas.</p>
+          </div>
+          <button type="button" className="campaign-template-close" onClick={() => setSaveOpen(false)} aria-label="Cerrar">
+            <i className="pi pi-times" />
+          </button>
+        </div>
+        <div className="campaign-template-form-body">
+          <label className="block mb-2 font-medium text-700">Nombre de la plantilla</label>
+          <InputText
+            value={templateName}
+            onChange={(e) => setTemplateName(e.target.value)}
+            placeholder="Ej: Boletín mensual"
+            className="w-full"
+          />
+        </div>
       </Dialog>
     </div>
   );

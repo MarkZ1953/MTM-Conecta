@@ -1,5 +1,5 @@
 import API_BASE_URL from "@/config/api.config";
-import { ResourceAPI } from "@/api";
+import { apiFetch, ResourceAPI } from "@/api";
 import type { PaginatedResponse, User, UserPasswordPayload, UserPayload } from "./users.types";
 
 type UsersQueryParams = {
@@ -45,9 +45,8 @@ class UsersAPI extends ResourceAPI<User> {
   }
 
   async getById(id: number): Promise<{ status: number; data: User }> {
-    const response = await fetch(`${API_BASE_URL}/users/${id}/`, {
+    const response = await apiFetch(`${API_BASE_URL}/users/${id}/`, {
       method: "GET",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
     });
 
@@ -58,9 +57,8 @@ class UsersAPI extends ResourceAPI<User> {
     id: number,
     data: UserPasswordPayload,
   ): Promise<{ status: number; data: unknown }> {
-    const response = await fetch(`${API_BASE_URL}/users/${id}/change-password/`, {
+    const response = await apiFetch(`${API_BASE_URL}/users/${id}/change-password/`, {
       method: "POST",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });

@@ -1,4 +1,5 @@
 import * as yup from "yup";
+import { getImageValidationMessage } from "@/utils/upload-validation";
 
 export const blogPostBaseSchema = yup.object({
   title: yup.string().trim().required("El título es obligatorio"),
@@ -20,9 +21,11 @@ export const blogPostBaseSchema = yup.object({
     .nullable()
     .default(null)
     .defined()
-    .test("is-image", "Selecciona una imagen válida.", (value) => {
+    .test("valid-image-upload", "Selecciona una imagen válida.", function (value) {
       if (!value) return true;
-      return value instanceof File && value.type.startsWith("image/");
+      if (!(value instanceof File)) return false;
+      const message = getImageValidationMessage(value);
+      return message ? this.createError({ message }) : true;
     }),
 });
 

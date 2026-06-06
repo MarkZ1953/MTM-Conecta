@@ -1,4 +1,5 @@
 import API_BASE_URL from "@/config/api.config";
+import { apiFetch } from "@/api";
 import type {
   CampaignTemplate,
   CampaignTemplatePayload,
@@ -14,9 +15,8 @@ class CampaignTemplatesAPI {
   private resource = "campaign-templates";
 
   async getAll(): Promise<{ status: number; data: PaginatedResponse<CampaignTemplate> }> {
-    const response = await fetch(`${this.baseUrl}/${this.resource}/?page_size=100`, {
+    const response = await apiFetch(`${this.baseUrl}/${this.resource}/?page_size=100`, {
       method: "GET",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
     });
     return { status: response.status, data: await response.json() };
@@ -27,9 +27,8 @@ class CampaignTemplatesAPI {
   }: {
     data: CampaignTemplatePayload;
   }): Promise<{ status: number; data: CampaignTemplate }> {
-    const response = await fetch(`${this.baseUrl}/${this.resource}/`, {
+    const response = await apiFetch(`${this.baseUrl}/${this.resource}/`, {
       method: "POST",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
@@ -37,9 +36,8 @@ class CampaignTemplatesAPI {
   }
 
   async softDelete({ id }: { id: number }): Promise<{ status: number; data: any }> {
-    const response = await fetch(`${this.baseUrl}/${this.resource}/${id}/soft-delete/`, {
+    const response = await apiFetch(`${this.baseUrl}/${this.resource}/${id}/soft-delete/`, {
       method: "POST",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
     });
     return { status: response.status, data: await response.json() };

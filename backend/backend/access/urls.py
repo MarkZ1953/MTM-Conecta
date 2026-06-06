@@ -5,6 +5,7 @@ from .views import (
     AccountGoogleUnlinkView,
     AccountPasswordView,
     AccountView,
+    CsrfTokenView,
     CustomTokenObtainPairView, 
     RolePermissionUpdateView,
     CustomTokenRefreshView, 
@@ -15,6 +16,7 @@ from .views import (
 )
 
 urlpatterns = [
+    path('csrf', CsrfTokenView.as_view(), name='csrf_token'),
     path('refresh', CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('login', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('register', RegisterView.as_view(), name='register'),

@@ -6,7 +6,9 @@ from app.mixins.export_mixin import ExportMixin
 from rest_framework import viewsets, filters, status as http_status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
 
+from access.permissions import DjangoModelPermissionsWithView
 from audits.service import log_event
 from .serializers import CampaignSerializer, CampaignTemplateSerializer
 from .paginations import CampaignPagination
@@ -19,6 +21,7 @@ class CampaignViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = Campaign.objects.filter(is_active=True)
     serializer_class = CampaignSerializer
     pagination_class = CampaignPagination
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,
@@ -33,6 +36,9 @@ class CampaignViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="send")
     def send(self, request, pk=None):
+        if not request.user.has_perm("campaigns.send_campaign"):
+            raise PermissionDenied("No tienes permiso para enviar campañas.")
+
         campaign = self.get_object()
 
         # 1. No reenviar una campaña ya enviada
@@ -100,6 +106,7 @@ class CampaignTemplateViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = CampaignTemplate.objects.filter(is_active=True)
     serializer_class = CampaignTemplateSerializer
     pagination_class = CampaignPagination
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,

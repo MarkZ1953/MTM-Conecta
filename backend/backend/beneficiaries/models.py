@@ -204,4 +204,5 @@ class AidLogEntry(BaseModel):
         ordering = ['-delivery_date']
         verbose_name = 'Aid Log Entry'
         verbose_name_plural = 'Aid Log Entries'
+        
 

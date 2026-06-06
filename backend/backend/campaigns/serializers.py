@@ -1,8 +1,15 @@
 from rest_framework import serializers
+from app.upload_validators import validate_image_upload, validate_pdf_upload
 from .models import Campaign, CampaignTemplate
 
 
 class CampaignSerializer(serializers.ModelSerializer):
+    def validate_image(self, value):
+        return validate_image_upload(value, field_name='image')
+
+    def validate_document(self, value):
+        return validate_pdf_upload(value, field_name='document')
+
     class Meta:
         model = Campaign
         fields = [

@@ -3,6 +3,7 @@ import { useFormContext, useFormState } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import type { BlogPostPayload } from "@/blog/blog.types";
+import { uploadLimits } from "@/utils/upload-validation";
 
 type BlogFormFieldsProps = {
   existingImageUrl?: string;
@@ -148,7 +149,7 @@ export const BlogFormFields = ({ existingImageUrl = "" }: BlogFormFieldsProps) =
               <i className="pi pi-cloud-upload" />
             </span>
             <strong>{previewUrl ? "Cambiar imagen" : "Seleccionar imagen"}</strong>
-            <small>JPG, PNG o WebP. Se subirá a Cloudinary en la carpeta Blog.</small>
+            <small>JPG, PNG o WebP. Máximo {uploadLimits.imageMaxMb} MB. Se subirá a Cloudinary en la carpeta Blog.</small>
           </label>
 
           {previewUrl && (
@@ -177,4 +178,3 @@ export const BlogFormFields = ({ existingImageUrl = "" }: BlogFormFieldsProps) =
     </div>
   );
 };
-

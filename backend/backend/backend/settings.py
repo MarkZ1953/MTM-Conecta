@@ -13,12 +13,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DJANGO_DEBUG", default=True, cast=bool)
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-]
+def csv_config(name, default):
+    return [
+        item.strip()
+        for item in config(name, default=default).split(",")
+        if item.strip()
+    ]
+
+
+def csv_config_lower(name, default):
+    return [item.lower() for item in csv_config(name, default)]
+
+
+CORS_ALLOWED_ORIGINS = csv_config(
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:5173,http://localhost:3000",
+)
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -26,10 +38,26 @@ CORS_EXPOSE_HEADERS = [
     "Content-Disposition",
 ]
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-]
+CSRF_TRUSTED_ORIGINS = csv_config(
+    "CSRF_TRUSTED_ORIGINS",
+    "http://localhost:5173,http://localhost:3000",
+)
+
+ALLOWED_HOSTS = csv_config(
+    "DJANGO_ALLOWED_HOSTS",
+    "localhost,127.0.0.1",
+)
+
+COOKIE_SECURE = config("COOKIE_SECURE", default=not DEBUG, cast=bool)
+COOKIE_SAMESITE = config("COOKIE_SAMESITE", default="Lax")
+COOKIE_DOMAIN = config("COOKIE_DOMAIN", default=None)
+CSRF_COOKIE_SECURE = COOKIE_SECURE
+CSRF_COOKIE_SAMESITE = COOKIE_SAMESITE
+CSRF_COOKIE_DOMAIN = COOKIE_DOMAIN
+CSRF_COOKIE_HTTPONLY = False
+SESSION_COOKIE_SECURE = COOKIE_SECURE
+SESSION_COOKIE_SAMESITE = COOKIE_SAMESITE
+SESSION_COOKIE_DOMAIN = COOKIE_DOMAIN
 
 
 # Application definition
@@ -59,6 +87,7 @@ INSTALLED_APPS = [
     'cap_collection',
     'volunteers',
     'blog',
+    'subscribers',
 ]
 
 MIDDLEWARE = [
@@ -168,6 +197,38 @@ CLOUDINARY_STORAGE = {
     "API_KEY": config("CLOUDINARY_API_KEY"),
     "API_SECRET": config("CLOUDINARY_API_SECRET"),
 }
+
+
+UPLOAD_MAX_IMAGE_MB = config("UPLOAD_MAX_IMAGE_MB", default=10, cast=int)
+UPLOAD_MAX_DOCUMENT_MB = config("UPLOAD_MAX_DOCUMENT_MB", default=10, cast=int)
+UPLOAD_MAX_VIDEO_MB = config("UPLOAD_MAX_VIDEO_MB", default=100, cast=int)
+
+UPLOAD_ALLOWED_IMAGE_TYPES = csv_config_lower(
+    "UPLOAD_ALLOWED_IMAGE_TYPES",
+    "image/jpeg,image/png,image/webp",
+)
+UPLOAD_ALLOWED_IMAGE_EXTENSIONS = csv_config_lower(
+    "UPLOAD_ALLOWED_IMAGE_EXTENSIONS",
+    ".jpg,.jpeg,.png,.webp",
+)
+UPLOAD_ALLOWED_DOCUMENT_TYPES = csv_config_lower(
+    "UPLOAD_ALLOWED_DOCUMENT_TYPES",
+    "application/pdf",
+)
+UPLOAD_ALLOWED_DOCUMENT_EXTENSIONS = csv_config_lower(
+    "UPLOAD_ALLOWED_DOCUMENT_EXTENSIONS",
+    ".pdf",
+)
+UPLOAD_ALLOWED_VIDEO_TYPES = csv_config_lower(
+    "UPLOAD_ALLOWED_VIDEO_TYPES",
+    "video/mp4,video/quicktime,video/webm",
+)
+UPLOAD_ALLOWED_VIDEO_EXTENSIONS = csv_config_lower(
+    "UPLOAD_ALLOWED_VIDEO_EXTENSIONS",
+    ".mp4,.mov,.webm",
+)
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = (UPLOAD_MAX_VIDEO_MB + 5) * 1024 * 1024
 
 # Django 6 usa STORAGES (no DEFAULT_FILE_STORAGE).
 # 'default' = dónde se guardan los archivos subidos (media) → Cloudinary

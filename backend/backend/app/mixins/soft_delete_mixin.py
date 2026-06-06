@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 
 
 class SoftDeleteMixin:
@@ -28,8 +29,17 @@ class SoftDeleteMixin:
         """Hook para lógica adicional tras eliminar una instancia."""
         pass
 
+    def check_soft_delete_permission(self, request):
+        model = self.get_queryset().model
+        permission = f"{model._meta.app_label}.delete_{model._meta.model_name}"
+
+        if not request.user.has_perm(permission):
+            raise PermissionDenied("No tienes permiso para eliminar este recurso.")
+
     @action(detail=True, methods=["post"], url_path="soft-delete")
     def soft_delete(self, request, pk=None):
+        self.check_soft_delete_permission(request)
+
         try:
             instance = self.get_object()
 
@@ -59,6 +69,8 @@ class SoftDeleteMixin:
 
     @action(detail=False, methods=["post"], url_path="bulk-soft-delete")
     def bulk_soft_delete(self, request):
+        self.check_soft_delete_permission(request)
+
         ids = request.data.get("ids", [])
 
         if not ids:

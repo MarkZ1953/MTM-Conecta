@@ -70,6 +70,38 @@ class CanManageRoles(HasAnyDjangoPermission):
         "auth.delete_group",
     )
 
+
+class CanViewFinancialReports(HasAnyDjangoPermission):
+    required_permissions = (
+        "donations.view_donation",
+        "donations.view_donor",
+    )
+
+
+class CanViewBeneficiaryReports(HasAnyDjangoPermission):
+    required_permissions = (
+        "beneficiaries.view_beneficiary",
+        "projects.view_project",
+    )
+
+
+class CanViewProjectReports(HasAnyDjangoPermission):
+    required_permissions = (
+        "projects.view_project",
+        "beneficiaries.view_beneficiary",
+    )
+
+
+class CanViewDashboardReports(HasAnyDjangoPermission):
+    required_permissions = (
+        "beneficiaries.view_beneficiary",
+        "donations.view_donation",
+        "projects.view_project",
+        "campaigns.view_campaign",
+        "events.view_event",
+        "blog.view_blogpost",
+    )
+
 # ---------------------------------------------------------------------------
 # Models / apps that must never appear in permission lists
 # ---------------------------------------------------------------------------
@@ -78,6 +110,7 @@ EXCLUDED_APPS = [
     "admin",
     "contenttypes",
     "sessions",
+    "token_blacklist",
 ]
 
 EXCLUDED_MODELS = [
@@ -141,6 +174,8 @@ def build_permission_dict(permission_qs, lang: str) -> dict:
         grouped[group_label].append(
             {
                 "id": perm.id,
+                "app_label": perm.content_type.app_label,
+                "model": model_name,
                 "codename": perm.codename,
                 "name": translate_permission_name(perm.codename, lang),
             }
@@ -155,6 +190,7 @@ def get_all_permissions(lang: str) -> dict:
         Permission.objects.select_related("content_type")
         .exclude(content_type__app_label__in=EXCLUDED_APPS)
         .exclude(content_type__model__in=EXCLUDED_MODELS)
+        .exclude(content_type__model__startswith="historical")
         .distinct()
     )
     return build_permission_dict(qs, lang)
@@ -171,7 +207,13 @@ def get_user_permissions(user, lang: str) -> dict:
     if user.is_superuser:
         return get_all_permissions(lang)
 
-    excluded_cts = ContentType.objects.filter(model__in=EXCLUDED_MODELS)
+    excluded_cts = ContentType.objects.filter(
+        model__in=EXCLUDED_MODELS,
+    ) | ContentType.objects.filter(
+        app_label__in=EXCLUDED_APPS,
+    ) | ContentType.objects.filter(
+        model__startswith="historical",
+    )
 
     qs = (
         (user.user_permissions.all() | Permission.objects.filter(group__user=user))

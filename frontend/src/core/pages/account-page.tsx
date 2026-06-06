@@ -7,6 +7,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "r
 import { Link } from "react-router-dom";
 import { publicAssets } from "./public-home/cloudinary-assets";
 import { PublicLayout } from "./public-home/public-layout";
+import { getImageValidationMessage } from "@/utils/upload-validation";
 import "./account-page.css";
 
 const dayLabels: Record<number, string> = {
@@ -337,6 +338,13 @@ export function AccountPage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    const validationMessage = getImageValidationMessage(file);
+    if (validationMessage) {
+      toast.error(validationMessage);
+      event.target.value = "";
+      return;
+    }
+
     setSaving(true);
     try {
       const { status, data } = await accountAPI.updateProfilePhoto(file);
@@ -436,7 +444,7 @@ export function AccountPage() {
                 <i className="pi pi-user" />
               )}
             </div>
-            <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoChange} hidden />
+            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoChange} hidden />
             <h2>{fullName}</h2>
             <span className="account-status-pill">
               <i className="pi pi-check-circle" />

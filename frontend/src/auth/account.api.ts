@@ -1,4 +1,5 @@
 import API_BASE_URL from "@/config/api.config";
+import { apiFetch } from "@/api";
 
 const parseResponse = async (response: Response) => {
   const text = await response.text();
@@ -15,8 +16,7 @@ const parseResponse = async (response: Response) => {
 };
 
 const request = async (path: string, options: RequestInit = {}) => {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    credentials: "include",
+  const response = await apiFetch(`${API_BASE_URL}${path}`, {
     headers: {
       "Content-Type": "application/json",
       ...(options.headers ?? {}),
@@ -28,8 +28,7 @@ const request = async (path: string, options: RequestInit = {}) => {
 };
 
 const uploadRequest = async (path: string, formData: FormData) => {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    credentials: "include",
+  const response = await apiFetch(`${API_BASE_URL}${path}`, {
     method: "PATCH",
     body: formData,
   });

@@ -9,33 +9,52 @@ ROLE_SPECS = {
         "description": "Acceso total a los módulos administrativos.",
         "permissions": "all",
     },
+    "Líder Fundación": {
+        "description": "Control operativo completo sin administración técnica de roles.",
+        "permissions": [
+            ("auth", ["user"], ["add", "change", "view"]),
+            ("auth", ["group"], ["view"]),
+            ("audits", ["auditlog"], ["view"]),
+            ("beneficiaries", ["beneficiary", "guardian", "aidlogentry"], ["add", "change", "delete", "view"]),
+            ("blog", ["blogpost"], ["add", "change", "delete", "view"]),
+            ("blog", ["blogpost"], ["publish"]),
+            ("campaigns", ["campaign", "campaigntemplate"], ["add", "change", "delete", "view"]),
+            ("campaigns", ["campaign"], ["send"]),
+            ("cap_collection", ["company", "collectionpoint", "collectionrequest"], ["add", "change", "delete", "view"]),
+            ("donations", ["donor", "donation"], ["add", "change", "delete", "view"]),
+            ("events", ["event", "attendance", "eventact", "evidence"], ["add", "change", "delete", "view"]),
+            ("projects", ["project"], ["add", "change", "delete", "view"]),
+            ("subscribers", ["newslettersubscriber"], ["add", "change", "delete", "view"]),
+            ("volunteers", ["volunteer", "volunteeravailability", "volunteertask"], ["add", "change", "delete", "view"]),
+        ],
+    },
     "Finanzas": {
-        "description": "Gestión económica, donantes, donaciones y lectura de indicadores.",
+        "description": "Gestión económica: donantes, donaciones y reportes financieros.",
         "permissions": [
             ("donations", ["donor", "donation"], ["add", "change", "delete", "view"]),
-            ("beneficiaries", ["beneficiary", "guardian"], ["view"]),
-            ("projects", ["project"], ["view"]),
-            ("events", ["event", "attendance", "eventact", "evidence"], ["view"]),
-            ("audits", ["auditlog"], ["view"]),
         ],
     },
     "Gestión Informativa": {
-        "description": "Campañas, correos, eventos, contenido institucional y destinatarios.",
+        "description": "Campañas, blog, eventos públicos, suscriptores y comunicación institucional.",
         "permissions": [
+            ("blog", ["blogpost"], ["add", "change", "delete", "view"]),
+            ("blog", ["blogpost"], ["publish"]),
             ("campaigns", ["campaign", "campaigntemplate"], ["add", "change", "delete", "view"]),
+            ("campaigns", ["campaign"], ["send"]),
+            ("cap_collection", ["company", "collectionpoint", "collectionrequest"], ["view"]),
             ("events", ["event", "eventact", "evidence"], ["add", "change", "delete", "view"]),
             ("events", ["attendance"], ["view"]),
-            ("beneficiaries", ["guardian"], ["view"]),
-            ("donations", ["donor"], ["view"]),
-            ("cap_collection", ["company", "collectionpoint", "collectionrequest"], ["view"]),
+            ("subscribers", ["newslettersubscriber"], ["change", "view"]),
+            ("volunteers", ["volunteer"], ["view"]),
         ],
     },
     "Diseñador": {
-        "description": "Material visual, piezas de campañas y evidencias gráficas.",
+        "description": "Diseño de piezas, plantillas, borradores y material visual sin envío.",
         "permissions": [
+            ("blog", ["blogpost"], ["add", "change", "view"]),
             ("campaigns", ["campaign", "campaigntemplate"], ["add", "change", "view"]),
-            ("events", ["evidence"], ["add", "change", "view"]),
             ("events", ["event"], ["view"]),
+            ("events", ["evidence"], ["add", "change", "view"]),
         ],
     },
 }
@@ -46,6 +65,7 @@ def _managed_permissions():
         Permission.objects.select_related("content_type")
         .exclude(content_type__app_label__in=EXCLUDED_APPS)
         .exclude(content_type__model__in=EXCLUDED_MODELS)
+        .exclude(content_type__model__startswith="historical")
         .distinct()
     )
 

@@ -1,5 +1,5 @@
 export type CampaignContentType = "BUILDER" | "IMAGE" | "PDF";
-export type CampaignRecipientGroup = "DONORS" | "GUARDIANS" | "USERS" | "ALL";
+export type CampaignRecipientGroup = "DONORS" | "GUARDIANS" | "USERS" | "NEWSLETTER" | "ALL";
 export type CampaignStatus = "DRAFT" | "SENDING" | "SENT" | "FAILED";
 
 export interface Campaign {

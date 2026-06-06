@@ -1,4 +1,5 @@
 import API_BASE_URL from "@/config/api.config";
+import { apiFetch } from "@/api";
 
 export type PublicBlogPostRecord = {
   id: number;
@@ -19,6 +20,7 @@ type PublicBlogResponse = {
 };
 
 const BLOG_PUBLIC_ENDPOINT = `${API_BASE_URL}/public/blog/posts/`;
+const NEWSLETTER_PUBLIC_ENDPOINT = `${API_BASE_URL}/public/newsletter/subscribe/`;
 
 async function readJsonResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
   if (!response.ok) {
@@ -51,5 +53,24 @@ export async function fetchPublicBlogPost(slug: string) {
   return readJsonResponse<PublicBlogPostRecord>(
     response,
     "No se pudo cargar la publicación solicitada.",
+  );
+}
+
+export async function subscribeToNewsletter(email: string) {
+  const response = await apiFetch(NEWSLETTER_PUBLIC_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      origin: "BLOG",
+      consent: true,
+    }),
+  });
+
+  return readJsonResponse<{ message: string }>(
+    response,
+    "No pudimos registrar tu suscripción. Inténtalo nuevamente.",
   );
 }

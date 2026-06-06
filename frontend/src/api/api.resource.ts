@@ -1,4 +1,5 @@
 import API_BASE_URL from "@/config/api.config";
+import { apiFetch } from "./http";
 
 export interface APIHooks {
   onSuccess?: (methodName: string, result: any) => void;
@@ -101,7 +102,7 @@ export class ResourceAPI<T = any> {
         });
       }
 
-      const response = await fetch(
+      const response = await apiFetch(
         `${this.baseUrl}/${this.resource}/?${searchParams.toString()}`,
         {
           method: "GET",
@@ -131,7 +132,7 @@ export class ResourceAPI<T = any> {
     data: Partial<T>;
   }): Promise<{ status: number; data: T }> {
     try {
-      const response = await fetch(`${this.baseUrl}/${this.resource}/`, {
+      const response = await apiFetch(`${this.baseUrl}/${this.resource}/`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -168,7 +169,7 @@ export class ResourceAPI<T = any> {
     data: Partial<T>;
   }): Promise<{ status: number; data: T }> {
     try {
-      const response = await fetch(`${this.baseUrl}/${this.resource}/${id}/`, {
+      const response = await apiFetch(`${this.baseUrl}/${this.resource}/${id}/`, {
         method: "PATCH",
         credentials: "include",
         headers: {
@@ -208,7 +209,7 @@ export class ResourceAPI<T = any> {
     id: number;
   }): Promise<{ status: number; data: T }> {
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `${this.baseUrl}/${this.resource}/${id}/soft-delete/`,
         {
           method: "POST",
@@ -242,7 +243,7 @@ export class ResourceAPI<T = any> {
     ids: number[];
   }): Promise<{ status: number; data: T }> {
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `${this.baseUrl}/${this.resource}/bulk-soft-delete/`,
         {
           method: "POST",
@@ -274,7 +275,7 @@ export class ResourceAPI<T = any> {
     format: "csv" | "xlsx";
   }) {
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `${this.baseUrl}/${this.resource}/export-excel/`,
         {
           method: "POST",

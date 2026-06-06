@@ -15,6 +15,7 @@ from rest_framework import viewsets, filters
 from rest_framework.generics import ListAPIView
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny
+from access.permissions import DjangoModelPermissionsWithView
 
 
 class EventViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
@@ -22,6 +23,7 @@ class EventViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     serializer_class = EventSerializer
     pagination_class = EventPagination
     parser_classes = [JSONParser, MultiPartParser, FormParser]
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,
@@ -51,6 +53,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
     pagination_class = AttendancePagination
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,
@@ -68,6 +71,7 @@ class EventActViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = EventAct.objects.filter(is_active=True)
     serializer_class = EventActSerializer
     pagination_class = EventActPagination
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,
@@ -85,6 +89,7 @@ class EvidenceViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = Evidence.objects.filter(is_active=True)
     serializer_class = EvidenceSerializer
     pagination_class = EvidencePagination
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,

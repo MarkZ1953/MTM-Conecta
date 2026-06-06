@@ -4,6 +4,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 
+from access.permissions import DjangoModelPermissionsWithView
 from app.mixins.export_mixin import ExportMixin
 from app.mixins.soft_delete_mixin import SoftDeleteMixin
 from .filters import BlogPostFilter
@@ -17,6 +18,7 @@ class BlogPostViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     serializer_class = BlogPostSerializer
     pagination_class = BlogPostPagination
     parser_classes = [JSONParser, MultiPartParser, FormParser]
+    permission_classes = [DjangoModelPermissionsWithView]
     soft_delete_model_name = "la publicación"
     soft_delete_model_name_plural = "las publicaciones"
 
@@ -54,4 +56,3 @@ class PublicBlogPostDetailView(RetrieveAPIView):
             is_active=True,
             status=BlogPost.STATUS_PUBLISHED,
         )
-

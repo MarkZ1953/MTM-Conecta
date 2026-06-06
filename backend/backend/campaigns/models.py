@@ -13,6 +13,7 @@ class CampaignRecipientGroup(models.TextChoices):
     DONORS = 'DONORS', 'Donantes'
     GUARDIANS = 'GUARDIANS', 'Cuidadores'
     USERS = 'USERS', 'Usuarios'
+    NEWSLETTER = 'NEWSLETTER', 'Suscriptores del boletín'
     ALL = 'ALL', 'Todos'
 
 
@@ -108,6 +109,9 @@ class Campaign(BaseModel):
         verbose_name = 'Campaign'
         verbose_name_plural = 'Campaigns'
         ordering = ['-id']
+        permissions = [
+            ('send_campaign', 'Can send campaign'),
+        ]
 
 
 class CampaignTemplate(BaseModel):

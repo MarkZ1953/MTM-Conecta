@@ -1,16 +1,23 @@
 import API_BASE_URL from "@/config/api.config";
-import { ResourceAPI } from "@/api";
+import { apiFetch, ResourceAPI } from "@/api";
 
 class AuthAPI extends ResourceAPI {
   constructor() {
     super({ resource: "auth" });
   }
 
+  async csrf() {
+    const response = await apiFetch(`${API_BASE_URL}/auth/csrf`, {
+      method: "GET",
+    });
+    return { status: response.status, data: await response.json() };
+  }
+
   async login({ username, password }: { username: string; password: string }) {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      await this.csrf();
+      const response = await apiFetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -35,9 +42,9 @@ class AuthAPI extends ResourceAPI {
     };
   }) {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      await this.csrf();
+      const response = await apiFetch(`${API_BASE_URL}/auth/register`, {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -52,9 +59,9 @@ class AuthAPI extends ResourceAPI {
 
   async googleAuth({ credential }: { credential: string }) {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/google`, {
+      await this.csrf();
+      const response = await apiFetch(`${API_BASE_URL}/auth/google`, {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -69,9 +76,9 @@ class AuthAPI extends ResourceAPI {
 
   async refresh() {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      await this.csrf();
+      const response = await apiFetch(`${API_BASE_URL}/auth/refresh`, {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -85,9 +92,8 @@ class AuthAPI extends ResourceAPI {
 
   async logout() {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+      const response = await apiFetch(`${API_BASE_URL}/auth/logout`, {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },

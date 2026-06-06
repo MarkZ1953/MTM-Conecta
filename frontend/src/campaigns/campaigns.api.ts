@@ -1,4 +1,5 @@
 import API_BASE_URL from "@/config/api.config";
+import { apiFetch } from "@/api";
 import type { Campaign, CampaignPayload, PaginatedResponse } from "./campaigns.types";
 
 type CampaignsQueryParams = {
@@ -50,7 +51,7 @@ class CampaignsAPI {
       }
     });
 
-    const response = await fetch(
+    const response = await apiFetch(
       `${this.baseUrl}/${this.resource}/?${searchParams.toString()}`,
       {
         method: "GET",
@@ -63,7 +64,7 @@ class CampaignsAPI {
   }
 
   async getById({ id }: { id: number }): Promise<{ status: number; data: Campaign }> {
-    const response = await fetch(`${this.baseUrl}/${this.resource}/${id}/`, {
+    const response = await apiFetch(`${this.baseUrl}/${this.resource}/${id}/`, {
       method: "GET",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -80,9 +81,8 @@ class CampaignsAPI {
   }: {
     data: CampaignPayload;
   }): Promise<{ status: number; data: Campaign }> {
-    const response = await fetch(`${this.baseUrl}/${this.resource}/`, {
+    const response = await apiFetch(`${this.baseUrl}/${this.resource}/`, {
       method: "POST",
-      credentials: "include",
       body: toFormData(data),
     });
     return { status: response.status, data: await response.json() };
@@ -95,16 +95,15 @@ class CampaignsAPI {
     id: number;
     data: Partial<CampaignPayload>;
   }): Promise<{ status: number; data: Campaign }> {
-    const response = await fetch(`${this.baseUrl}/${this.resource}/${id}/`, {
+    const response = await apiFetch(`${this.baseUrl}/${this.resource}/${id}/`, {
       method: "PATCH",
-      credentials: "include",
       body: toFormData(data),
     });
     return { status: response.status, data: await response.json() };
   }
 
   async softDelete({ id }: { id: number }): Promise<{ status: number; data: any }> {
-    const response = await fetch(
+    const response = await apiFetch(
       `${this.baseUrl}/${this.resource}/${id}/soft-delete/`,
       {
         method: "POST",
@@ -116,7 +115,7 @@ class CampaignsAPI {
   }
 
   async bulkSoftDelete({ ids }: { ids: number[] }): Promise<{ status: number; data: any }> {
-    const response = await fetch(
+    const response = await apiFetch(
       `${this.baseUrl}/${this.resource}/bulk-soft-delete/`,
       {
         method: "POST",
@@ -133,9 +132,8 @@ class CampaignsAPI {
    * POST /campaigns/<id>/send/
    */
   async send({ id }: { id: number }): Promise<{ status: number; data: any }> {
-    const response = await fetch(`${this.baseUrl}/${this.resource}/${id}/send/`, {
+    const response = await apiFetch(`${this.baseUrl}/${this.resource}/${id}/send/`, {
       method: "POST",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
     });
     return { status: response.status, data: await response.json() };

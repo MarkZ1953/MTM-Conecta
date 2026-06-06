@@ -18,6 +18,7 @@ const recipientLabel: Record<string, string> = {
   DONORS: "los donantes",
   GUARDIANS: "los cuidadores",
   USERS: "los usuarios del sistema",
+  NEWSLETTER: "los suscriptores activos del boletín",
   ALL: "donantes y cuidadores",
 };
 

@@ -34,6 +34,7 @@ import { DonorsPage } from "@/donors";
 import { CampaignsPage, CampaignFormPage } from "@/campaigns";
 import { VolunteersPage } from "@/volunteers";
 import { BlogAdminPage } from "@/blog";
+import { SubscribersPage } from "@/subscribers";
 import {
   CapCollectionPage,
   CompaniesPage,
@@ -96,6 +97,7 @@ export const AppRouter = () => {
           <Route path="/campaigns" element={<CampaignsPage />} />
           <Route path="/campaigns/nueva" element={<CampaignFormPage />} />
           <Route path="/campaigns/:id/editar" element={<CampaignFormPage />} />
+          <Route path="/subscribers" element={<SubscribersPage />} />
           <Route path="/blog-posts" element={<BlogAdminPage />} />
 
           <Route path="/cap-collection" element={<CapCollectionPage />} />

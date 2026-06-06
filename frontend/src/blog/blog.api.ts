@@ -1,4 +1,5 @@
 import { ResourceAPI } from "@/api";
+import { apiFetch } from "@/api";
 import API_BASE_URL from "@/config/api.config";
 import type { BlogPost, BlogPostPayload, PaginatedResponse } from "./blog.types";
 
@@ -52,9 +53,8 @@ class BlogAPI extends ResourceAPI<BlogPost> {
   }: {
     data: BlogPostPayload;
   }): Promise<{ status: number; data: BlogPost }> {
-    const response = await fetch(`${this.blogBaseUrl}/${this.blogResource}/`, {
+    const response = await apiFetch(`${this.blogBaseUrl}/${this.blogResource}/`, {
       method: "POST",
-      credentials: "include",
       body: toFormData(data),
     });
     const result = { status: response.status, data: await response.json() };
@@ -70,9 +70,8 @@ class BlogAPI extends ResourceAPI<BlogPost> {
     id: number;
     data: Partial<BlogPostPayload>;
   }): Promise<{ status: number; data: BlogPost }> {
-    const response = await fetch(`${this.blogBaseUrl}/${this.blogResource}/${id}/`, {
+    const response = await apiFetch(`${this.blogBaseUrl}/${this.blogResource}/${id}/`, {
       method: "PATCH",
-      credentials: "include",
       body: toFormData(data),
     });
     const result = { status: response.status, data: await response.json() };

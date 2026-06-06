@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from donations.models import Donor
 from beneficiaries.models import Guardian
+from subscribers.models import NewsletterSubscriber
 from .models import CampaignContentType, CampaignRecipientGroup
 
 
@@ -29,6 +30,16 @@ def get_recipient_emails(recipient_group: str) -> list[str]:
     if recipient_group == CampaignRecipientGroup.USERS:
         emails += list(
             User.objects.filter(is_active=True)
+            .exclude(email="").values_list("email", flat=True)
+        )
+
+    if recipient_group == CampaignRecipientGroup.NEWSLETTER:
+        emails += list(
+            NewsletterSubscriber.objects.filter(
+                is_active=True,
+                status=NewsletterSubscriber.STATUS_ACTIVE,
+                consent=True,
+            )
             .exclude(email="").values_list("email", flat=True)
         )
 

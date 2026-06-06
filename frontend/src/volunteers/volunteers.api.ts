@@ -1,4 +1,4 @@
-import { ResourceAPI } from "@/api";
+import { apiFetch, ResourceAPI } from "@/api";
 import type { Volunteer, VolunteerPayload, VolunteerTask, PaginatedResponse } from "./volunteers.types";
 
 type VolunteerQueryParams = {
@@ -50,7 +50,7 @@ class VolunteersAPI extends ResourceAPI<Volunteer> {
     // Let's import the base API URL to make it completely robust
     const apiConfig = await import("@/config/api.config");
     const baseUrl = apiConfig.default;
-    const response = await fetch(`${baseUrl}/volunteers/public-register/`, {
+    const response = await apiFetch(`${baseUrl}/volunteers/public-register/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -5,6 +5,12 @@ from rest_framework.views import APIView
 from donations.models import Donation, Donor
 from beneficiaries.models import Beneficiary
 from projects.models import Project
+from access.permissions import (
+    CanViewBeneficiaryReports,
+    CanViewDashboardReports,
+    CanViewFinancialReports,
+    CanViewProjectReports,
+)
 
 from .utils import apply_date_range
 
@@ -18,6 +24,7 @@ class DonationsReportView(APIView):
         to=YYYY-MM-DD
         status=PENDING|COMPLETED|FAILED
     """
+    permission_classes = [CanViewFinancialReports]
 
     def get(self, request):
         qs = Donation.objects.filter(is_active=True)
@@ -58,6 +65,7 @@ class DonationsReportView(APIView):
 
 class DonorsReportView(APIView):
     """GET /reports/donors/ — donor statistics and rankings."""
+    permission_classes = [CanViewFinancialReports]
 
     def get(self, request):
         active_donors = Donor.objects.filter(is_active=True)
@@ -84,6 +92,7 @@ class DonorsReportView(APIView):
 
 class BeneficiariesReportView(APIView):
     """GET /reports/beneficiaries/ — beneficiary statistics by project."""
+    permission_classes = [CanViewBeneficiaryReports]
 
     def get(self, request):
         active_beneficiaries = Beneficiary.objects.filter(is_active=True)
@@ -114,6 +123,7 @@ class BeneficiariesReportView(APIView):
 
 class ProjectsReportView(APIView):
     """GET /reports/projects/ — project statistics by status."""
+    permission_classes = [CanViewProjectReports]
 
     def get(self, request):
         qs = Project.objects.filter(is_active=True)
@@ -149,6 +159,7 @@ class ProjectsReportView(APIView):
 
 class DashboardReportView(APIView):
     """GET /reports/dashboard/ — high level metrics for the dashboard."""
+    permission_classes = [CanViewDashboardReports]
 
     def get(self, request):
         donations_qs = Donation.objects.filter(is_active=True)

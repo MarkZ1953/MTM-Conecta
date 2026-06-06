@@ -7,12 +7,14 @@ from .paginations import BeneficiaryPagination, GuardianPagination, AidLogEntryP
 from .models import Beneficiary, Guardian, AidLogEntry
 from .filters import BeneficiaryFilter, GuardianFilter, AidLogEntryFilter
 from rest_framework import viewsets, filters
+from access.permissions import DjangoModelPermissionsWithView
 
 
 class BeneficiaryViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = Beneficiary.objects.filter(is_active=True)
     serializer_class = BeneficiarySerializer
     pagination_class = BeneficiaryPagination
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,
@@ -33,6 +35,7 @@ class GuardianViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = Guardian.objects.filter(is_active=True)
     serializer_class = GuardianSerializer
     pagination_class = GuardianPagination
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,
@@ -49,6 +52,7 @@ class AidLogEntryViewSet(viewsets.ModelViewSet):
     queryset = AidLogEntry.objects.filter(is_active=True)
     serializer_class = AidLogEntrySerializer
     pagination_class = AidLogEntryPagination
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,

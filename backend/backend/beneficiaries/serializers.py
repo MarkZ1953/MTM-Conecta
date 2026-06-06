@@ -1,8 +1,15 @@
 from rest_framework import serializers
+from app.upload_validators import validate_image_upload, validate_pdf_upload
 from .models import Beneficiary, Guardian, AidLogEntry
 
 
 class BeneficiarySerializer(serializers.ModelSerializer):
+    def validate_photo(self, value):
+        return validate_image_upload(value, field_name='photo')
+
+    def validate_authorization_doc(self, value):
+        return validate_pdf_upload(value, field_name='authorization_doc')
+
     class Meta:
         model = Beneficiary
         fields = [

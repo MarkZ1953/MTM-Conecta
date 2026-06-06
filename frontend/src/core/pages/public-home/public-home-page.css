@@ -3951,6 +3951,27 @@
   padding: 0 16px;
 }
 
+.public-blog-newsletter button:disabled {
+  cursor: progress;
+  opacity: .72;
+}
+
+.public-blog-newsletter-message {
+  display: block;
+  font-family: var(--mtm-font-ui);
+  font-size: .84rem;
+  font-weight: 800;
+  margin-top: 10px;
+}
+
+.public-blog-newsletter-message.success {
+  color: var(--public-teal-dark);
+}
+
+.public-blog-newsletter-message.error {
+  color: #b42318;
+}
+
 .public-blog-loading,
 .public-blog-empty {
   align-items: center;

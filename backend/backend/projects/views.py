@@ -7,6 +7,7 @@ from rest_framework import viewsets, filters, status
 
 from beneficiaries.serializers import BeneficiarySerializer
 from beneficiaries.models import Beneficiary
+from access.permissions import DjangoModelPermissionsWithView
 
 from .serializers import ProjectSerializer
 from .paginations import ProjectPagination
@@ -27,6 +28,7 @@ class ProjectViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = Project.objects.filter(is_active=True)
     serializer_class = ProjectSerializer
     pagination_class = ProjectPagination
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,

@@ -6,12 +6,14 @@ from .paginations import DonorPagination, DonationPagination
 from .models import Donor, Donation
 from .filters import DonorFilter, DonationFilter
 from rest_framework import viewsets, filters
+from access.permissions import DjangoModelPermissionsWithView
 
 
 class DonorViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = Donor.objects.filter(is_active=True)
     serializer_class = DonorSerializer
     pagination_class = DonorPagination
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,
@@ -32,6 +34,7 @@ class DonationViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = Donation.objects.filter(is_active=True)
     serializer_class = DonationSerializer
     pagination_class = DonationPagination
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,

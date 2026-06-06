@@ -1,5 +1,6 @@
 from utils.exporters import export_xlsx, export_csv
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from django.db.models import Case, When
 from django.utils import timezone
 
@@ -18,8 +19,17 @@ class ExportMixin:
     def filter_export_queryset(self, qs):
         return qs
 
+    def check_export_permission(self, request):
+        model = self.get_queryset().model
+        permission = f"{model._meta.app_label}.view_{model._meta.model_name}"
+
+        if not request.user.has_perm(permission):
+            raise PermissionDenied("No tienes permiso para exportar este recurso.")
+
     @action(detail=False, methods=["post"], url_path="export-excel")
     def export_excel(self, request):
+        self.check_export_permission(request)
+
         body = request.data
 
         mode = body.get("mode", "selected")

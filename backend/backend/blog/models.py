@@ -30,4 +30,6 @@ class BlogPost(BaseModel):
         verbose_name = 'Blog post'
         verbose_name_plural = 'Blog posts'
         ordering = ['-published_at', '-created_at']
-
+        permissions = [
+            ('publish_blogpost', 'Can publish blog post'),
+        ]

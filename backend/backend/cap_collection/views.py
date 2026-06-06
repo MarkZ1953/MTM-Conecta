@@ -6,12 +6,14 @@ from .paginations import CompanyPagination, CollectionPointPagination, Collectio
 from .models import Company, CollectionPoint, CollectionRequest
 from .filters import CompanyFilter, CollectionPointFilter, CollectionRequestFilter
 from rest_framework import viewsets, filters
+from access.permissions import DjangoModelPermissionsWithView
 
 
 class CompanyViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = Company.objects.filter(is_active=True)
     serializer_class = CompanySerializer
     pagination_class = CompanyPagination
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,
@@ -29,6 +31,7 @@ class CollectionPointViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet
     queryset = CollectionPoint.objects.filter(is_active=True)
     serializer_class = CollectionPointSerializer
     pagination_class = CollectionPointPagination
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,
@@ -46,6 +49,7 @@ class CollectionRequestViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewS
     queryset = CollectionRequest.objects.filter(is_active=True)
     serializer_class = CollectionRequestSerializer
     pagination_class = CollectionRequestPagination
+    permission_classes = [DjangoModelPermissionsWithView]
 
     filter_backends = [
         DjangoFilterBackend,

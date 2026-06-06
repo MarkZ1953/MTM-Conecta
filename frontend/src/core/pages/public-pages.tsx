@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   publicAboutGallerySlides,
@@ -15,6 +15,7 @@ import {
 import {
   fetchPublicBlogPost,
   fetchPublicBlogPosts,
+  subscribeToNewsletter,
   type PublicBlogPostRecord,
 } from "./public-home/public-blog.api";
 import { fetchPublicEvents, type PublicEventRecord } from "./public-home/public-events.api";
@@ -916,6 +917,10 @@ export function PublicEventsPage() {
 export function BlogPage() {
   const [posts, setPosts] = useState<PublicBlogPostRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "success" | "error">("idle");
+  const [newsletterMessage, setNewsletterMessage] = useState("");
+  const [newsletterSubmitting, setNewsletterSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
@@ -957,6 +962,34 @@ export function BlogPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleNewsletterSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const email = newsletterEmail.trim();
+
+    if (!email) {
+      setNewsletterStatus("error");
+      setNewsletterMessage("Ingresa tu correo para suscribirte.");
+      return;
+    }
+
+    try {
+      setNewsletterSubmitting(true);
+      const response = await subscribeToNewsletter(email);
+      setNewsletterStatus("success");
+      setNewsletterMessage(response.message || "Listo, quedaste suscrito al boletín.");
+      setNewsletterEmail("");
+    } catch (submitError) {
+      setNewsletterStatus("error");
+      setNewsletterMessage(
+        submitError instanceof Error
+          ? submitError.message
+          : "No pudimos registrar tu suscripción. Inténtalo nuevamente.",
+      );
+    } finally {
+      setNewsletterSubmitting(false);
+    }
+  };
 
   return (
     <PublicLayout>
@@ -1081,10 +1114,30 @@ export function BlogPage() {
               Recibe nuestras novedades
             </h2>
             <p>Suscríbete a nuestro boletín y entérate de todo lo que estamos haciendo.</p>
-            <form>
-              <input type="email" placeholder="Tu correo electrónico" aria-label="Tu correo electrónico" />
-              <button type="button">Suscribirme</button>
+            <form onSubmit={handleNewsletterSubmit}>
+              <input
+                type="email"
+                placeholder="Tu correo electrónico"
+                aria-label="Tu correo electrónico"
+                value={newsletterEmail}
+                onChange={(event) => {
+                  setNewsletterEmail(event.target.value);
+                  if (newsletterStatus !== "idle") {
+                    setNewsletterStatus("idle");
+                    setNewsletterMessage("");
+                  }
+                }}
+                disabled={newsletterSubmitting}
+              />
+              <button type="submit" disabled={newsletterSubmitting}>
+                {newsletterSubmitting ? "Enviando..." : "Suscribirme"}
+              </button>
             </form>
+            {newsletterMessage && (
+              <small className={`public-blog-newsletter-message ${newsletterStatus}`}>
+                {newsletterMessage}
+              </small>
+            )}
           </div>
         </aside>
       </section>

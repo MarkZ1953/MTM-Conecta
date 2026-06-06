@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from app.mixins.soft_delete_mixin import SoftDeleteMixin
 from app.mixins.export_mixin import ExportMixin
+from access.permissions import DjangoModelPermissionsWithView
 from .models import Volunteer, VolunteerAvailability, VolunteerTask
 from .serializers import VolunteerSerializer, VolunteerAvailabilitySerializer, VolunteerTaskSerializer
 from .paginations import VolunteerPagination, VolunteerAvailabilityPagination, VolunteerTaskPagination
@@ -15,6 +16,7 @@ class VolunteerViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = Volunteer.objects.filter(is_active=True)
     serializer_class = VolunteerSerializer
     pagination_class = VolunteerPagination
+    permission_classes = [DjangoModelPermissionsWithView]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = VolunteerFilter
     search_fields = ['first_name', 'last_name', 'email', 'profession', 'identification_number']
@@ -35,6 +37,7 @@ class VolunteerAvailabilityViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelV
     queryset = VolunteerAvailability.objects.filter(is_active=True)
     serializer_class = VolunteerAvailabilitySerializer
     pagination_class = VolunteerAvailabilityPagination
+    permission_classes = [DjangoModelPermissionsWithView]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = VolunteerAvailabilityFilter
     ordering_fields = ['id', 'day_of_week']
@@ -45,6 +48,7 @@ class VolunteerTaskViewSet(ExportMixin, SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = VolunteerTask.objects.filter(is_active=True)
     serializer_class = VolunteerTaskSerializer
     pagination_class = VolunteerTaskPagination
+    permission_classes = [DjangoModelPermissionsWithView]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = VolunteerTaskFilter
     ordering_fields = ['id', 'date', 'hours_spent']
