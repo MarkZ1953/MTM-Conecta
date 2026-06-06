@@ -10,6 +10,7 @@ import {
 import type { PublicImageCarouselSlide } from "./public-home/public-image-carousel";
 import { PublicLayout } from "./public-home/public-layout";
 import { usePublicCloudinaryGallery } from "./public-home/use-public-cloudinary-gallery";
+import { Seo } from "../seo";
 
 const getImageByToken = (assets: PublicImageCarouselSlide[], token: string) =>
   assets.find((asset) => asset.publicId?.toLowerCase().includes(token)) ?? assets[0];
@@ -51,6 +52,13 @@ export function HelpDetailPage({ type }: { type: PublicHelpWayKey }) {
 
   return (
     <PublicLayout className={`public-help-detail-page is-${current.tone}`}>
+      <Seo
+        canonicalPath={current.path}
+        title={`${current.title} | Fundación MTM`}
+        description={current.intro}
+        image={image?.src}
+        imageAlt={image?.alt}
+      />
       <section
         className="public-help-detail"
         style={{ "--public-help-detail-accent": current.accent } as CSSProperties}

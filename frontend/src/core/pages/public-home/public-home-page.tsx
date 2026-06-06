@@ -5,6 +5,7 @@ import { PublicHelpWaysSection } from "./public-help-ways-section";
 import { PublicImageCarousel } from "./public-image-carousel";
 import { publicNews, publicPrograms } from "./public-content";
 import { PublicLayout } from "./public-layout";
+import { Seo } from "../../seo";
 import "./public-home-page.css";
 
 const heroSlides = [
@@ -33,6 +34,12 @@ const heroSlides = [
 export const PublicHomePage = () => {
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath="/home"
+        title="Fundación MTM | Apoyo social y acompañamiento familiar en el Meta"
+        description="Conoce la labor de Fundación MTM en Villavicencio: programas sociales, acompañamiento a familias, voluntariado, donaciones y campañas solidarias."
+        image={publicAssets.banner}
+      />
       <PublicImageCarousel
         className="public-hero"
         label="Galeria principal MTM"

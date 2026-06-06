@@ -21,6 +21,7 @@ import {
 import { fetchPublicEvents, type PublicEventRecord } from "./public-home/public-events.api";
 import { PublicLayout } from "./public-home/public-layout";
 import { usePublicCloudinaryGallery } from "./public-home/use-public-cloudinary-gallery";
+import { Seo } from "../seo";
 
 function PageHero({
   eyebrow,
@@ -170,6 +171,12 @@ export function AboutPage() {
 
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath="/nosotros"
+        title="Sobre Nosotros | Fundación MTM en Villavicencio"
+        description="Conoce la historia, misión y visión de Fundación MTM, una organización que acompaña a niñas, niños y familias durante el tratamiento oncológico en la Orinoquía."
+        image={publicAssets.heroAlt}
+      />
       <PublicImageCarousel
         className="public-about-gallery"
         label="Galería Sobre Nosotros MTM"
@@ -220,6 +227,12 @@ export function AboutPage() {
 export function ProgramsPage() {
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath="/programas"
+        title="Programas Sociales | Fundación MTM"
+        description="Explora los programas de Fundación MTM para brindar acompañamiento, bienestar, educación y apoyo familiar a pacientes oncológicos y sus cuidadores."
+        image={publicAssets.careOne}
+      />
       <PageHero
         eyebrow="Programas"
         title="Frentes de apoyo que convierten solidaridad en bienestar real."
@@ -244,6 +257,12 @@ export function ProgramsPage() {
 export function HelpPage() {
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath="/como-ayudar"
+        title="Cómo Ayudar | Fundación MTM"
+        description="Descubre cómo apoyar a Fundación MTM mediante donaciones, voluntariado, aportes en especie, alianzas y actividades solidarias."
+        image={publicAssets.vinculate}
+      />
       <PublicHelpWaysSection />
     </PublicLayout>
   );
@@ -252,6 +271,12 @@ export function HelpPage() {
 export function DonatePage() {
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath="/donar"
+        title="Donar a Fundación MTM | Apoya a familias en tratamiento"
+        description="Haz tu aporte a Fundación MTM y ayuda a sostener programas de hospedaje, alimentación, apoyo psicosocial, educación y bienestar familiar."
+        image={publicAssets.donate}
+      />
       <PageHero
         eyebrow="Quiero donar"
         title="Elige cómo quieres hacer tu aporte a la Fundación MTM."
@@ -294,6 +319,12 @@ export function DonatePage() {
 export function DonationBondPage() {
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath="/bono-donacion"
+        title="Bono Donación | Fundación MTM"
+        description="Realiza un aporte único con propósito a Fundación MTM y acompaña a niñas, niños, adolescentes y familias vinculadas a sus programas sociales."
+        image={publicAssets.donate}
+      />
       <PageHero
         eyebrow="Bono Donación"
         title="Un aporte único que honra fechas especiales y se convierte en bienestar."
@@ -333,6 +364,12 @@ export function DonationBondPage() {
 export function SponsorPage() {
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath="/padrino-permanente"
+        title="Padrino Permanente | Fundación MTM"
+        description="Conviértete en padrino permanente de Fundación MTM y apoya mes a mes los programas de acompañamiento familiar y bienestar."
+        image={publicAssets.sponsor}
+      />
       <section
         className="public-sponsor-page"
         aria-label="Padrino permanente"
@@ -386,6 +423,12 @@ export function DonationMethodPage({ method }: { method: DonationMethodKey }) {
 
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath={selectedMethod.path}
+        title={`Donar por ${selectedMethod.title} | Fundación MTM`}
+        description={`Continúa tu aporte a Fundación MTM por ${selectedMethod.title}. ${selectedMethod.text}`}
+        image={method === "paypal" ? publicAssets.banner : publicAssets.donate}
+      />
       <PageHero
         eyebrow="Pago de donación"
         title={`Continúa tu aporte por ${selectedMethod.title}.`}
@@ -425,6 +468,12 @@ export function DonationMethodPage({ method }: { method: DonationMethodKey }) {
 export function VolunteerPage() {
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath="/voluntariado"
+        title="Voluntariado | Fundación MTM"
+        description="Dona tu tiempo y talento como voluntario de Fundación MTM para acompañar actividades, familias y programas sociales."
+        image={publicAssets.careOne}
+      />
       <PageHero
         eyebrow="Voluntariado"
         title="Tu tiempo también puede convertirse en esperanza."
@@ -683,6 +732,12 @@ export function PublicEventsPage() {
 
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath="/eventos-publicos"
+        title="Eventos Públicos | Fundación MTM"
+        description="Consulta eventos, jornadas, campañas y actividades públicas de Fundación MTM en Villavicencio y la región de la Orinoquía."
+        image={featuredEvent?.imageSrc || publicAssets.careOne}
+      />
       <section className="public-events-showcase" aria-label="Eventos Fundación MTM">
         <div className="public-events-showcase-hero">
           <div className="public-events-showcase-copy">
@@ -993,6 +1048,12 @@ export function BlogPage() {
 
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath="/blog"
+        title="Blog | Historias reales de Fundación MTM"
+        description="Lee historias, actividades, logros y aprendizajes de Fundación MTM y conoce el impacto que construye con familias, voluntarios y aliados."
+        image={featuredPost ? getBlogImage(featuredPost) : publicAssets.careThree}
+      />
       <section
         className="public-blog-hero"
         aria-label="Blog de Fundación MTM"
@@ -1182,6 +1243,15 @@ export function BlogPostDetailPage() {
 
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath={`/blog/${slug}`}
+        title={post ? `${post.title} | Blog Fundación MTM` : "Blog Fundación MTM"}
+        description={post?.summary || "Lee publicaciones, historias y actividades recientes de Fundación MTM."}
+        image={post ? getBlogImage(post) : publicAssets.careThree}
+        imageAlt={post?.image_alt || post?.title || "Blog Fundación MTM"}
+        noIndex={!loading && !post}
+        type="article"
+      />
       <article className="public-blog-detail">
         <Link className="public-blog-back-link" to="/blog">
           <i className="pi pi-arrow-left" />
@@ -1237,6 +1307,12 @@ export function BlogPostDetailPage() {
 export function NewsPage() {
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath="/noticias"
+        title="Noticias | Fundación MTM"
+        description="Consulta campañas, comunicados, novedades institucionales y próximas noticias conectadas con las redes sociales de Fundación MTM."
+        image={publicAssets.bingo}
+      />
       <PageHero
         eyebrow="Noticias"
         title="Campañas, comunicados y novedades de la fundación."
@@ -1263,6 +1339,12 @@ export function NewsPage() {
 export function TestimonialsPage() {
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath="/testimonios"
+        title="Testimonios | Fundación MTM"
+        description="Historias y voces de familias, cuidadores, beneficiarios y aliados que acompañan el trabajo social de Fundación MTM."
+        image={publicAssets.careThree}
+      />
       <PageHero
         eyebrow="Testimonios"
         title="Voces de familias, cuidadores y beneficiarios."
@@ -1281,6 +1363,12 @@ export function TestimonialsPage() {
 export function FAQPage() {
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath="/preguntas-frecuentes"
+        title="Preguntas Frecuentes | Fundación MTM"
+        description="Resuelve dudas frecuentes sobre donaciones, padrinos, voluntariado, programas y formas de apoyar a Fundación MTM."
+        image={publicAssets.banner}
+      />
       <PageHero
         eyebrow="Preguntas frecuentes"
         title="Respuestas claras para donantes, padrinos, familias y aliados."
@@ -1370,6 +1458,12 @@ const contactSocialLinks = [
 export function ContactPage() {
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath="/contacto"
+        title="Contacto | Fundación MTM"
+        description="Contacta a Fundación MTM en Villavicencio para donaciones, voluntariado, alianzas, campañas solidarias y apoyo institucional."
+        image="/contacto-poster-mtm.png"
+      />
       <section className="public-contact-showcase" aria-label="Contacto Fundación MTM">
         <div className="public-contact-showcase-hero">
           <div className="public-contact-showcase-copy">
@@ -1474,6 +1568,13 @@ export function ContactPage() {
 export function NotFoundPage() {
   return (
     <PublicLayout>
+      <Seo
+        canonicalPath="/404"
+        title="Página no encontrada | Fundación MTM"
+        description="La página solicitada no existe. Vuelve al inicio de Fundación MTM para conocer programas, donaciones, blog y contacto."
+        image={publicAssets.notFound}
+        noIndex
+      />
       <section className="public-not-found" aria-label="Error 404, página no encontrada">
         <img
           className="public-not-found-image"

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { publicAssets } from "./public-home/cloudinary-assets";
 import { PublicFloatingActions } from "./public-home/public-floating-actions";
+import { Seo } from "../seo";
 import "./public-home/public-home-page.css";
 
 type PublicInfoPageProps = {
@@ -57,6 +58,11 @@ export const PublicInfoPage = ({ variant }: PublicInfoPageProps) => {
 
   return (
     <main className="public-site">
+      <Seo
+        title={`${page.eyebrow} | Fundación MTM`}
+        description={page.text}
+        image={page.image}
+      />
       <nav className="public-nav is-scrolled">
         <Link className="public-brand" to="/home">
           <img src={publicAssets.logo} alt="Fundacion Mujeres Trabajando por el Meta" />
