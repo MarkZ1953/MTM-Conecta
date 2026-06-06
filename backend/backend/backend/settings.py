@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'campaigns',
     'cap_collection',
     'volunteers',
+    'blog',
 ]
 
 MIDDLEWARE = [

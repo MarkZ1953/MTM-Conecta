@@ -497,6 +497,10 @@
   color: #fff;
 }
 
+.public-navbar-mobile-only {
+  display: none !important;
+}
+
 @media (max-width: 1060px) {
   .public-navbar-top {
     grid-template-columns: auto 1fr auto;
@@ -550,6 +554,10 @@
     justify-content: flex-start;
     min-height: 56px;
     padding: 0.8rem 1.25rem;
+  }
+
+  .public-navbar-mobile-only {
+    display: inline-flex !important;
   }
 
   .public-navbar-dropdown {

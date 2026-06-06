@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   publicAboutGallerySlides,
   publicAssets,
@@ -12,6 +12,11 @@ import {
   publicNews,
   publicPrograms,
 } from "./public-home/public-content";
+import {
+  fetchPublicBlogPost,
+  fetchPublicBlogPosts,
+  type PublicBlogPostRecord,
+} from "./public-home/public-blog.api";
 import { fetchPublicEvents, type PublicEventRecord } from "./public-home/public-events.api";
 import { PublicLayout } from "./public-home/public-layout";
 import { usePublicCloudinaryGallery } from "./public-home/use-public-cloudinary-gallery";
@@ -480,6 +485,85 @@ function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
+const blogDayFormatter = new Intl.DateTimeFormat("es-CO", {
+  day: "2-digit",
+});
+
+const blogMonthFormatter = new Intl.DateTimeFormat("es-CO", {
+  month: "short",
+});
+
+const blogYearFormatter = new Intl.DateTimeFormat("es-CO", {
+  year: "numeric",
+});
+
+const blogLongDateFormatter = new Intl.DateTimeFormat("es-CO", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+function getBlogDate(value?: string | null) {
+  const date = value ? new Date(value) : null;
+
+  if (!date || Number.isNaN(date.getTime())) {
+    return {
+      day: "--",
+      month: "MTM",
+      year: "Blog",
+      long: "Fecha por anunciar",
+    };
+  }
+
+  return {
+    day: blogDayFormatter.format(date),
+    month: blogMonthFormatter.format(date).replace(".", "").toUpperCase(),
+    year: blogYearFormatter.format(date),
+    long: capitalize(blogLongDateFormatter.format(date)),
+  };
+}
+
+function getBlogImage(post?: PublicBlogPostRecord | null) {
+  return post?.image_url || publicAssets.careOne;
+}
+
+function BlogDateBadge({ value }: { value?: string | null }) {
+  const date = getBlogDate(value);
+
+  return (
+    <span className="public-blog-date-badge">
+      <strong>{date.day}</strong>
+      <span>{date.month}</span>
+      <small>{date.year}</small>
+    </span>
+  );
+}
+
+function BlogCard({ post, featured = false }: { post: PublicBlogPostRecord; featured?: boolean }) {
+  return (
+    <article className={featured ? "public-blog-card public-blog-featured-card is-featured" : "public-blog-card"}>
+      <div className="public-blog-card-media">
+        <img src={getBlogImage(post)} alt={post.image_alt || post.title} />
+        {featured && (
+          <span className="public-blog-feature-pill">
+            <i className="pi pi-star-fill" />
+            Destacada
+          </span>
+        )}
+        <BlogDateBadge value={post.published_at} />
+      </div>
+      <div className="public-blog-card-copy">
+        <h2>{post.title}</h2>
+        <p>{post.summary}</p>
+        <Link to={`/blog/${post.slug}`}>
+          Leer más
+          <i className="pi pi-arrow-right" />
+        </Link>
+      </div>
+    </article>
+  );
+}
+
 function formatPublicEvent(
   event: PublicEventRecord,
   index: number,
@@ -830,19 +914,269 @@ export function PublicEventsPage() {
 }
 
 export function BlogPage() {
+  const [posts, setPosts] = useState<PublicBlogPostRecord[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  const filteredPosts = useMemo(
+    () =>
+      normalizedSearchTerm
+        ? posts.filter((post) =>
+            [post.title, post.summary, post.content].some((value) =>
+              value.toLowerCase().includes(normalizedSearchTerm),
+            ),
+          )
+        : posts,
+    [normalizedSearchTerm, posts],
+  );
+  const featuredPost = filteredPosts[0];
+  const latestPosts = filteredPosts.slice(1);
+  const recentPosts = posts.slice(0, 5);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchPublicBlogPosts()
+      .then((data) => {
+        if (!isMounted) return;
+        setPosts(data);
+        setError("");
+      })
+      .catch((fetchError) => {
+        if (!isMounted) return;
+        setError(fetchError instanceof Error ? fetchError.message : "No se pudieron cargar las publicaciones.");
+      })
+      .finally(() => {
+        if (isMounted) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <PublicLayout>
-      <PageHero
-        eyebrow="Blog"
-        title="Historias, aprendizajes y contenido institucional."
-        text="El blog será el espacio editorial para contar procesos, programas y temas de interés para familias y aliados."
-        image={publicAssets.toys}
-      />
-      <PlaceholderBlock
-        icon="pi-book"
-        title="Blog administrable próximamente"
-        text="Por ahora dejamos la ruta lista. Luego conectaremos publicaciones desde el panel administrativo."
-      />
+      <section
+        className="public-blog-hero"
+        aria-label="Blog de Fundación MTM"
+        style={
+          {
+            "--public-blog-hero-image": `url(${publicAssets.careThree})`,
+          } as CSSProperties
+        }
+      >
+        <div className="public-blog-hero-copy">
+          <span className="public-blog-kicker">Blog de Fundación MTM</span>
+          <h1>
+            Lo que hacemos,
+            <strong> contado en historias reales</strong>
+          </h1>
+          <p>
+            Conoce nuestras actividades, logros e historias que reflejan el trabajo
+            de nuestra comunidad y el impacto que construimos juntas.
+          </p>
+          <a href="#public-blog-posts">
+            <i className="pi pi-envelope" />
+            Conoce nuestro impacto
+          </a>
+        </div>
+      </section>
+
+      <section className="public-blog-shell" id="public-blog-posts">
+        <div className="public-blog-main">
+          {loading && (
+            <div className="public-blog-loading">
+              <i className="pi pi-spin pi-spinner" />
+              Cargando publicaciones...
+            </div>
+          )}
+
+          {!loading && featuredPost && (
+            <>
+              <div className="public-blog-section-title">
+                <i className="pi pi-star-fill" />
+                <h2>Historia destacada</h2>
+              </div>
+              <BlogCard post={featuredPost} featured />
+            </>
+          )}
+
+          {!loading && !featuredPost && (
+            <div className="public-blog-empty">
+              <i className="pi pi-book" />
+              <h2>
+                {error
+                  ? "No pudimos cargar el Blog"
+                  : normalizedSearchTerm
+                    ? "No encontramos resultados"
+                    : "Publicaciones por anunciar"}
+              </h2>
+              <p>
+                {error ||
+                  (normalizedSearchTerm
+                    ? "Prueba con otra búsqueda o vuelve a ver todas las publicaciones."
+                    : "Cuando el equipo publique artículos desde el panel administrativo, aparecerán en esta sección.")}
+              </p>
+            </div>
+          )}
+
+          {latestPosts.length > 0 && (
+            <>
+              <div className="public-blog-section-title">
+                <i className="pi pi-book" />
+                <h2>Publicaciones recientes</h2>
+              </div>
+              <div className="public-blog-grid">
+                {latestPosts.map((post) => (
+                  <BlogCard post={post} key={post.id} />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        <aside className="public-blog-sidebar" aria-label="Publicaciones recientes del Blog">
+          <div className="public-blog-search">
+            <input
+              type="search"
+              placeholder="Buscar en el blog..."
+              aria-label="Buscar en el blog"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+            />
+            <i className="pi pi-search" />
+          </div>
+
+          <div className="public-blog-recent">
+            <h2>
+              <i className="pi pi-list" />
+              Publicaciones recientes
+            </h2>
+            {recentPosts.length > 0 ? (
+              recentPosts.map((post) => {
+                const date = getBlogDate(post.published_at);
+
+                return (
+                  <Link to={`/blog/${post.slug}`} key={post.id}>
+                    <img src={getBlogImage(post)} alt={post.image_alt || post.title} />
+                    <span>
+                      <strong>{post.title}</strong>
+                      <small>{date.long}</small>
+                    </span>
+                  </Link>
+                );
+              })
+            ) : (
+              <p>{loading ? "Cargando entradas recientes..." : "Aún no hay entradas publicadas."}</p>
+            )}
+          </div>
+
+          <div className="public-blog-newsletter">
+            <h2>
+              <i className="pi pi-envelope" />
+              Recibe nuestras novedades
+            </h2>
+            <p>Suscríbete a nuestro boletín y entérate de todo lo que estamos haciendo.</p>
+            <form>
+              <input type="email" placeholder="Tu correo electrónico" aria-label="Tu correo electrónico" />
+              <button type="button">Suscribirme</button>
+            </form>
+          </div>
+        </aside>
+      </section>
+    </PublicLayout>
+  );
+}
+
+export function BlogPostDetailPage() {
+  const { slug = "" } = useParams();
+  const [post, setPost] = useState<PublicBlogPostRecord | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const date = getBlogDate(post?.published_at);
+  const paragraphs = useMemo(
+    () => post?.content.split(/\n{2,}/).map((text) => text.trim()).filter(Boolean) ?? [],
+    [post?.content],
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchPublicBlogPost(slug)
+      .then((data) => {
+        if (!isMounted) return;
+        setPost(data);
+        setError("");
+      })
+      .catch((fetchError) => {
+        if (!isMounted) return;
+        setError(fetchError instanceof Error ? fetchError.message : "No se pudo cargar la publicación.");
+      })
+      .finally(() => {
+        if (isMounted) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [slug]);
+
+  return (
+    <PublicLayout>
+      <article className="public-blog-detail">
+        <Link className="public-blog-back-link" to="/blog">
+          <i className="pi pi-arrow-left" />
+          Volver al Blog
+        </Link>
+
+        {loading && (
+          <div className="public-blog-loading">
+            <i className="pi pi-spin pi-spinner" />
+            Cargando publicación...
+          </div>
+        )}
+
+        {!loading && post && (
+          <>
+            <header className="public-blog-detail-hero">
+              <div>
+                <span className="public-blog-kicker">Blog de Fundación MTM</span>
+                <h1>{post.title}</h1>
+                <p>{post.summary}</p>
+                <small>
+                  <i className="pi pi-calendar" />
+                  {date.long}
+                </small>
+              </div>
+              <figure>
+                <img src={getBlogImage(post)} alt={post.image_alt || post.title} />
+                <BlogDateBadge value={post.published_at} />
+              </figure>
+            </header>
+
+            <div className="public-blog-detail-content">
+              {paragraphs.map((paragraph, index) => (
+                <p key={`${post.slug}-paragraph-${index}`}>{paragraph}</p>
+              ))}
+            </div>
+          </>
+        )}
+
+        {!loading && !post && (
+          <div className="public-blog-empty">
+            <i className="pi pi-exclamation-circle" />
+            <h2>Publicación no encontrada</h2>
+            <p>{error || "Esta entrada no está publicada o ya no se encuentra disponible."}</p>
+            <Link to="/blog">Ver publicaciones disponibles</Link>
+          </div>
+        )}
+      </article>
     </PublicLayout>
   );
 }

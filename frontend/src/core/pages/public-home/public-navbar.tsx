@@ -220,6 +220,9 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
             <Link className={location.pathname === "/programas" ? "is-active" : ""} to="/programas">
               Programas
             </Link>
+            <Link className={isActionActive("/blog") ? "is-active" : ""} to="/blog">
+              Blog
+            </Link>
             <Link className="public-navbar-vinculate" to="/donar">
               <i className="pi pi-heart-fill" />
               <span>Vincúlate</span>
@@ -247,6 +250,10 @@ export function PublicNavbar({ onSectionNavigate }: PublicNavbarProps) {
         >
           <Link className={isActionActive("/home") ? "is-active" : ""} to="/home" onClick={closeMenus}>
             <ActionLabel item={actionLinks[0]} />
+          </Link>
+
+          <Link className="public-navbar-mobile-only" to="/blog" onClick={closeMenus}>
+            <ActionLabel item={{ label: "Blog", path: "/blog", strongLabel: "Blog" }} />
           </Link>
 
           <div className={`public-navbar-donate-menu ${donateOpen ? "is-open" : ""}`}>

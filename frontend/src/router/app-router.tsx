@@ -5,6 +5,7 @@ import {
   AboutPage,
   AccountPage,
   BlogPage,
+  BlogPostDetailPage,
   ContactPage,
   DashboardPage,
   DonationBondPage,
@@ -32,6 +33,7 @@ import { DonationsPage } from "@/donations";
 import { DonorsPage } from "@/donors";
 import { CampaignsPage, CampaignFormPage } from "@/campaigns";
 import { VolunteersPage } from "@/volunteers";
+import { BlogAdminPage } from "@/blog";
 import {
   CapCollectionPage,
   CompaniesPage,
@@ -62,6 +64,7 @@ export const AppRouter = () => {
       <Route path="/voluntariado" element={<Navigate to="/como-ayudar/voluntariado-presencial" replace />} />
       <Route path="/eventos-publicos" element={<PublicEventsPage />} />
       <Route path="/blog" element={<BlogPage />} />
+      <Route path="/blog/:slug" element={<BlogPostDetailPage />} />
       <Route path="/noticias" element={<NewsPage />} />
       <Route path="/testimonios" element={<TestimonialsPage />} />
       <Route path="/preguntas-frecuentes" element={<FAQPage />} />
@@ -93,6 +96,7 @@ export const AppRouter = () => {
           <Route path="/campaigns" element={<CampaignsPage />} />
           <Route path="/campaigns/nueva" element={<CampaignFormPage />} />
           <Route path="/campaigns/:id/editar" element={<CampaignFormPage />} />
+          <Route path="/blog-posts" element={<BlogAdminPage />} />
 
           <Route path="/cap-collection" element={<CapCollectionPage />} />
           <Route path="/cap-collection/companies" element={<CompaniesPage />} />
