@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     'volunteers',
     'blog',
     'subscribers',
+    'news',
 ]
 
 MIDDLEWARE = [
@@ -250,6 +251,17 @@ ANYMAIL = {
 }
 
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
+
+
+# ---------------------------------------------------------------------------
+# Instagram / Meta Graph API
+# ---------------------------------------------------------------------------
+
+INSTAGRAM_ACCESS_TOKEN = config("INSTAGRAM_ACCESS_TOKEN", default="")
+INSTAGRAM_BUSINESS_ACCOUNT_ID = config("INSTAGRAM_BUSINESS_ACCOUNT_ID", default="")
+INSTAGRAM_GRAPH_API_VERSION = config("INSTAGRAM_GRAPH_API_VERSION", default="v20.0")
+INSTAGRAM_SYNC_LIMIT = config("INSTAGRAM_SYNC_LIMIT", default=25, cast=int)
+INSTAGRAM_SYNC_TIMEOUT_SECONDS = config("INSTAGRAM_SYNC_TIMEOUT_SECONDS", default=15, cast=int)
 
 
 # ---------------------------------------------------------------------------

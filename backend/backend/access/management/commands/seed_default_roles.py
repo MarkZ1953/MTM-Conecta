@@ -23,6 +23,7 @@ ROLE_SPECS = {
             ("cap_collection", ["company", "collectionpoint", "collectionrequest"], ["add", "change", "delete", "view"]),
             ("donations", ["donor", "donation"], ["add", "change", "delete", "view"]),
             ("events", ["event", "attendance", "eventact", "evidence"], ["add", "change", "delete", "view"]),
+            ("news", ["instagrampost"], ["add", "change", "delete", "view"]),
             ("projects", ["project"], ["add", "change", "delete", "view"]),
             ("subscribers", ["newslettersubscriber"], ["add", "change", "delete", "view"]),
             ("volunteers", ["volunteer", "volunteeravailability", "volunteertask"], ["add", "change", "delete", "view"]),
@@ -44,6 +45,7 @@ ROLE_SPECS = {
             ("cap_collection", ["company", "collectionpoint", "collectionrequest"], ["view"]),
             ("events", ["event", "eventact", "evidence"], ["add", "change", "delete", "view"]),
             ("events", ["attendance"], ["view"]),
+            ("news", ["instagrampost"], ["add", "change", "delete", "view"]),
             ("subscribers", ["newslettersubscriber"], ["change", "view"]),
             ("volunteers", ["volunteer"], ["view"]),
         ],
@@ -55,6 +57,7 @@ ROLE_SPECS = {
             ("campaigns", ["campaign", "campaigntemplate"], ["add", "change", "view"]),
             ("events", ["event"], ["view"]),
             ("events", ["evidence"], ["add", "change", "view"]),
+            ("news", ["instagrampost"], ["change", "view"]),
         ],
     },
 }

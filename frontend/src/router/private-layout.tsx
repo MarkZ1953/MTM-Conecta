@@ -88,6 +88,12 @@ const navItems: PermissionNavItem[] = [
     permissions: ["blog.view_blogpost"],
   },
   {
+    title: "Noticias",
+    url: "/instagram-posts",
+    icon: "pi-instagram",
+    permissions: ["news.view_instagrampost"],
+  },
+  {
     title: "Voluntarios",
     url: "/volunteers",
     icon: "pi-id-card",

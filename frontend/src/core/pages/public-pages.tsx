@@ -19,6 +19,11 @@ import {
   type PublicBlogPostRecord,
 } from "./public-home/public-blog.api";
 import { fetchPublicEvents, type PublicEventRecord } from "./public-home/public-events.api";
+import {
+  fetchPublicInstagramPost,
+  fetchPublicInstagramPosts,
+  type PublicInstagramPostRecord,
+} from "./public-home/public-news.api";
 import { PublicLayout } from "./public-home/public-layout";
 import { usePublicCloudinaryGallery } from "./public-home/use-public-cloudinary-gallery";
 import { Seo } from "../seo";
@@ -577,6 +582,30 @@ function getBlogImage(post?: PublicBlogPostRecord | null) {
   return post?.image_url || publicAssets.careOne;
 }
 
+function getInstagramImage(post?: PublicInstagramPostRecord | null) {
+  if (!post) return publicAssets.bingo;
+  const firstChild = post.children?.find((child) => child.thumbnail_url || child.media_url);
+  return post.thumbnail_url || post.media_url || firstChild?.thumbnail_url || firstChild?.media_url || publicAssets.bingo;
+}
+
+function getInstagramTitle(post: PublicInstagramPostRecord) {
+  const firstLine = post.caption.split(/\r?\n/).find(Boolean)?.trim() || "Publicación de Fundación MTM";
+  const firstSentence = firstLine.split(/[.!?]/).find(Boolean)?.trim() || firstLine;
+  return firstSentence.length > 78 ? `${firstSentence.slice(0, 75).trim()}...` : firstSentence;
+}
+
+function getInstagramSummary(post: PublicInstagramPostRecord) {
+  const cleanCaption = post.caption.replace(/\s+/g, " ").trim();
+  if (!cleanCaption) return "Conoce una actualización reciente compartida por Fundación MTM.";
+  return cleanCaption.length > 150 ? `${cleanCaption.slice(0, 147).trim()}...` : cleanCaption;
+}
+
+function getInstagramLabel(mediaType: PublicInstagramPostRecord["media_type"]) {
+  if (mediaType === "VIDEO") return "Reel";
+  if (mediaType === "CAROUSEL_ALBUM") return "Carrusel";
+  return "Instagram";
+}
+
 function BlogDateBadge({ value }: { value?: string | null }) {
   const date = getBlogDate(value);
 
@@ -737,6 +766,33 @@ export function PublicEventsPage() {
         title="Eventos Públicos | Fundación MTM"
         description="Consulta eventos, jornadas, campañas y actividades públicas de Fundación MTM en Villavicencio y la región de la Orinoquía."
         image={featuredEvent?.imageSrc || publicAssets.careOne}
+        jsonLd={({ canonical }) => ({
+          "@type": "ItemList",
+          "@id": `${canonical}#events`,
+          name: "Eventos públicos de Fundación MTM",
+          itemListElement: events.slice(0, 10).map((event, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            item: {
+              "@type": "Event",
+              name: event.title,
+              description: event.description,
+              startDate: event.start_date,
+              endDate: event.end_date,
+              eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+              eventStatus: "https://schema.org/EventScheduled",
+              image: event.image_url || event.images?.[0]?.image_url || publicAssets.careOne,
+              location: {
+                "@type": "Place",
+                name: event.location,
+                address: event.location,
+              },
+              organizer: {
+                "@id": `${canonical.replace(/\/eventos-publicos$/, "")}/#organization`,
+              },
+            },
+          })),
+        })}
       />
       <section className="public-events-showcase" aria-label="Eventos Fundación MTM">
         <div className="public-events-showcase-hero">
@@ -1245,10 +1301,36 @@ export function BlogPostDetailPage() {
     <PublicLayout>
       <Seo
         canonicalPath={`/blog/${slug}`}
+        breadcrumbTitle={post?.title || "Publicación"}
         title={post ? `${post.title} | Blog Fundación MTM` : "Blog Fundación MTM"}
         description={post?.summary || "Lee publicaciones, historias y actividades recientes de Fundación MTM."}
         image={post ? getBlogImage(post) : publicAssets.careThree}
         imageAlt={post?.image_alt || post?.title || "Blog Fundación MTM"}
+        jsonLd={({ canonical, description, imageUrl, title }) =>
+          post
+            ? {
+                "@type": "BlogPosting",
+                "@id": `${canonical}#article`,
+                headline: post.title,
+                description,
+                image: imageUrl,
+                datePublished: post.published_at,
+                dateModified: post.published_at,
+                inLanguage: "es-CO",
+                mainEntityOfPage: {
+                  "@type": "WebPage",
+                  "@id": canonical,
+                },
+                author: {
+                  "@id": `${canonical.replace(/\/blog\/.+$/, "")}/#organization`,
+                },
+                publisher: {
+                  "@id": `${canonical.replace(/\/blog\/.+$/, "")}/#organization`,
+                },
+                name: title,
+              }
+            : undefined
+        }
         noIndex={!loading && !post}
         type="article"
       />
@@ -1305,33 +1387,210 @@ export function BlogPostDetailPage() {
 }
 
 export function NewsPage() {
+  const [posts, setPosts] = useState<PublicInstagramPostRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    fetchPublicInstagramPosts()
+      .then((items) => {
+        if (active) setPosts(items);
+      })
+      .catch(() => {
+        if (active) setPosts([]);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const featuredPost = posts.find((post) => post.is_featured) || posts[0];
+  const fallbackNews = !loading && posts.length === 0;
+
   return (
     <PublicLayout>
       <Seo
         canonicalPath="/noticias"
         title="Noticias | Fundación MTM"
-        description="Consulta campañas, comunicados, novedades institucionales y próximas noticias conectadas con las redes sociales de Fundación MTM."
-        image={publicAssets.bingo}
+        description="Consulta novedades, campañas, comunicados y publicaciones recientes de Fundación MTM conectadas con Instagram."
+        image={getInstagramImage(featuredPost)}
       />
       <PageHero
         eyebrow="Noticias"
-        title="Campañas, comunicados y novedades de la fundación."
-        text="Las noticias mostrarán comunicaciones recientes, campañas y avances institucionales."
+        title="Novedades, campañas y publicaciones de la fundación."
+        text="Conoce las actualizaciones recientes que compartimos con nuestra comunidad."
         image={publicAssets.bingo}
       />
       <section className="public-section public-news">
-        <div className="public-news-grid">
-          {publicNews.map((item) => (
-            <article className="public-news-card" key={item.title}>
-              <img src={item.image} alt={item.title} />
-              <div>
-                <span>{item.tag}</span>
-                <h3>{item.title}</h3>
-              </div>
-            </article>
-          ))}
+        <div className="public-section-heading compact">
+          <span className="public-kicker">Instagram</span>
+          <h2>Publicaciones recientes</h2>
         </div>
+
+        {loading && (
+          <div className="public-blog-loading">
+            <i className="pi pi-spin pi-spinner" />
+            <p>Cargando publicaciones recientes...</p>
+          </div>
+        )}
+
+        {!loading && posts.length > 0 && (
+          <div className="public-news-grid public-instagram-grid">
+            {posts.map((post) => {
+              const date = getBlogDate(post.timestamp);
+              return (
+                <article className={post.is_featured ? "public-news-card is-featured" : "public-news-card"} key={post.id}>
+                  <Link to={`/noticias/${post.instagram_id}`} aria-label={`Leer ${getInstagramTitle(post)}`}>
+                    <div className="public-news-card-media">
+                      <img src={getInstagramImage(post)} alt={getInstagramTitle(post)} />
+                      <span className="public-blog-date-badge">
+                        <strong>{date.day}</strong>
+                        <span>{date.month}</span>
+                        <small>{date.year}</small>
+                      </span>
+                      {post.is_featured && <span className="public-news-feature-pill">Destacada</span>}
+                    </div>
+                    <div>
+                      <span>{getInstagramLabel(post.media_type)}</span>
+                      <h3>{getInstagramTitle(post)}</h3>
+                      <p>{getInstagramSummary(post)}</p>
+                      <strong className="public-news-read-more">Leer más <i className="pi pi-arrow-right" /></strong>
+                    </div>
+                  </Link>
+                </article>
+              );
+            })}
+          </div>
+        )}
+
+        {fallbackNews && (
+          <div className="public-news-grid">
+            {publicNews.map((item) => (
+              <article className="public-news-card" key={item.title}>
+                <img src={item.image} alt={item.title} />
+                <div>
+                  <span>{item.tag}</span>
+                  <h3>{item.title}</h3>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
+    </PublicLayout>
+  );
+}
+
+export function NewsPostDetailPage() {
+  const { instagramId } = useParams();
+  const [post, setPost] = useState<PublicInstagramPostRecord | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!instagramId) {
+      setLoading(false);
+      setError("No encontramos la publicación solicitada.");
+      return;
+    }
+
+    let active = true;
+    setLoading(true);
+    setError("");
+
+    fetchPublicInstagramPost(instagramId)
+      .then((item) => {
+        if (active) setPost(item);
+      })
+      .catch((err) => {
+        if (active) setError(err instanceof Error ? err.message : "No se pudo cargar la publicación.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [instagramId]);
+
+  const title = post ? getInstagramTitle(post) : "Publicación de Instagram";
+  const description = post ? getInstagramSummary(post) : "Publicación reciente de Fundación MTM.";
+  const image = getInstagramImage(post);
+  const date = getBlogDate(post?.timestamp);
+
+  return (
+    <PublicLayout>
+      <Seo
+        canonicalPath={`/noticias/${instagramId || ""}`}
+        title={`${title} | Noticias Fundación MTM`}
+        description={description}
+        image={image}
+        jsonLd={({ canonical }) => post ? ({
+          "@type": "SocialMediaPosting",
+          "@id": `${canonical}#post`,
+          headline: title,
+          articleBody: post.caption,
+          datePublished: post.timestamp,
+          image,
+          url: canonical,
+          sameAs: post.permalink || undefined,
+        }) : undefined}
+      />
+
+      <article className="public-blog-detail public-news-detail">
+        <Link className="public-blog-back-link" to="/noticias">
+          <i className="pi pi-arrow-left" /> Volver a noticias
+        </Link>
+
+        {loading && (
+          <div className="public-blog-loading">
+            <i className="pi pi-spin pi-spinner" />
+            <p>Cargando publicación...</p>
+          </div>
+        )}
+
+        {!loading && post && (
+          <>
+            <header className="public-blog-detail-hero">
+              <div>
+                <span className="public-blog-kicker">{getInstagramLabel(post.media_type)}</span>
+                <h1>{title}</h1>
+                <p>{description}</p>
+                <small>{date.long}</small>
+                {post.permalink && (
+                  <a className="public-news-instagram-link" href={post.permalink} target="_blank" rel="noreferrer">
+                    Ver publicación original <i className="pi pi-instagram" />
+                  </a>
+                )}
+              </div>
+              <figure>
+                <img src={image} alt={title} />
+              </figure>
+            </header>
+
+            <div className="public-blog-detail-content">
+              {post.caption.split(/\n{2,}/).filter(Boolean).map((paragraph, index) => (
+                <p key={`${post.instagram_id}-${index}`}>{paragraph}</p>
+              ))}
+            </div>
+          </>
+        )}
+
+        {!loading && !post && (
+          <div className="public-blog-empty">
+            <i className="pi pi-instagram" />
+            <h2>Publicación no disponible</h2>
+            <p>{error || "Esta publicación no está disponible o fue ocultada."}</p>
+            <Link to="/noticias">Ver publicaciones recientes</Link>
+          </div>
+        )}
+      </article>
     </PublicLayout>
   );
 }
@@ -1368,6 +1627,18 @@ export function FAQPage() {
         title="Preguntas Frecuentes | Fundación MTM"
         description="Resuelve dudas frecuentes sobre donaciones, padrinos, voluntariado, programas y formas de apoyar a Fundación MTM."
         image={publicAssets.banner}
+        jsonLd={({ canonical }) => ({
+          "@type": "FAQPage",
+          "@id": `${canonical}#faq`,
+          mainEntity: publicFaqs.map((faq) => ({
+            "@type": "Question",
+            name: faq.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: faq.answer,
+            },
+          })),
+        })}
       />
       <PageHero
         eyebrow="Preguntas frecuentes"

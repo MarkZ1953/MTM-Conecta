@@ -16,6 +16,7 @@ import {
   HelpPage,
   HomePage,
   NewsPage,
+  NewsPostDetailPage,
   NotFoundPage,
   ProgramsPage,
   PublicEventsPage,
@@ -35,6 +36,7 @@ import { CampaignsPage, CampaignFormPage } from "@/campaigns";
 import { VolunteersPage } from "@/volunteers";
 import { BlogAdminPage } from "@/blog";
 import { SubscribersPage } from "@/subscribers";
+import { NewsAdminPage } from "@/news";
 import {
   CapCollectionPage,
   CompaniesPage,
@@ -67,6 +69,7 @@ export const AppRouter = () => {
       <Route path="/blog" element={<BlogPage />} />
       <Route path="/blog/:slug" element={<BlogPostDetailPage />} />
       <Route path="/noticias" element={<NewsPage />} />
+      <Route path="/noticias/:instagramId" element={<NewsPostDetailPage />} />
       <Route path="/testimonios" element={<TestimonialsPage />} />
       <Route path="/preguntas-frecuentes" element={<FAQPage />} />
       <Route path="/contacto" element={<ContactPage />} />
@@ -99,6 +102,7 @@ export const AppRouter = () => {
           <Route path="/campaigns/:id/editar" element={<CampaignFormPage />} />
           <Route path="/subscribers" element={<SubscribersPage />} />
           <Route path="/blog-posts" element={<BlogAdminPage />} />
+          <Route path="/instagram-posts" element={<NewsAdminPage />} />
 
           <Route path="/cap-collection" element={<CapCollectionPage />} />
           <Route path="/cap-collection/companies" element={<CompaniesPage />} />
